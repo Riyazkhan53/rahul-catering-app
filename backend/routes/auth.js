@@ -2,9 +2,13 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
+/**
+ * 🔐 LOGIN
+ */
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -23,7 +27,6 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // 🔐 CREATE JWT
     const token = jwt.sign(
       { userId: user._id, username: user.username },
       process.env.JWT_SECRET,
@@ -40,6 +43,32 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+/**
+ * ✅ CHECK LOGIN (USED ON REFRESH)
+ */
+router.get("/me", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    res.json({
+      user: {
+        username: decoded.username,
+        userId: decoded.userId,
+      },
+    });
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
   }
 });
 
