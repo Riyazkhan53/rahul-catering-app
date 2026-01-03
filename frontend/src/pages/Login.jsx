@@ -13,20 +13,16 @@ function Login({ onLoginSuccess }) {
   setLoading(true);
 
   try {
-    const data = await apiRequest("/api/auth/login", {
-      method: "POST",
-      body: { username, password },
-    });
+  const data = await apiRequest("/api/auth/login", {
+    method: "POST",
+    body: { username, password },
+  });
 
-    // ✅ SUCCESS PATH
-    localStorage.setItem("token", data.token);
-    onLoginSuccess(data.user);
-  } catch (err) {
-    console.error(err, "__serverError");
-    setError(err.message || "Server not reachable");
-  } finally {
-    setLoading(false);
-  }
+  localStorage.setItem("token", data.token);
+  onLoginSuccess(data.user);
+} catch (err) {
+  setError(err.message || "Server not reachable");
+}
 };
 
     return (

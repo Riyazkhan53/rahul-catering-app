@@ -1,29 +1,27 @@
 const BASE_URL = import.meta.env.VITE_API_URL;
 
-export async function apiRequest(endpoint, options = {}) {
-  const token = localStorage.getItem("token");
-
-  const config = {
-    method: options.method || "GET",
+export async function apiRequest(path, options = {}) {
+  const res = await fetch(`${BASE_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
-      ...options.headers,
+      ...(options.headers || {}),
     },
-  };
+    body: options.body ? JSON.stringify(options.body) : undefined,
+    method: options.method || "GET",
+  });
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  // 👇 SAFE PARSING
+  const text = await res.text();
+  let data = {};
+
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (err) {
+    console.error("Invalid JSON from server:", text);
   }
 
-  if (options.body) {
-    config.body = JSON.stringify(options.body);
-  }
-
-  const response = await fetch(`${BASE_URL}${endpoint}`, config);
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || "API error");
+  if (!res.ok) {
+    throw new Error(data.message || "Server error");
   }
 
   return data;
