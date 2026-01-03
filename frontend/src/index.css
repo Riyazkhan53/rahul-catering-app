@@ -1,0 +1,17 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  height: 100vh;
+  background: linear-gradient(135deg, #fff5e6, #ffe0b2);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+}

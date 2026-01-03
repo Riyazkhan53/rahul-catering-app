@@ -1,0 +1,120 @@
+/* ===== RESET & GLOBAL ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  height: 100vh;
+  background: linear-gradient(135deg, #fff5e6, #ffe0b2);
+}
+
+/* ===== SPLASH / CARD ===== */
+.app-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-card {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.logo-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: #ff9800;
+  color: #fff;
+  font-size: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.app-title {
+  font-size: 32px;
+  color: #333;
+}
+
+.app-subtitle {
+  font-size: 20px;
+  color: #ff9800;
+  margin-bottom: 10px;
+}
+
+.app-tagline {
+  color: #666;
+  margin-bottom: 30px;
+}
+
+/* ===== BUTTONS ===== */
+.primary-btn {
+  background: #ff9800;
+  color: #fff;
+  padding: 14px 28px;
+  font-size: 16px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+}
+
+.primary-btn:hover {
+  opacity: 0.9;
+}
+
+/* ===== LOGIN PAGE ===== */
+.login-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.login-title {
+  margin-bottom: 5px;
+}
+
+.login-subtitle {
+  margin-bottom: 25px;
+  color: #777;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.login-error {
+  color: red;
+  margin-bottom: 10px;
+}
+
+/* ===== DASHBOARD ===== */
+.dashboard {
+  padding: 20px;
+}
