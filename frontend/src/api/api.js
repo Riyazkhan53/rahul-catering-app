@@ -1,27 +1,27 @@
-const BASE_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 export async function apiRequest(path, options = {}) {
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${API_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
-      ...(options.headers || {}),
+      ...(options.token && {
+        Authorization: `Bearer ${options.token}`,
+      }),
     },
-    body: options.body ? JSON.stringify(options.body) : undefined,
     method: options.method || "GET",
+    body: options.body ? JSON.stringify(options.body) : undefined,
   });
 
-  // 👇 SAFE PARSING
-  const text = await res.text();
-  let data = {};
+  // 👇 SAFETY CHECK
+  let data = null;
+  const contentType = res.headers.get("content-type");
 
-  try {
-    data = text ? JSON.parse(text) : {};
-  } catch (err) {
-    console.error("Invalid JSON from server:", text);
+  if (contentType && contentType.includes("application/json")) {
+    data = await res.json();
   }
 
   if (!res.ok) {
-    throw new Error(data.message || "Server error");
+    throw new Error(data?.message || "Server error");
   }
 
   return data;

@@ -21,7 +21,8 @@ function Login({ onLoginSuccess }) {
   localStorage.setItem("token", data.token);
   onLoginSuccess(data.user);
 } catch (err) {
-  setError(err.message || "Server not reachable");
+  console.error(err);
+  res.status(500).json({ message: "Server error" });
 }
 };
 
