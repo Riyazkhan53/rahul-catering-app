@@ -2,29 +2,52 @@ import { useEffect, useState } from "react";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 
+function ProtectedRoute({ user, onLoginSuccess, children }) {
+  const token = localStorage.getItem("token");
+
+  if (!token || !user) {
+    return <Login onLoginSuccess={onLoginSuccess} />;
+  }
+
+  return children;
+}
+
 function App() {
   const [user, setUser] = useState(null);
-  const [showLogin, setShowLogin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      setUser({ username: "admin" });
+      setUser({ username: "admin" }); // later decode token
     }
     setLoading(false);
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+    setShowLogin(false);
+  };
+
   if (loading) return <p>Loading...</p>;
 
-  if (showLogin && !user) {
+  // 1️⃣ DASHBOARD (logged in)
+  if (user) {
+    return (
+      <ProtectedRoute user={user} onLoginSuccess={setUser}>
+        <Dashboard onLogout={handleLogout} />
+      </ProtectedRoute>
+    );
+  }
+
+  // 2️⃣ LOGIN SCREEN
+  if (showLogin) {
     return <Login onLoginSuccess={setUser} />;
   }
 
-  if (user) {
-    return <Dashboard onLogout={() => setUser(null)} />;
-  }
-
+  // 3️⃣ LANDING / START PAGE
   return (
     <div className="app-container">
       <div className="app-card">
