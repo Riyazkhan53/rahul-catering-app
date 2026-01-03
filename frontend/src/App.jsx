@@ -1,73 +1,78 @@
 import { useEffect, useState } from "react";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-
-function ProtectedRoute({ user, onLoginSuccess, children }) {
-    const token = localStorage.getItem("token");
-
-    if (!token || !user) {
-        return <Login onLoginSuccess={onLoginSuccess} />;
-    }
-
-    return children;
-}
+import { apiRequest } from "./api/api";
 
 function App() {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [showLogin, setShowLogin] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
 
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            setUser({ username: "admin" }); // later decode token
-        }
+  // 🔐 Check auth on page refresh
+  useEffect(() => {
+    async function checkAuth() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
         setLoading(false);
-    }, []);
+        return;
+      }
 
-    const handleLogout = () => {
+      try {
+        const data = await apiRequest("/api/auth/me", {
+          token,
+        });
+        setUser(data.user);
+      } catch (err) {
         localStorage.removeItem("token");
         setUser(null);
-        setShowLogin(false);
-    };
-
-    if (loading) return <p>Loading...</p>;
-
-    // 1️⃣ DASHBOARD (logged in)
-    if (user) {
-        return (
-            <ProtectedRoute user={user} onLoginSuccess={setUser}>
-                <Dashboard onLogout={handleLogout} />
-            </ProtectedRoute>
-        );
+      } finally {
+        setLoading(false);
+      }
     }
 
-    // 2️⃣ LOGIN SCREEN
-    if (showLogin) {
-        return <Login onLoginSuccess={setUser} />;
-    }
+    checkAuth();
+  }, []);
 
-    // 3️⃣ LANDING / START PAGE
-    return (
-        <div className="app-container">
-            <div className="app-card">
-                <div className="logo-circle">🍽️</div>
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+    setShowLogin(false);
+  };
 
-                <h1 className="app-title">Rahul Catering & Events</h1>
+  if (loading) return <p>Loading...</p>;
 
-                <p className="app-tagline">
-                    Delicious moments for every occasion
-                </p>
+  // ✅ USER LOGGED IN → DASHBOARD
+  if (user) {
+    return <Dashboard onLogout={handleLogout} />;
+  }
 
-                <button
-                    className="primary-btn"
-                    onClick={() => setShowLogin(true)}
-                >
-                    Enter App →
-                </button>
-            </div>
-        </div>
-    );
+  // 🔐 LOGIN PAGE
+  if (showLogin) {
+    return <Login onLoginSuccess={setUser} />;
+  }
+
+  // 🌟 LANDING PAGE
+  return (
+    <div className="app-container">
+      <div className="app-card">
+        <div className="logo-circle">🍽️</div>
+
+        <h1 className="app-title">Rahul Catering & Events</h1>
+
+        <p className="app-tagline">
+          Delicious moments for every occasion
+        </p>
+
+        <button
+          className="primary-btn"
+          onClick={() => setShowLogin(true)}
+        >
+          Enter App →
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default App;
