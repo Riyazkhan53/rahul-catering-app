@@ -24,7 +24,7 @@ function Dashboard({ onLogout }) {
                     alignItems: "center",
                 }}
             >
-                <h1>👨‍🍳 {greeting}, Chef!!</h1>
+                <h1>👨‍🍳  Hi, {greeting}, Chef!!</h1>
 
                 <button
                     onClick={handleLogout}
@@ -47,7 +47,7 @@ function Dashboard({ onLogout }) {
                     🚧
                 </div>
 
-                <h3>Dashboard in development</h3>
+                <h3>Dashboard under development</h3>
                 <p>Look out for further updates here in future buddy!</p>
             </div>
         </div>
