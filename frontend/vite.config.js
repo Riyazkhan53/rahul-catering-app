@@ -1,11 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+const isElectron = process.env.ELECTRON === 'true'
 
 export default defineConfig({
+  base: './',
   plugins: [
     react(),
     VitePWA({
+      disable: isElectron,
       registerType: 'autoUpdate',
       manifest: {
         name: 'Rahul Catering & Events',
@@ -14,15 +17,18 @@ export default defineConfig({
         theme_color: '#ff9800',
         background_color: '#ffffff',
         display: 'standalone',
-        start_url: '/',
+
+        // 🔥 MUST be relative for Electron
+        start_url: './',
+
         icons: [
           {
-            src: '/icon-192.png',
+            src: 'icon-192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/icon-192.png',
+            src: 'icon-192.png',
             sizes: '512x512',
             type: 'image/png'
           }

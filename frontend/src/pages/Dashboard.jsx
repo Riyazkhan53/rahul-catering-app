@@ -4,10 +4,26 @@ function Dashboard({ onLogout }) {
     onLogout();
   };
 
+  function getGreeting() {
+  const hour = new Date().getHours();
+
+  if (hour < 12) return "Good Morning";
+  if (hour < 17) return "Good Afternoon";
+  return "Good Evening";
+}
+
+const greeting = getGreeting();
+
   return (
     <div style={{ padding: "20px" }}>
-      <h1>Dashboard</h1>
-      <p>You are logged in 🔐</p>
+        <h1>
+        👨‍🍳 {greeting}, Chef!!
+      </h1>
+
+      {/* <h2>Welcome to Rahul Catering & Events</h2> */}
+
+      <h3>Dashboard in development</h3>
+      <p>Look out for further updates here in future buddy!</p>
 
       <button
         onClick={handleLogout}

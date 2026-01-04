@@ -1,24 +1,28 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
 export async function apiRequest(path, options = {}) {
-  const res = await fetch(`${API_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.token && {
-        Authorization: `Bearer ${options.token}`,
-      }),
-    },
-    method: options.method || "GET",
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
+  let res;
 
-  // 👇 SAFETY CHECK
-  let data = null;
-  const contentType = res.headers.get("content-type");
-
-  if (contentType && contentType.includes("application/json")) {
-    data = await res.json();
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      method: options.method || "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.token && {
+          Authorization: `Bearer ${options.token}`,
+        }),
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+  } catch {
+    throw new Error("Network error");
   }
+
+  const contentType = res.headers.get("content-type");
+  const data =
+    contentType && contentType.includes("application/json")
+      ? await res.json()
+      : null;
 
   if (!res.ok) {
     throw new Error(data?.message || "Server error");
