@@ -1,5 +1,9 @@
 {
   "appId": "com.riyaz.catering",
-  "appName": "Rahul Catering & Events",
-  "webDir": "dist"
+  "appName": "Rahul Catering",
+  "webDir": "dist",
+  "server": {
+    "url": "https://rahulcateringevents.netlify.app",
+    "cleartext": true
+  }
 }
