@@ -3,6 +3,7 @@ const MENU_CONFIG = {
     { key: "dashboard", label: "📊 Dashboard" },
     { key: "orders", label: "🧾 Orders" },
     { key: "menu", label: "🍽 Menu" },
+    { key: "add-order", label: "➕ Add New Order" }
   ],
   admin: [
     { key: "dashboard", label: "📊 Dashboard" },
