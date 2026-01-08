@@ -11,7 +11,7 @@ export default function Topbar({ greeting, onLogout, setSidebarOpen }) {
         </button>
 
         <h1 className="text-2xl font-bold">
-          👋 {greeting}, Chef!
+          👋 {greeting}
         </h1>
       </div>
 

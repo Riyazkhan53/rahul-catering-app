@@ -19,3 +19,15 @@ button {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.input {
+  @apply border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-orange-400;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.animate-scaleIn {
+  animation: scaleIn 0.2s ease-out;
+}

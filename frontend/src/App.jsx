@@ -10,41 +10,46 @@ function App() {
 
   // 🔐 Check auth on page refresh
   useEffect(() => {
-    async function checkAuth() {
-      const token = localStorage.getItem("token");
+  async function checkAuth() {
+    const token = localStorage.getItem("token");
 
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const data = await apiRequest("/api/auth/me", {
-          token,
-        });
-        setUser(data.user);
-      } catch (err) {
-        localStorage.removeItem("token");
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
     }
 
-    checkAuth();
-  }, []);
+    try {
+      const data = await apiRequest("/api/auth/me", {
+        method: "GET",
+        token,
+      });
+
+      setUser(data.user);
+      localStorage.setItem("user", JSON.stringify(data.user));
+    } catch {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  checkAuth();
+}, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    setShowLogin(false);
-  };
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");   // 👈 THIS WAS MISSING
+  setUser(null);
+};
 
   if (loading) return <p>Loading...</p>;
 
   // ✅ USER LOGGED IN → DASHBOARD
   if (user) {
-    return <Dashboard onLogout={handleLogout} />;
+    return <Dashboard user={user} onLogout={handleLogout} />;
   }
 
   // 🔐 LOGIN PAGE

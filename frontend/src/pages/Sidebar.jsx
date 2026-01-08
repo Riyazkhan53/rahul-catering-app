@@ -14,8 +14,9 @@ const MENU_CONFIG = {
   ],
 };
 
-export default function Sidebar({ activeTab, setActiveTab, open, setOpen }) {
-  const role = localStorage.getItem("role") || "chef";
+export default function Sidebar({ user, activeTab, setActiveTab, open, setOpen }) {debugger;
+    const isAdmin = user?.role === "admin";
+  const role = isAdmin ? "admin" : "chef";
   const items = MENU_CONFIG[role];
 
   return (
