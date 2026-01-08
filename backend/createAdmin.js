@@ -1,22 +1,16 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const User = require("./models/User");
-require("dotenv").config();
+import bcrypt from "bcryptjs";
+import User from "./src/models/User.js";
+import { connectDB } from "./src/config/db.js";
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch(err => console.error(err));
+await connectDB();
 
-async function createAdmin() {
-  const hashedPassword = await bcrypt.hash("rahul@123", 10);
+const hashed = await bcrypt.hash("admin123", 10);
 
-  await User.create({
-    username: "admin",
-    password: hashedPassword,
-  });
+await User.findOneAndUpdate(
+  { username: "admin" },
+  { password: hashed, name: "Admin", role: "admin" },
+  { upsert: true }
+);
 
-  console.log("✅ Admin user created");
-  mongoose.disconnect();
-}
-
-createAdmin();
+console.log("✅ Admin password reset to admin123");
+process.exit();
