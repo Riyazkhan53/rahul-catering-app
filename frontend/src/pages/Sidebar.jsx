@@ -34,7 +34,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, open, setOpen }
         md:translate-x-0 transition-transform`}
       >
         <div className="p-6 text-2xl font-bold border-b border-gray-700">
-          👨‍🍳 Chef Panel
+         {isAdmin ? "👨‍💼 Admin Panel" : "👨‍🍳 Chef Panel"}
         </div>
 
         <nav className="p-4 space-y-2">
