@@ -1,33 +1,62 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", system-ui, sans-serif;
-}
-
-body {
-  height: 100vh;
-  background: linear-gradient(135deg, #fff5e6, #ffe0b2);
-}
-
-button {
-  cursor: pointer;
-  border: none;
-  outline: none;
-}
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-.input {
-  @apply border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-orange-400;
+/* 🌗 GLOBAL THEME VARIABLES */
+@layer base {
+  html {
+    --bg-app: linear-gradient(135deg, #fff5e6, #ffe0b2);
+    --text-app: #1f2937;
+    --card-bg: rgba(255, 255, 255, 0.95);
+  }
+
+  html.dark {
+    --bg-app: linear-gradient(135deg, #0f172a, #1e293b);
+    --text-app: #f8fafc;
+    --card-bg: rgba(255, 255, 255, 0.08);
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--bg-app);
+    color: var(--text-app);
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+
+  input, textarea, select {
+    background: transparent;
+    color: var(--text-app);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: rgba(156, 163, 175, 0.8); /* gray-400 */
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+  }
 }
 
-@keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+@layer utilities {
+  .bg-app {
+    background: var(--bg-app);
+  }
+
+  .text-app {
+    color: var(--text-app);
+  }
+
+  .card {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    border-radius: 1rem;
+  }
 }
-.animate-scaleIn {
-  animation: scaleIn 0.2s ease-out;
+
+body {
+  background: var(--bg-app);
+  color: var(--text-app);
 }

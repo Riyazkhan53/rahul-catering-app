@@ -50,7 +50,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, open, setOpen }
                   activeTab === item.key
                     ? "bg-orange-500"
                     : "hover:bg-gray-800"
-                }`}
+                } opacity-90 hover:opacity-100`}
             >
               {item.label}
             </div>

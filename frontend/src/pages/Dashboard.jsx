@@ -23,7 +23,7 @@ export default function Dashboard({ user, onLogout }) {debugger;
             : `Hi ${timeGreeting} Chef ${user?.name} 👨‍🍳`;
 
     return (
-        <div className="flex h-screen bg-gray-100">
+        <div className="flex h-screen bg-gray-100 min-h-screen bg-app text-app transition-colors">
 
             <Sidebar
                 user={user}
@@ -33,14 +33,14 @@ export default function Dashboard({ user, onLogout }) {debugger;
                 setOpen={setSidebarOpen}
             />
 
-            <main className="flex-1 p-6 overflow-auto">
+            <main className="flex-1 p-6 overflow-auto min-h-screen bg-app text-app transition-colors">
                 <Topbar
                     greeting={greetingText}
                     onLogout={onLogout}
                     setSidebarOpen={setSidebarOpen}
                 />
 
-                <div className="flex justify-center items-start mt-6">
+                <div className="flex justify-center items-start mt-6 min-h-screen bg-app text-app transition-colors">
                     {{
                         dashboard: <DashboardHome />,
                         orders: <Orders />,

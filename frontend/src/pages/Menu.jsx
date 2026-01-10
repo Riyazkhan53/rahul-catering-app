@@ -55,7 +55,7 @@ function CategoryGrid({ onSelect }) {
 
 function CategoryItems({ category, onBack }) {
   return (
-    <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-3xl">
+    <div className="shadow-xl card p-8 text-app w-full max-w-3xl">
       <button
         onClick={onBack}
         className="text-orange-500 mb-4 font-medium"

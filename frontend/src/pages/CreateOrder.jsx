@@ -47,7 +47,7 @@ export default function CreateOrder({ setActiveTab }) {
     <motion.div
       initial={{ x: 20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="bg-white shadow-xl rounded-2xl p-8 max-w-xl w-full"
+      className="card p-8 text-app shadow-xl max-w-xl w-full"
     >
       <h2 className="text-2xl font-bold mb-6">🧾 New Order Details</h2>
 

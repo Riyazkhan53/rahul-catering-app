@@ -15,7 +15,7 @@ export default function Topbar({ greeting, onLogout, setSidebarOpen }) {
         </h1>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 mr-12">
         <div className="relative">
           🔔
           <span className="absolute -top-2 -right-2 bg-red-500 text-xs px-2 rounded-full text-white">
