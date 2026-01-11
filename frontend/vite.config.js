@@ -10,6 +10,11 @@ export default defineConfig({
     VitePWA({
       disable: isElectron,
       registerType: 'autoUpdate',
+      workbox: {
+    cleanupOutdatedCaches: true,
+    skipWaiting: true,
+    clientsClaim: true,
+  },
       manifest: {
         name: 'Rahul Catering & Events',
         short_name: 'Rahul Catering',

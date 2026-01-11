@@ -2,7 +2,7 @@ import { useState } from "react";
 import AnimatedPage from "../AnimatedPage";
 import CardButton from "../../Components/CardButton";
 import BackHeader from "../../Components/BackHeader";
-import MasterList from "./MasterList";
+import MasterList from "../Common/MasterList";
 import {
   PackageOpen,
   Utensils,
