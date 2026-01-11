@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Modal from "../../Components/Modal";
 import { apiRequest } from "../../api/api";
+import { useToast } from "../../context/ToastContext";
 
 export default function CreateChefModal({ onClose }) {
   const [form, setForm] = useState({
@@ -8,6 +9,7 @@ export default function CreateChefModal({ onClose }) {
     username: "",
     password: "",
   });
+  const { showToast } = useToast();
 
   const submit = async () => {
     await apiRequest("/api/users/create-chef", {
@@ -16,7 +18,7 @@ export default function CreateChefModal({ onClose }) {
       token: localStorage.getItem("token"),
     });
 
-    alert("Chef created successfully 👨‍🍳");
+    showToast("Chef created successfully 👨‍🍳","success")
     onClose();
   };
 

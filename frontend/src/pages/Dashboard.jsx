@@ -5,9 +5,10 @@ import DashboardHome from "./DashboardHome";
 import Orders from "./Orders";
 import Menu from "./Menu";
 import Settings from "./Settings/Settings";
-import Setup from "./Setup";
+import Setup from "./Setup/Setup";
 import AddOrder from "./AddOrder";
 import CreateOrder from "./CreateOrder";
+import MenuList from "./MenuList/MenuList";
 
 export default function Dashboard({ user, onLogout }) {debugger;
     const [activeTab, setActiveTab] = useState("dashboard");
@@ -49,6 +50,7 @@ export default function Dashboard({ user, onLogout }) {debugger;
                         menu: <Menu />,
                         settings: <Settings user={user} />,
                         setup: <Setup />,
+                        list: <MenuList />,
                     }[activeTab]}
                 </div>
             </main>

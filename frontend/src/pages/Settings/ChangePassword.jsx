@@ -1,9 +1,11 @@
 import { useState } from "react";
 import Modal from "../../Components/Modal";
 import { apiRequest } from "../../api/api";
+import { useToast } from "../../context/ToastContext";
 
 export default function ChangePasswordModal({ user, onClose }) {
   const [password, setPassword] = useState("");
+   const { showToast } = useToast();
 
   const submit = async () => {
     await apiRequest("/api/users/change-password", {
@@ -15,7 +17,7 @@ export default function ChangePasswordModal({ user, onClose }) {
       token: localStorage.getItem("token"),
     });
 
-    alert("Password updated 🔐");
+    showToast("Password updated 🔐","success")
     onClose();
   };
 

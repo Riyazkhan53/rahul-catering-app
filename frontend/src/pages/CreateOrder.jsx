@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useToast } from "../context/ToastContext";
 
 const DISHES = ["Idli", "Dosa", "Sambar", "Biryani", "Paneer Curry"];
 const SERVICES = ["Morning", "Afternoon", "Evening", "Night"];
@@ -9,6 +10,7 @@ export default function CreateOrder({ setActiveTab }) {
   const [pax, setPax] = useState("");
   const [services, setServices] = useState([]);
   const [dishes, setDishes] = useState([]);
+  const { showToast } = useToast();
 
   function toggle(value, list, setList) {
     setList(
@@ -24,7 +26,7 @@ export default function CreateOrder({ setActiveTab }) {
 
   function handleCreate() {
     if (!date || !pax || services.length === 0 || dishes.length === 0) {
-      alert("Please fill all mandatory fields");
+      showToast("Please fill Mandatory fields","error")
       return;
     }
 
@@ -39,7 +41,7 @@ export default function CreateOrder({ setActiveTab }) {
     const existing = JSON.parse(localStorage.getItem("orders")) || [];
     localStorage.setItem("orders", JSON.stringify([...existing, newOrder]));
 
-    alert(`Order ${newOrder.id} created`);
+    showToast(`Order ${newOrder.id} created`,"success")
     setActiveTab("orders");
   }
 

@@ -1,53 +1,86 @@
+import { useState } from "react";
 import AnimatedPage from "./AnimatedPage";
-
-const MOCK_ORDERS = {
-    "2026-01-06": true,
-    "2026-01-08": true,
-};
+import CardButton from "../Components/CardButton";
+import BackHeader from "../Components/BackHeader";
+import {
+  ClipboardList,
+  CalendarDays,
+  UtensilsCrossed,
+  ListChecks,
+} from "lucide-react";
+import OrdersCalender from "./Orderpage/OrderCalender";
+import CreatedItemLists from "./Orderpage/CreatedItemList";
+import CreatedMenuList from "./Orderpage/CreatedMenuList";
 
 export default function Orders() {
-    const today = new Date();
-    const days = Array.from({ length: 14 }, (_, i) => {
-        const d = new Date();
-        d.setDate(today.getDate() + i);
-        return d;
-    });
+  const [orderSelected, setOrderSelected] = useState(null);
 
-    return (
-        <AnimatedPage>
-            <div className="card p-6 text-app shadow w-full max-w-4xl">
-                <h2 className="text-2xl font-bold mb-4">📅 Orders Calendar</h2>
+  return (
+    <AnimatedPage>
+      {!orderSelected && (
+        <div className="card p-6 text-app w-full max-w-5xl">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <ClipboardList className="w-6 h-6 text-orange-400" />
+            Orders Management
+          </h2>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {days.map(date => {
-                        const key = date.toISOString().split("T")[0];
-                        const hasOrder = MOCK_ORDERS[key];
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardButton
+              icon={CalendarDays}
+              title="Orders Calendar"
+              description="View, create and manage orders by date"
+              onClick={() => setOrderSelected("calendar")}
+            />
 
-                        return (
-                            <div
-                                key={key}
-                                className={`card p-4 cursor-pointer transition border
-    ${hasOrder ? "border-orange-400" : "opacity-70"}
-  `}
-                            >
-                                <p className="text-sm font-medium opacity-80">
-                                    {date.toDateString()}
-                                </p>
+            <CardButton
+              icon={UtensilsCrossed}
+              title="Menu List Manager"
+              description="Plan dishes and menus for each order"
+              onClick={() => setOrderSelected("menu")}
+            />
 
-                                {hasOrder ? (
-                                    <span className="block mt-2 text-sm font-semibold text-orange-500">
-                                        🔔 Orders Available
-                                    </span>
-                                ) : (
-                                    <span className="block mt-2 text-sm opacity-60">
-                                        No orders
-                                    </span>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        </AnimatedPage>
-    );
+            <CardButton
+              icon={ListChecks}
+              title="Item List Manager"
+              description="Generated ingredient & service item lists"
+              onClick={() => setOrderSelected("items")}
+            />
+          </div>
+        </div>
+      )}
+
+      {orderSelected === "calendar" && (
+        <div className="w-full max-w-5xl">
+          <BackHeader
+            title="Orders Calendar"
+            subtitle="Plan and track orders by date"
+            onBack={() => setOrderSelected(null)}
+          />
+          <OrdersCalender />
+        </div>
+      )}
+
+      {orderSelected === "menu" && (
+        <div className="w-full max-w-5xl">
+          <BackHeader
+            title="Menu List Manager"
+            subtitle="Select dishes and build menus for orders"
+            onBack={() => setOrderSelected(null)}
+          />
+          <CreatedMenuList/>
+        </div>
+      )}
+
+      {orderSelected === "items" && (
+        <div className="w-full max-w-5xl">
+          <BackHeader
+            title="Item List Manager"
+            subtitle="Finalize ingredients & quantities for orders"
+            onBack={() => setOrderSelected(null)}
+          />
+          <CreatedItemLists/>
+        </div>
+      )}
+    </AnimatedPage>
+  );
 }
