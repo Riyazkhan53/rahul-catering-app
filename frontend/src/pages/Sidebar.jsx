@@ -1,57 +1,65 @@
-const MENU_CONFIG = {
-  chef: [
-    { key: "dashboard", label: "📊 Dashboard" },
-    { key: "orders", label: "🧾 Orders" },
-    { key: "menu", label: "🍽 Menu" },
-    { key: "add-order", label: "➕ Add New Order" },
-    { key: "list", label: "📝 Master List" },
-  ],
-  admin: [
-    { key: "dashboard", label: "📊 Dashboard" },
-    { key: "orders", label: "🧾 Orders" },
-    { key: "menu", label: "🍽 Menu" },
-    { key: "settings", label: "⚙️ Settings" },
-    { key: "setup", label: "🛠 Setup" },
-  ],
-};
+import { X } from "lucide-react";
 
-export default function Sidebar({ user, activeTab, setActiveTab, open, setOpen }) {debugger;
-    const isAdmin = user?.role === "admin";
-  const role = isAdmin ? "admin" : "chef";
-  const items = MENU_CONFIG[role];
+export default function Sidebar({
+  user,
+  activeTab,
+  setActiveTab,
+  open,
+  setOpen,
+  isDesktop,
+}) {
+  const menu = [
+    { key: "dashboard", label: "Dashboard" },
+    { key: "orders", label: "Orders" },
+    { key: "menu", label: "Menu" },
+    { key: "add-order", label: "Add New Order" },
+    { key: "list", label: "Master List" },
+  ];
 
   return (
     <>
-      {open && (
+      {/* Mobile overlay */}
+      {!isDesktop && open && (
         <div
-          className="fixed inset-0 bg-black/40 z-20 md:hidden"
+          className="fixed inset-0 bg-black/40 z-30"
           onClick={() => setOpen(false)}
         />
       )}
 
       <aside
-        className={`fixed md:static z-30 w-64 h-full bg-gray-900 text-white
-        ${open ? "translate-x-0" : "-translate-x-full"} 
-        md:translate-x-0 transition-transform`}
-      >
-        <div className="p-6 text-2xl font-bold border-b border-gray-700">
-         {isAdmin ? "👨‍💼 Admin Panel" : "👨‍🍳 Chef Panel"}
+  className={`fixed top-0 left-0 z-40 h-full w-64
+    bg-gray-900 text-white
+    transition-transform duration-300
+    ${open ? "translate-x-0" : "-translate-x-full"}
+  `}
+>
+        <div className="flex items-center justify-between p-5 border-b border-gray-700">
+          <span className="text-xl font-bold">
+            {user?.role === "admin" ? "Admin Panel" : "Chef Panel"}
+          </span>
+
+          {/* Close on desktop & mobile */}
+          <button
+  onClick={() => setOpen(false)}
+  className="absolute top-4 right-4"
+>
+  <X />
+</button>
         </div>
 
         <nav className="p-4 space-y-2">
-          {items.map(item => (
+          {menu.map(item => (
             <div
               key={item.key}
               onClick={() => {
                 setActiveTab(item.key);
-                setOpen(false);
+                if (!isDesktop) setOpen(false);
               }}
-              className={`p-2 rounded cursor-pointer transition
-                ${
-                  activeTab === item.key
-                    ? "bg-orange-500"
-                    : "hover:bg-gray-800"
-                } opacity-90 hover:opacity-100`}
+              className={`p-3 rounded cursor-pointer
+                ${activeTab === item.key
+                  ? "bg-orange-500"
+                  : "hover:bg-gray-800"}
+              `}
             >
               {item.label}
             </div>
