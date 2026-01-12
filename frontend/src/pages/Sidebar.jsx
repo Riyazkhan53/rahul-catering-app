@@ -1,5 +1,22 @@
 import { X } from "lucide-react";
 
+const MENU_CONFIG = {
+  chef: [
+    { key: "dashboard", label: "Dashboard" },
+    { key: "orders", label: "Orders" },
+    { key: "menu", label: "Menu" },
+    { key: "add-order", label: "Add New Order" },
+    { key: "list", label: "Master List" },
+  ],
+  admin: [
+    { key: "dashboard", label: "Dashboard" },
+    { key: "orders", label: "Orders" },
+    { key: "menu", label: "Menu" },
+    { key: "settings", label: "Settings" },
+    { key: "setup", label: "Setup" },
+  ],
+};
+
 export default function Sidebar({
   user,
   activeTab,
@@ -8,17 +25,12 @@ export default function Sidebar({
   setOpen,
   isDesktop,
 }) {
-  const menu = [
-    { key: "dashboard", label: "Dashboard" },
-    { key: "orders", label: "Orders" },
-    { key: "menu", label: "Menu" },
-    { key: "add-order", label: "Add New Order" },
-    { key: "list", label: "Master List" },
-  ];
+  const role = user?.role === "admin" ? "admin" : "chef";
+  const menu = MENU_CONFIG[role];
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Overlay for mobile only */}
       {!isDesktop && open && (
         <div
           className="fixed inset-0 bg-black/40 z-30"
@@ -27,26 +39,28 @@ export default function Sidebar({
       )}
 
       <aside
-  className={`fixed top-0 left-0 z-40 h-full w-64
-    bg-gray-900 text-white
-    transition-transform duration-300
-    ${open ? "translate-x-0" : "-translate-x-full"}
-  `}
->
+        className={`fixed top-0 left-0 z-40 h-full w-64
+        bg-gray-900 text-white
+        transition-transform duration-300
+        ${open ? "translate-x-0" : "-translate-x-full"}
+        `}
+      >
+        {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-gray-700">
           <span className="text-xl font-bold">
-            {user?.role === "admin" ? "Admin Panel" : "Chef Panel"}
+            {role === "admin" ? "Admin Panel" : "Chef Panel"}
           </span>
 
-          {/* Close on desktop & mobile */}
+          {/* Close button (desktop + mobile) */}
           <button
-  onClick={() => setOpen(false)}
-  className="absolute top-4 right-4"
->
-  <X />
-</button>
+            onClick={() => setOpen(false)}
+            className="p-1 rounded hover:bg-gray-800"
+          >
+            <X />
+          </button>
         </div>
 
+        {/* Menu */}
         <nav className="p-4 space-y-2">
           {menu.map(item => (
             <div
@@ -55,10 +69,12 @@ export default function Sidebar({
                 setActiveTab(item.key);
                 if (!isDesktop) setOpen(false);
               }}
-              className={`p-3 rounded cursor-pointer
-                ${activeTab === item.key
-                  ? "bg-orange-500"
-                  : "hover:bg-gray-800"}
+              className={`p-3 rounded cursor-pointer transition
+                ${
+                  activeTab === item.key
+                    ? "bg-orange-500"
+                    : "hover:bg-gray-800"
+                }
               `}
             >
               {item.label}
