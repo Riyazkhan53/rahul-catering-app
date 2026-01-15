@@ -3,15 +3,17 @@ import { X } from "lucide-react";
 const MENU_CONFIG = {
   chef: [
     { key: "dashboard", label: "Dashboard" },
-    { key: "orders", label: "Orders" },
-    { key: "menu", label: "Menu" },
-    { key: "add-order", label: "Add New Order" },
-    { key: "list", label: "Master List" },
+    { key: "menu", label: "Menu Catalogue"  },
+    { key: "orders", label: "Orders Management" },
+    
+    { key: "add-order", label: "New Order ⭐" },
+    { key: "listcreator", label: "Item/Menu List Creator" },
+    {key: "invoice",label:"Invoice & Billing"}
   ],
   admin: [
     { key: "dashboard", label: "Dashboard" },
-    { key: "orders", label: "Orders" },
-    { key: "menu", label: "Menu" },
+    { key: "orders", label: "Orders Management" },
+    { key: "menu", label: "Menu & Items Catalogue" },
     { key: "settings", label: "Settings" },
     { key: "setup", label: "Setup" },
   ],

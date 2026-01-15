@@ -8,7 +8,7 @@ import {
   Utensils,
   ClipboardList
 } from "lucide-react";
-import GenerateRandomList from "./GenerateList";
+import GenerateRandomList from "../MenuListCreator/GenerateList";
 
 export default function MenuList() {
   const [itemOpen, setItemOpen] = useState(false);
@@ -30,13 +30,13 @@ export default function MenuList() {
               description="Manage ingredients, raw materials & services"
               onClick={() => setItemOpen(true)}
             />
-
+{/* 
             <CardButton
               icon={Utensils}
               title="Menu Builder"
               description="Create menus & generate item-wise lists"
               onClick={() => setGenerateListOpen(true)}
-            />
+            /> */}
           </div>
         </div>
       )}
@@ -52,7 +52,7 @@ export default function MenuList() {
         </div>
       )}
 
-      {generateListOpen && (
+      {/* {generateListOpen && (
         <div className="w-full max-w-5xl">
           <BackHeader
             title="Menu Builder"
@@ -61,7 +61,7 @@ export default function MenuList() {
           />
           <GenerateRandomList />
         </div>
-      )}
+      )} */}
     </AnimatedPage>
   );
 }

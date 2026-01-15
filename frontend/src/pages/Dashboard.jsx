@@ -9,24 +9,19 @@ import Setup from "./Setup/Setup";
 import AddOrder from "./AddOrder";
 import CreateOrder from "./CreateOrder";
 import MenuList from "./MenuList/MenuList";
+import Invoice from "./InvoiceBilling/Invoice"
+import MenuListCreator from "./MenuListCreator/MenuListCreator"
 import useIsDesktop from "../hooks/uselsDesktop";
 
 export default function Dashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState("dashboard");
   const isDesktop = useIsDesktop();
-const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
-//   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
 
-  // Track screen size properly
-  useEffect(() => {
-    const onResize = () => setIsDesktop(window.innerWidth >= 768);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
 
   useEffect(() => {
-  setSidebarOpen(isDesktop);
-}, [isDesktop]);
+    setSidebarOpen(isDesktop);
+  }, [isDesktop]);
 
   const hour = new Date().getHours();
   const timeGreeting =
@@ -52,10 +47,10 @@ const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
 
       {/* Main */}
       <main
-  className={`flex-1 transition-all duration-300
+        className={`flex-1 transition-all duration-300
     ${isDesktop && sidebarOpen ? "ml-64" : "ml-0"}
   `}
->
+      >
         <Topbar
           greeting={greetingText}
           onLogout={onLogout}
@@ -73,6 +68,8 @@ const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
             settings: <Settings user={user} />,
             setup: <Setup />,
             list: <MenuList />,
+            invoice: <Invoice />,
+            listcreator: <MenuListCreator />
           }[activeTab]}
         </div>
       </main>

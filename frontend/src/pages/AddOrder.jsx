@@ -1,28 +1,230 @@
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useToast } from "../context/ToastContext";
+
+const ORDER_TYPE = ["Total Order", "Cooking & Service", "Only Cooking", "Only Service"]
+const FUNCTION_TYPE = ["Wedding","Birthday","Housewarming","Corporate Event","Temple Function", "Church Function", "Puberty Function","Baby Shower Function"]
 
 export default function AddOrder({ setActiveTab }) {
+  const [orderType, setOrderType] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [functionType, setFunctionType] = useState("Wedding");
+  const [days, setDays] = useState(0);
+  const { showToast } = useToast();
+
+  const [orderDays, setOrderDays] = useState([]);
+
+  /* ---------- Generate Days ---------- */
+  useEffect(() => {
+    if (days > 0) {
+      const generated = Array.from({ length: days }, (_, i) => ({
+        day: i + 1,
+        date: "",
+        enabled: false,
+        services: {
+          morning: { pax: "", boys: "" },
+          afternoon: { pax: "", boys: "" },
+          evening: { pax: "", boys: "" },
+          night: { pax: "", boys: "" }
+        }
+      }));
+      setOrderDays(generated);
+    } else {
+      setOrderDays([]);
+    }
+  }, [days]);
+
+  /* ---------- Validation ---------- */
+  const validateForm = () => {
+    if (!orderType) return showToast("Select order type", "error");
+    if (!clientName.trim()) return showToast("Enter client name", "error");
+    if (!/^[6-9]\d{9}$/.test(mobile))
+      return showToast("Enter valid mobile number", "error");
+    if (!functionType) return showToast("Select function type", "error");
+    if (days === 0) return showToast("Select number of days", "error");
+
+    for (const d of orderDays) {
+      if (!d.date)
+        return showToast(`Select date for Day ${d.day}`, "error");
+
+      if (d.enabled) {
+        const validService = Object.values(d.services).some(
+          (s) => s.pax && s.boys
+        );
+        if (!validService)
+          return showToast(`Add services for Day ${d.day}`, "error");
+      }
+    }
+
+    return true;
+  };
+
   return (
     <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      className="bg-white shadow-xl rounded-2xl p-10 text-center max-w-md"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full bg-white shadow-xl rounded-2xl p-8"
     >
-      <div className="text-6xl mb-4">📝</div>
+      <h2 className="text-2xl font-bold mb-6">📝 New Order Booking</h2>
 
-      <h2 className="text-2xl font-bold mb-2">
-        Create a New Catering Order
-      </h2>
+      {/* Order Type */}
+      <div className="mb-6">
+        <label className="block font-semibold mb-2">Order Type *</label>
+        <div className="flex gap-3 flex-wrap">
+          {ORDER_TYPE.map((type) => (
+            <button
+              key={type}
+              onClick={() => setOrderType(type)}
+              className={`px-4 py-2 rounded-full border ${orderType === type
+                  ? "bg-orange-500 text-white"
+                  : "hover:bg-orange-50"
+                }`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <p className="text-gray-500 mb-6">
-        Plan, organize & manage catering orders with ease 👨‍🍳
-      </p>
+      {/* Client Info */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label className="block font-semibold mb-1">Client Name *</label>
+          <input
+            value={clientName}
+            onChange={(e) => setClientName(e.target.value)}
+            className="w-full border rounded-lg px-4 py-2"
+            placeholder="Enter client name"
+          />
+        </div>
 
-      <button
-        onClick={() => setActiveTab("create-order")}
-        className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-full text-lg transition"
-      >
-        ➕ Add New Order
-      </button>
+        <div>
+          <label className="block font-semibold mb-1">Mobile Number *</label>
+          <input
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+            className="w-full border rounded-lg px-4 py-2"
+            placeholder="Enter mobile number"
+          />
+        </div>
+      </div>
+
+      {/* Function + Days */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label className="block font-semibold mb-1">Function Type *</label>
+          <select
+            value={functionType}
+            onChange={(e) => setFunctionType(e.target.value)}
+            className="w-full border rounded-lg px-4 py-2"
+          >
+            {FUNCTION_TYPE.map((_obj)=>(
+              <option>{_obj}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block font-semibold mb-1">No of Days *</label>
+          <select
+            value={days}
+            onChange={(e) => setDays(Number(e.target.value))}
+            className="w-full border rounded-lg px-4 py-2"
+          >
+            {[...Array(15)].map((_, i) => (
+              <option key={i} value={i}>
+                {i}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Day-wise Dates & Services */}
+      {orderDays.map((d, index) => (
+        <div key={index} className="border rounded-xl p-4 mb-4">
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="font-semibold">Day {d.day}</h4>
+            <button
+              onClick={() => {
+                const updated = [...orderDays];
+                updated[index].enabled = !updated[index].enabled;
+                setOrderDays(updated);
+              }}
+              className="text-orange-500 font-semibold"
+            >
+              {d.enabled ? "− Remove Services" : "+ Add Services"}
+            </button>
+          </div>
+
+          {/* Date */}
+          <div className="mb-4">
+            <label className="block font-medium mb-1">Date *</label>
+            <input
+              type="date"
+              value={d.date}
+              onChange={(e) => {
+                const updated = [...orderDays];
+                updated[index].date = e.target.value;
+                setOrderDays(updated);
+              }}
+              className="border rounded-lg px-4 py-2 w-full md:w-1/3"
+            />
+          </div>
+
+          {/* Services */}
+          {d.enabled && (
+            <div className="grid gap-3">
+              {["morning", "afternoon", "evening", "night"].map((s) => (
+                <div
+                  key={s}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center"
+                >
+                  <div className="capitalize font-medium">{s}</div>
+
+                  <input
+                    placeholder="No of Pax"
+                    value={d.services[s].pax}
+                    onChange={(e) => {
+                      const updated = [...orderDays];
+                      updated[index].services[s].pax = e.target.value;
+                      setOrderDays(updated);
+                    }}
+                    className="border rounded-lg px-3 py-2"
+                  />
+
+                  {orderType!="Only Cooking" &&<input
+                    placeholder="Service Boys"
+                    value={d.services[s].boys}
+                    onChange={(e) => {
+                      const updated = [...orderDays];
+                      updated[index].services[s].boys = e.target.value;
+                      setOrderDays(updated);
+                    }}
+                    className="border rounded-lg px-3 py-2"
+                  />}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* CTA */}
+      <div className="flex justify-end mt-6">
+        <button
+          onClick={() => {
+            if (validateForm()) {
+              showToast("Order details saved", "success");
+              setActiveTab("dish-selection");
+            }
+          }}
+          className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-xl text-lg"
+        >
+          Continue →
+        </button>
+      </div>
     </motion.div>
   );
 }
