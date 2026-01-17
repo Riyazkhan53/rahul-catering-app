@@ -14,6 +14,15 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+window.addEventListener("DOMContentLoaded", () => {
+  const splash = document.getElementById("splash-screen");
+  if (splash) {
+    splash.style.opacity = "0";
+    splash.style.transition = "opacity 0.4s ease";
+    setTimeout(() => splash.remove(), 400);
+  }
+});
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ToastProvider>
