@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { PackageOpen } from "lucide-react";
 import items from "../../utils/items.json";
 import RenderList from "./RenderList"
+import { getAllItems } from "../../db/indexedDB";
 
 const TABS = [
   { id: "all", label: "All Items" },
@@ -24,6 +25,16 @@ const TABS = [
 
 export default function ItemsList() {
   const [activeTab, setActiveTab] = useState("all");
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    loadItems();
+  }, []);
+
+  const loadItems = async () => {
+    const data = await getAllItems();
+    setItems(data);
+  };
   const filteredItems =
     activeTab === "all"
       ? items

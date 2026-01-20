@@ -1,32 +1,31 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
 import "./styles/main.css";
+import App from "./App.jsx";
 import { ToastProvider } from "./context/ToastContext";
 
+// Theme
 const theme = localStorage.getItem("theme") || "light";
 document.documentElement.classList.toggle("dark", theme === "dark");
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    window.location.reload();
-  });
-}
+const rootElement = document.getElementById("root");
+const splash = document.getElementById("splash-screen");
 
-window.addEventListener("DOMContentLoaded", () => {
-  const splash = document.getElementById("splash-screen");
+// Mount React FIRST
+createRoot(rootElement).render(
+  <StrictMode>
+    <ToastProvider>
+      <App />
+    </ToastProvider>
+  </StrictMode>
+);
+
+// Remove splash AFTER first paint
+requestAnimationFrame(() => {
   if (splash) {
     splash.style.opacity = "0";
     splash.style.transition = "opacity 0.4s ease";
     setTimeout(() => splash.remove(), 400);
   }
 });
-
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <ToastProvider>
-      <App />
-    </ToastProvider>
-  </StrictMode>,
-)

@@ -8,11 +8,16 @@
   </head>
   <body>
   <div id="splash-screen">
-    <div class="logo">🍽️</div>
-    <h1>Rahul Catering Services</h1>
-    <p>Preparing something delicious…</p>
-    <div class="loader"></div>
+  <div class="chef">
+    <div class="hat"></div>
+    <div class="steam s1"></div>
+    <div class="steam s2"></div>
+    <div class="steam s3"></div>
   </div>
+
+  <h1>Rahul Catering & Events</h1>
+  <p class="loading-text">Preparing your order…</p>
+</div>
 
   <div id="root"></div>
 
@@ -23,56 +28,87 @@
     }
 
     #splash-screen {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(135deg, #fff4e6, #ffe8cc);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      animation: fadeIn 0.6s ease;
-    }
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.4s ease;
+}
 
-    .logo {
-      font-size: 64px;
-      animation: bounce 1.5s infinite;
-    }
+/* Chef icon */
+.chef {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 16px;
+}
 
-    h1 {
-      margin: 12px 0 4px;
-      font-size: 26px;
-      color: #d9480f;
-    }
+.hat {
+  width: 60px;
+  height: 40px;
+  background: #ADC455;
+  border-radius: 12px 12px 6px 6px;
+  margin: auto;
+}
 
-    p {
-      color: #555;
-      margin-bottom: 20px;
-    }
+/* Steam animation */
+.steam {
+  position: absolute;
+  width: 8px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(173, 196, 85, 0.5);
+  top: -20px;
+  animation: steam 2s infinite ease-in-out;
+}
+.loading-text::after {
+  content: "🍽️";
+  margin-left: 6px;
+}
 
-    .loader {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #ffd8a8;
-      border-top-color: #f76707;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
+.s1 { left: 10px; animation-delay: 0s; }
+.s2 { left: 35px; animation-delay: 0.4s; }
+.s3 { left: 60px; animation-delay: 0.8s; }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+@keyframes steam {
+  0% { transform: translateY(0); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(-20px); opacity: 0; }
+}
 
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
+h1 {
+  margin: 12px 0 4px;
+  font-size: 26px;
+  color: #2F6F4E;
+}
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
+.loading-text {
+  color: #666;
+  font-size: 14px;
+  animation: blink 1.4s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
   </style>
+  <script>
+  // Failsafe: remove splash if something breaks
+  setTimeout(() => {
+    const splash = document.getElementById("splash-screen");
+    if (splash) splash.remove();
+  }, 5000);
+</script>
  <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

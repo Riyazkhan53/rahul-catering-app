@@ -114,3 +114,62 @@ body {
 .animate-scaleIn {
   animation: scaleIn 0.25s ease-out;
 }
+
+
+.pdf-page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 20mm;
+  background: white;
+  position: relative;
+  font-family: Arial, sans-serif;
+}
+
+/* HEADER */
+.pdf-header {
+  display: flex;
+  gap: 12px;
+  border-bottom: 2px solid #ADC455;
+  padding-bottom: 8px;
+}
+
+.logo {
+  width: 60px;
+}
+
+/* WATERMARK */
+.watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300px;
+  opacity: 0.05;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* CONTENT */
+.pdf-content {
+  margin-top: 20px;
+  min-height: 200mm;
+}
+
+/* FOOTER */
+.pdf-footer {
+  position: absolute;
+  bottom: 15mm;
+  left: 20mm;
+  right: 20mm;
+  text-align: center;
+  font-size: 10px;
+  color: #555;
+  border-top: 1px solid #ccc;
+  padding-top: 6px;
+}
+
+/* PRINT SETTINGS */
+@media print {
+  body {
+    margin: 0;
+  }
+}
