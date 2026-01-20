@@ -120,12 +120,10 @@ body {
   width: 210mm;
   min-height: 297mm;
   padding: 20mm;
-  background: white;
   position: relative;
-  font-family: Arial, sans-serif;
+  background: white;
 }
 
-/* HEADER */
 .pdf-header {
   display: flex;
   gap: 12px;
@@ -137,24 +135,20 @@ body {
   width: 60px;
 }
 
-/* WATERMARK */
 .watermark {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 300px;
+  width: 280px;
   opacity: 0.05;
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
 
-/* CONTENT */
 .pdf-content {
-  margin-top: 20px;
-  min-height: 200mm;
+  margin-top: 16px;
 }
 
-/* FOOTER */
 .pdf-footer {
   position: absolute;
   bottom: 15mm;
@@ -162,13 +156,24 @@ body {
   right: 20mm;
   text-align: center;
   font-size: 10px;
-  color: #555;
   border-top: 1px solid #ccc;
   padding-top: 6px;
 }
 
-/* PRINT SETTINGS */
 @media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .pdf-page,
+  .pdf-page * {
+    visibility: visible;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
   body {
     margin: 0;
   }

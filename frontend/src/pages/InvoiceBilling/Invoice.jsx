@@ -1,70 +1,90 @@
 import { motion } from "framer-motion";
-import React from "react";
+import { useState } from "react";
+import InvoiceBillingHome from "./Invoice/InvoiceBillingHome";
 import CreateInvoice from "./Invoice/CreateInvoice";
 import PdfLayout from "../../utils/InvoiceTemplate";
+import InvoicePreview from "./Invoice/InvoicePreview";
+import BackHeader from "../../Components/BackHeader";
 
-export default function InvoiceBillingHome({ setActiveTab }) {
-    const [invoice, setInvoice]= React.useState(false)
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full flex justify-center items-center"
-    >
-      <div className="bg-white rounded-2xl shadow-xl p-10 w-full max-w-3xl">
-        <h2 className="text-2xl font-bold mb-2">
-          🧾 Invoice & Billing
-        </h2>
-        <p className="text-gray-500 mb-8">
-          Create invoices, quotations and bills for catering orders
-        </p>
+export default function InvoiceBillingPage() {
+    const [view, setView] = useState("home");
+    const [invoice, setInvoice] = useState({
+        type: "INVOICE",
+        invoiceNo: "INV-0001", // later auto-generate
+        date: new Date().toISOString().slice(0, 10),
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          <ActionCard
-            title="Create Invoice"
-            desc="Official invoice for completed orders"
-            onClick={() => setInvoice("create-invoice")}
-          />
+        client: {
+            name: "",
+            mobile: "",
+            address: ""
+        },
 
-          <ActionCard
-            title="Create Quotation"
-            desc="Share pricing before confirmation"
-            onClick={() => setInvoice("create-quotation")}
-          />
+        event: {
+            functionType: "",
+            eventDate: "",
+            location: "",
+            pax: ""
+        },
 
-          <ActionCard
-            title="Create Bill"
-            desc="Quick billing for instant payments"
-            onClick={() => setActiveTab("create-bill")}
-          />
+        items: [],
 
-          <ActionCard
-            title="View Documents"
-            desc="Invoices, bills & quotations"
-            onClick={() => setActiveTab("all-documents")}
-          />
-        </div>
-      </div>
-      {invoice=="create-invoice" && (
-        <CreateInvoice
-          invoice={invoice}
-        //   onClose={() => setShowPreview(false)}
-        />
-      )}
-      {invoice =="create-quotation" && <PdfLayout>Quotation Here</PdfLayout>}
-    </motion.div>
-  );
-}
+        summary: {
+            discount: 0,
+            tax: 0
+        }
+    });
+    // home | create-invoice | create-quotation | documents
 
-function ActionCard({ title, desc, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="text-left border rounded-xl p-6 hover:shadow-md hover:border-orange-400 transition"
-    >
-      <h3 className="font-semibold text-lg">{title}</h3>
-      <p className="text-gray-500 text-sm mt-1">{desc}</p>
-    </button>
-  );
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full"
+        >
+            {view === "home" && (
+                <InvoiceBillingHome onSelect={setView} />
+            )}
+
+            {view === "create-invoice" && (
+                <CreateInvoice onSelect={setView} invoice={invoice} setInvoice={setInvoice} onBack={() => setView("home")} />
+            )}
+
+            {view === "create-quotation" && (
+                <CreateInvoice
+                    type="QUOTATION"
+                    onSelect={setView}
+                    invoice={invoice}
+                    setInvoice={setInvoice}
+                    onBack={() => setView("home")}
+                />
+            )}
+
+            {view === "preview" && (
+                <InvoicePreview
+                    invoice={invoice}
+                    onClose={() => setView("create-invoice")}
+                />
+            )}
+
+            {view === "documents" && (
+                <div className="w-full max-w-5xl">
+                    <BackHeader
+                        title="Invoice & Billing"
+                        subtitle="Manage your invoices, quotations, and bills"
+                        onBack={() => setView("home")}
+                    />
+
+                    <div className="bg-white rounded-2xl shadow-xl p-10 max-w-3xl mx-auto">
+                        <h2 className="text-2xl font-bold mb-2">📂 Documents</h2>
+                        <p className="text-gray-500 mb-8">
+                            View and manage all your invoices, quotations, and bills
+                        </p>
+
+                        <div className="text-center text-gray-500 py-20 border-dashed border-4 border-gray-200 rounded-xl">
+                            No documents available.
+                        </div>
+                    </div>
+                </div>)}
+        </motion.div>
+    );
 }
