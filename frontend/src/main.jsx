@@ -12,6 +12,8 @@ document.documentElement.classList.toggle("dark", theme === "dark");
 const rootElement = document.getElementById("root");
 const splash = document.getElementById("splash-screen");
 
+
+
 // Mount React FIRST
 createRoot(rootElement).render(
   <StrictMode>
@@ -21,11 +23,10 @@ createRoot(rootElement).render(
   </StrictMode>
 );
 
-// Remove splash AFTER first paint
-requestAnimationFrame(() => {
-  if (splash) {
-    splash.style.opacity = "0";
-    splash.style.transition = "opacity 0.4s ease";
-    setTimeout(() => splash.remove(), 400);
-  }
+window.addEventListener("app-ready", () => {
+  if (!splash) return;
+
+  splash.style.opacity = "0";
+  splash.style.transition = "opacity 0.4s ease";
+  setTimeout(() => splash.remove(), 400);
 });

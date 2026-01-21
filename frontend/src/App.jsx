@@ -48,6 +48,11 @@ function App() {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    // App is now fully mounted & ready
+    window.dispatchEvent(new Event("app-ready"));
+  }, []);
+
   const handleLogout = () => {
     localStorage.clear();
     setUser(null);
