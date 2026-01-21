@@ -4,7 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import { apiRequest } from "./api/api";
 import AppLayout from "./Layouts/AppLayout";
 import ThemeToggle from "./Components/ThemeToggle";
-import { appBoot } from "./utils/appBoot"
+import CateringLoader from "./utils/welcomeScreen";
 
 const getInitialTheme = () =>
   localStorage.getItem("theme") === "dark";
@@ -49,19 +49,13 @@ function App() {
     checkAuth();
   }, []);
 
-  useEffect(() => {
-    appBoot().then(() => {
-      window.dispatchEvent(new Event("app-ready"));
-    });
-  }, []);
-
   const handleLogout = () => {
     localStorage.clear();
     setUser(null);
     setShowLogin(false);
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <CateringLoader />;
 
   return (
     <AppLayout>

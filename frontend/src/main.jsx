@@ -10,7 +10,6 @@ const theme = localStorage.getItem("theme") || "light";
 document.documentElement.classList.toggle("dark", theme === "dark");
 
 const rootElement = document.getElementById("root");
-const splash = document.getElementById("splash-screen");
 
 
 
@@ -22,12 +21,3 @@ createRoot(rootElement).render(
     </ToastProvider>
   </StrictMode>
 );
-
-window.addEventListener("app-ready", () => {
-  const splash = document.getElementById("splash-screen");
-  if (!splash) return;
-
-  splash.style.opacity = "0";
-  splash.style.transition = "opacity 0.4s ease";
-  setTimeout(() => splash.remove(), 400);
-});
