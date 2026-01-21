@@ -24,6 +24,7 @@ createRoot(rootElement).render(
 );
 
 window.addEventListener("app-ready", () => {
+  const splash = document.getElementById("splash-screen");
   if (!splash) return;
 
   splash.style.opacity = "0";

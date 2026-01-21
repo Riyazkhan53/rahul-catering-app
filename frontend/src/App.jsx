@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import { apiRequest } from "./api/api";
 import AppLayout from "./Layouts/AppLayout";
 import ThemeToggle from "./Components/ThemeToggle";
+import { appBoot } from "./utils/appBoot"
 
 const getInitialTheme = () =>
   localStorage.getItem("theme") === "dark";
@@ -49,8 +50,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // App is now fully mounted & ready
-    window.dispatchEvent(new Event("app-ready"));
+    appBoot().then(() => {
+      window.dispatchEvent(new Event("app-ready"));
+    });
   }, []);
 
   const handleLogout = () => {
