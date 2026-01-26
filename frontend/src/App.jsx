@@ -5,6 +5,7 @@ import { apiRequest } from "./api/api";
 import AppLayout from "./Layouts/AppLayout";
 import ThemeToggle from "./Components/ThemeToggle";
 import CateringLoader from "./utils/welcomeScreen";
+import { syncPendingItems, pullItemsFromServer } from "./sync/itemSync";
 
 const getInitialTheme = () =>
   localStorage.getItem("theme") === "dark";
@@ -49,6 +50,32 @@ function App() {
     checkAuth();
   }, []);
 
+  
+
+//   useEffect(() => {
+//   // Initial pull on app start
+//   if (navigator.onLine) {
+//     pullItemsFromServer();
+//   }
+
+//   // Sync when internet comes back
+//   const handleOnline = () => {
+//     syncPendingItems();
+//     pullItemsFromServer();
+//   };
+
+//   window.addEventListener("online", handleOnline);
+
+//   return () => {
+//     window.removeEventListener("online", handleOnline);
+//   };
+// }, []);
+
+const handleOnline = () => {
+    syncPendingItems();
+    pullItemsFromServer();
+  };
+
   const handleLogout = () => {
     localStorage.clear();
     setUser(null);
@@ -64,7 +91,7 @@ function App() {
       {user ? (
         <Dashboard user={user} onLogout={handleLogout} />
       ) : showLogin ? (
-        <Login onLoginSuccess={setUser} />
+        <Login onLoginSuccess={setUser} handleOnline={handleOnline} />
       ) : (
         <div className="app-container">
           <div className="app-card">

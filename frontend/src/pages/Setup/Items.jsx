@@ -33,7 +33,7 @@ export default function Items() {
 
       {open === "add" && (
         <Modal title="Add New Item" onClose={() => setOpen(null)}>
-          <AddItem />
+          <AddItem onClose={() => setOpen(null)} />
         </Modal>
       )}
 

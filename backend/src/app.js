@@ -3,6 +3,8 @@ import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import healthRoutes from "./routes/health.routes.js";
+import itemsRoutes from "./routes/item.routes.js";
+import picklistRoutes from "./routes/picklist.routes.js";
 
 
 const app = express();
@@ -12,5 +14,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api", healthRoutes);
+app.use("/api/items", itemsRoutes);
+app.use("/api/picklist", picklistRoutes);
 
 export default app;

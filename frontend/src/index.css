@@ -122,27 +122,32 @@ body {
   padding: 20mm;
   position: relative;
   background: white;
+  z-index: 0;
 }
 
 .pdf-header {
   display: flex;
-  gap: 12px;
+  gap: 1px;
   border-bottom: 2px solid #ADC455;
   padding-bottom: 8px;
+  background-color: rgb(255, 246, 226);
+  z-index: .2;
 }
 
 .logo {
-  width: 60px;
+  width: 100px;
+  z-index: .4;
 }
 
 .watermark {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 280px;
-  opacity: 0.05;
+  width: 550px;
+  opacity: 1;            /* recommended for watermark */
   transform: translate(-50%, -50%);
   pointer-events: none;
+  z-index: -1;              /* 👈 sends it to the back */
 }
 
 .pdf-content {

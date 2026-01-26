@@ -2,6 +2,10 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export async function apiRequest(path, options = {}) {
   let res;
+  const token = localStorage.getItem("token");
+  if (token) {
+    options.token = token;
+  }
 
   try {
     res = await fetch(`${API_URL}${path}`, {
@@ -13,6 +17,7 @@ export async function apiRequest(path, options = {}) {
         }),
       },
       body: options.body ? JSON.stringify(options.body) : undefined,
+      cache: "no-store",
     });
   } catch {
     throw new Error("Network error");

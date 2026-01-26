@@ -1,0 +1,16 @@
+export const TAMIL_FOOD_MAP = {
+  idli: "இட்லி",
+  idly: "இட்லி",
+  dosa: "தோசை",
+  sambar: "சாம்பார்",
+  sambhar: "சாம்பார்",
+  vada: "வடை",
+  pongal: "பொங்கல்",
+  upma: "உப்புமா",
+  chapati: "சப்பாத்தி",
+  parotta: "பரோட்டா",
+  biryani: "பிரியாணி",
+  rasam: "ரசம்",
+  curd: "தயிர்",
+  rice: "சாதம்",
+};

@@ -1,7 +1,7 @@
-import { useState } from "react";
-import items from "../../utils/items.json";
+import { useState,useEffect } from "react";
+// import items from "../../utils/items.json";
 import { CheckCircle, ListChecks } from "lucide-react";
-import { saveListToDB } from "../../db/indexedDB";
+import { saveListToDB,getAllItems } from "../../db/indexedDB";
 import { useToast } from "../../context/ToastContext";
 
 export default function GenerateSingleList() {
@@ -9,6 +9,17 @@ export default function GenerateSingleList() {
     const [listName, setListName] = useState("");
     const [listDate, setListDate] = useState("");
     const { showToast } = useToast();
+
+    const [items, setItems] = useState([]);
+    
+      useEffect(() => {
+        loadItems();
+      }, []);
+    
+      const loadItems = async () => {
+        const data = await getAllItems();
+        setItems(data);
+      };
 
     const generateListId = () => {
         const random = Math.floor(1000 + Math.random() * 9000);
@@ -127,7 +138,7 @@ export default function GenerateSingleList() {
 
             {/* Items */}
             <div className="space-y-3 max-h-[420px] overflow-y-auto pr-2">
-                {items.map((item) => {
+                {items && items.map((item) => {
                     const isChecked = !!selected[item.itemId];
 
                     return (

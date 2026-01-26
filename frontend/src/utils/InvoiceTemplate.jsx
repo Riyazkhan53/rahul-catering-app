@@ -6,7 +6,8 @@ export default function PdfLayout({ invoice }) {
       <header className="pdf-header">
         <img src="/roundlogo3.png" className="logo" />
         <div>
-          <h2>Rahul Catering & Events</h2>
+          <h2>RAHUL CATERING AND EVENTS</h2>
+          <p><i>Keeping the spirit of cooking alive</i></p>
           <p>📞 9655264092 | WhatsApp 8248403710</p>
         </div>
       </header>

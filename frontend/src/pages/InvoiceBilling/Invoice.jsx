@@ -3,7 +3,7 @@ import { useState } from "react";
 import InvoiceBillingHome from "./Invoice/InvoiceBillingHome";
 import CreateInvoice from "./Invoice/CreateInvoice";
 import PdfLayout from "../../utils/InvoiceTemplate";
-import InvoicePreview from "./Invoice/InvoicePreview";
+import InvoicePreview from "../../pdf/invoicePreview";
 import BackHeader from "../../Components/BackHeader";
 
 export default function InvoiceBillingPage() {

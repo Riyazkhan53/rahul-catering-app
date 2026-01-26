@@ -1,8 +1,15 @@
 import { useState } from "react";
 import { apiRequest } from "../api/api";
 import { useToast } from "../context/ToastContext";
+import NetworkStatusBar from "../Components/NetworkStatusBar";
+import useNetworkStatus from "../hooks/useNetworkStatus";
+import {
+    saveAuthLogin,
+    getOfflineAuth,
+    isAuthExpired,
+} from "../db/indexedDB";
 
-function Login({ onLoginSuccess, isDark, toggleTheme }) {
+function Login({ onLoginSuccess, handleOnline }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -10,21 +17,84 @@ function Login({ onLoginSuccess, isDark, toggleTheme }) {
     const [error, setError] = useState("");
     const { showToast } = useToast();
 
+    const isOnline = useNetworkStatus();
+    const [syncing, setSyncing] = useState(false);
+
+    async function handleManualSync() {
+        if (navigator.onLine) {
+            handleOnline()
+        }
+        if (!isOnline) return;
+
+        try {
+            setSyncing(true);
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            const data = await apiRequest("/api/auth/me", {
+                method: "GET",
+                token,
+            });
+
+            await saveAuthLogin({
+                username: data.user.username,
+                token,
+            });
+            showToast("Login synced successfully", "success");
+        } catch {
+            showToast("Sync failed", "error");
+        } finally {
+            setSyncing(false);
+        }
+    }
+
     async function handleLogin(e) {
         e.preventDefault();
         setLoading(true);
         setError("");
 
         try {
-            const data = await apiRequest("/api/auth/login", {
-                method: "POST",
-                body: { username, password },
-            });
+            // 🌐 ONLINE LOGIN
+            if (isOnline) {
+                const data = await apiRequest("/api/auth/login", {
+                    method: "POST",
+                    body: { username, password },
+                });
 
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
-            onLoginSuccess(data.user);
-            showToast("Logged in Successfully.", "success")
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+
+                // 💾 Save for offline use
+                await saveAuthLogin({
+                    username,
+                    token: data.token,
+                });
+                handleOnline();
+
+                onLoginSuccess(data.user);
+                showToast("Logged in successfully", "success");
+                return;
+            }
+
+            // 📴 OFFLINE LOGIN
+            const cached = await getOfflineAuth(username);
+
+            if (!cached || isAuthExpired(cached)) {
+                throw new Error(
+                    "Offline login not available. Please connect to internet."
+                );
+            }
+
+            // Restore session from cache
+            localStorage.setItem("token", cached.token);
+            localStorage.setItem(
+                "user",
+                JSON.stringify({ username })
+            );
+
+            onLoginSuccess({ username });
+            showToast("Offline login successful", "info");
+
         } catch (err) {
             setError(err.message || "Login failed");
         } finally {
@@ -34,8 +104,16 @@ function Login({ onLoginSuccess, isDark, toggleTheme }) {
 
     return (
         <div className="min-h-screen flex items-center justify-center px-4">
-            <div className="w-full max-w-md rounded-2xl shadow-xl p-8 card"
-                style={{ background: "var(--card-bg)" }}>
+            {/* Network Status */}
+            <div
+                className="relative w-full max-w-md rounded-2xl shadow-xl p-8 card"
+                style={{ background: "var(--card-bg)" }}
+            >
+                <NetworkStatusBar
+                    isOnline={isOnline}
+                    syncing={syncing}
+                    onSync={handleManualSync}
+                />
 
                 {/* Logo / Title */}
                 <div className="text-center mb-8">
@@ -106,7 +184,11 @@ function Login({ onLoginSuccess, isDark, toggleTheme }) {
                         disabled={loading}
                         className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-60"
                     >
-                        {loading ? "Logging in..." : "Login"}
+                        {loading
+                            ? "Logging in..."
+                            : isOnline
+                                ? "Login"
+                                : "Offline Login"}
                     </button>
                 </form>
 
