@@ -114,11 +114,15 @@ export default function AppSettings() {
             {confirmOpen && (
                 <ConfirmModal
                     title="Reset Local Data?"
-                    message="All offline data will be permanently deleted and replaced with server data."
+                    message="All offline data will be deleted and replaced with server data."
                     confirmText="Yes, Reset & Sync"
                     danger
                     onCancel={() => setConfirmOpen(false)}
-                    onConfirm={handleMasterSync}
+                    onConfirm={async (setProgress) => {
+                        await masterSync(setProgress);
+                        showToast("Master sync completed", "success");
+                        setConfirmOpen(false);
+                    }}
                 />
             )}
         </div>

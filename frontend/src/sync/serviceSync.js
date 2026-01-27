@@ -25,16 +25,35 @@ export async function appSync() {
 
 /* ---------------- MASTER SYNC ---------------- */
 /* Destructive: clears IndexedDB */
-export async function masterSync() {
+export async function masterSync(setProgress) {
   if (!navigator.onLine) {
     throw new Error("Internet required for Master Sync");
   }
 
+  // 1️⃣ Clear local DB
+  setProgress(20);
   await clearIndexedDB("rahul_catering_db");
 
-  await pullItemsFromServer();
+  // 2️⃣ Pull from server
+  setProgress(50);
+  const items = await itemService.getItems();
 
-  localStorage.setItem("lastMasterSync", Date.now());
+  // 3️⃣ Save locally
+  let count = 0;
+  for (const item of items) {
+    await saveItem({
+      ...item,
+      syncStatus: "synced",
+      serverId: item._id,
+    });
+
+    count++;
+    const percent = 50 + Math.floor((count / items.length) * 40);
+    setProgress(percent);
+  }
+
+  // 4️⃣ Done
+  setProgress(100);
 }
 
 /* ---------------- PUSH ---------------- */

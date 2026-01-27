@@ -183,3 +183,36 @@ body {
     margin: 0;
   }
 }
+
+/* Theme Toggle Button Fix */
+/* ☀️ Sun Glow */
+.sun-glow {
+  filter: drop-shadow(0 0 6px rgba(255, 165, 0, 0.7))
+          drop-shadow(0 0 12px rgba(255, 165, 0, 0.5));
+  animation: sunPulse 2s infinite alternate;
+}
+
+@keyframes sunPulse {
+  from {
+    filter: drop-shadow(0 0 6px rgba(255, 165, 0, 0.6));
+  }
+  to {
+    filter: drop-shadow(0 0 14px rgba(255, 165, 0, 0.9));
+  }
+}
+
+/* 🌙 Moon Glow */
+.moon-glow {
+  filter: drop-shadow(0 0 6px rgba(120, 150, 255, 0.6))
+          drop-shadow(0 0 12px rgba(120, 150, 255, 0.4));
+  animation: moonPulse 2s infinite alternate;
+}
+
+@keyframes moonPulse {
+  from {
+    filter: drop-shadow(0 0 6px rgba(120, 150, 255, 0.5));
+  }
+  to {
+    filter: drop-shadow(0 0 14px rgba(120, 150, 255, 0.9));
+  }
+}
