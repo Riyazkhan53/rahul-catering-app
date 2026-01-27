@@ -3,6 +3,7 @@ import { useState,useEffect } from "react";
 import { CheckCircle, ListChecks } from "lucide-react";
 import { saveListToDB,getAllItems } from "../../db/indexedDB";
 import { useToast } from "../../context/ToastContext";
+import { Checkbox, Input, Button } from "../../Components/BasicComponents";
 
 export default function GenerateSingleList() {
     const [selected, setSelected] = useState({});
@@ -107,7 +108,7 @@ export default function GenerateSingleList() {
 
                 {/* Name + Date */}
                 <div className="flex gap-3">
-                    <input
+                    <Input
                         type="text"
                         value={listName}
                         onChange={(e) => setListName(e.target.value)}
@@ -117,7 +118,7 @@ export default function GenerateSingleList() {
         focus:ring-orange-400"
                     />
 
-                    <input
+                    <Input
                         type="date"
                         value={listDate}
                         onChange={(e) => setListDate(e.target.value)}
@@ -153,7 +154,7 @@ export default function GenerateSingleList() {
                         >
                             {/* Checkbox */}
                             <div className="col-span-1 flex justify-center">
-                                <input
+                                <Checkbox
                                     type="checkbox"
                                     checked={isChecked}
                                     onChange={() => toggleItem(item)}
@@ -179,7 +180,7 @@ export default function GenerateSingleList() {
                                 {isChecked ? (
                                     <div className="flex gap-2">
                                         {/* Quantity */}
-                                        <input
+                                        <Input
                                             type="text"
                                             value={selected[item.itemId]?.quantity || ""}
                                             onChange={(e) =>
@@ -191,7 +192,7 @@ export default function GenerateSingleList() {
                                         />
 
                                         {/* Unit */}
-                                        <input
+                                        <Input
                                             type="text"
                                             value={selected[item.itemId]?.unit || ""}
                                             onChange={(e) =>
@@ -214,14 +215,14 @@ export default function GenerateSingleList() {
 
             {/* Action */}
             <div className="mt-6 flex justify-end">
-                <button
+                <Button
                     onClick={handleGenerate}
                     className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600
             text-white px-6 py-2.5 rounded-lg font-semibold transition"
                 >
                     <CheckCircle className="w-5 h-5" />
                     Generate List
-                </button>
+                </Button>
             </div>
         </div>
     );

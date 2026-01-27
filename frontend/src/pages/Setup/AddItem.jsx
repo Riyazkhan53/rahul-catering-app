@@ -7,9 +7,13 @@ import { generateNextItemCode } from "../../utils/codeGen";
 import { itemService } from "../../api/service";
 import { useToast } from "../../context/ToastContext";
 import { toTamilSmart } from "../../utils/toTamilSmart";
-import {uuid} from "../../utils/uuid";
+import { uuid } from "../../utils/uuid";
+import Modal from "../../Components/BasicComponents/Modal";
+import ModalCard from "../../Components/BasicComponents/ModalCard";
+import { Input, Select, Textarea, FormField, PrimaryButton } from "../../Components/BasicComponents/index";
 
 export default function AddItem(props) {
+
   const { onClose } = props;
   const { showToast } = useToast();
   const [form, setForm] = useState({
@@ -40,131 +44,141 @@ export default function AddItem(props) {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const itemPayload = {
-    ...form,
-    code,
-    price: Number(form.price),
-    defaultQuantity: Number(form.defaultQuantity),
-    image: null,
-    updatedAt: Date.now(),
+    const itemPayload = {
+      ...form,
+      code,
+      price: Number(form.price),
+      defaultQuantity: Number(form.defaultQuantity),
+      image: null,
+      updatedAt: Date.now(),
+    };
+
+    // 1️⃣ Always save locally first
+    const localItem = {
+      ...itemPayload,
+      syncStatus: navigator.onLine ? "synced" : "pending",
+      serverId: null,
+    };
+
+    await saveItem(localItem);
+
+    // 2️⃣ If online → sync immediately
+    if (navigator.onLine) {
+      await itemService.upsertItem(itemPayload);
+    }
+
+    showToast("Item saved successfully", "success");
+    resetForm();
   };
 
-  // 1️⃣ Always save locally first
-  const localItem = {
-    ...itemPayload,
-    syncStatus: navigator.onLine ? "synced" : "pending",
-    serverId: null,
-  };
-
-  await saveItem(localItem);
-
-  // 2️⃣ If online → sync immediately
-  if (navigator.onLine) {
-    await itemService.upsertItem(itemPayload);
+  const resetForm = () => {
+    setForm({
+      name: "",
+      tamilName: "",
+      category: "",
+      description: "",
+      defaultQuantity: 1,
+      price: "",
+      unit: "kg"
+    });
+    setCode("");
+    onClose()
   }
-
-  showToast("Item saved successfully", "success");
-  resetForm();
-};
-
-const resetForm = () => {
-  setForm({
-    name: "",
-    tamilName: "",
-    category: "",
-    description: "",
-    defaultQuantity: 1,
-    price: "",
-    unit: "kg"
-  });
-  setCode("");
-  onClose()
-}
 
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <Modal onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        <ModalCard
+          title="Add New Item"
+          onClose={onClose}
+          footer={
+            <PrimaryButton type="submit">
+              Save Item
+            </PrimaryButton>
+          }
+        >
+          <FormField label="Item Name (English)">
+            <Input
+              placeholder="Enter item name"
+              value={form.name}
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm((prev) => ({
+                  ...prev,
+                  name: value,
+                  tamilName: toTamilSmart(value),
+                }));
+              }}
+              required
+            />
+          </FormField>
 
-      <input
-  placeholder="Item Name (English)"
-  value={form.name}
-  onChange={(e) => {
-    const value = e.target.value;
+          <FormField label="Item Name (Tamil)">
+            <Input
+              placeholder="தமிழ் பெயர்"
+              value={form.tamilName}
+              lang="ta"
+              onChange={(e) => handleChange("tamilName", e.target.value)}
+            />
+          </FormField>
 
-    setForm(prev => ({
-      ...prev,
-      name: value,
-      tamilName: toTamilSmart(value),
-    }));
-  }}
-  className="w-full border px-4 py-2 rounded-lg"
-  required
-/>
+          <FormField label="Category">
+            <Select
+              value={form.category}
+              onChange={(e) => handleChange("category", e.target.value)}
+              required
+            >
+              <option value="">Select Category</option>
+              <option value="essentials">Essentials</option>
+              <option value="veg">Veg</option>
+              <option value="nonveg">Non-Veg</option>
+              <option value="dessert">Dessert</option>
+              <option value="service">Service</option>
+            </Select>
+          </FormField>
 
-      <input
-  placeholder="Item Name (Tamil)"
-  value={form.tamilName}
-  onChange={(e) => handleChange("tamilName", e.target.value)}
-  lang="ta"
-  className="w-full border px-4 py-2 rounded-lg"
-/>
+          <FormField label="Item Code">
+            <Input value={code} disabled />
+          </FormField>
 
-      <select
-        value={form.category}
-        onChange={(e) => handleChange("category", e.target.value)}
-        className="w-full border px-4 py-2 rounded-lg"
-        required
-      >
-        <option value="">Select Category</option>
-        <option value="essentials">Essentials</option>
-        <option value="veg">Veg</option>
-        <option value="nonveg">Non-Veg</option>
-        <option value="dessert">Dessert</option>
-        <option value="service">Service</option>
-      </select>
+          <FormField label="Description">
+            <Textarea
+              placeholder="Short description"
+              value={form.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+            />
+          </FormField>
 
-      <input
-        value={code}
-        disabled
-        className="w-full border px-4 py-2 rounded-lg bg-gray-100"
-      />
+          <FormField label="Default Quantity">
+            <Input
+              type="number"
+              value={form.defaultQuantity}
+              onChange={(e) => handleChange("defaultQuantity", e.target.value)}
+            />
+          </FormField>
 
-      <textarea
-        placeholder="Description"
-        value={form.description}
-        onChange={(e) => handleChange("description", e.target.value)}
-        className="w-full border px-4 py-2 rounded-lg"
-      />
+          <FormField label="Price">
+            <Input
+              type="number"
+              placeholder="₹ Price"
+              value={form.price}
+              onChange={(e) => handleChange("price", e.target.value)}
+              required
+            />
+          </FormField>
 
-      <input
-        type="number"
-        placeholder="Default Quantity"
-        value={form.defaultQuantity}
-        onChange={(e) => handleChange("defaultQuantity", e.target.value)}
-        className="w-full border px-4 py-2 rounded-lg"
-      />
-
-      <input
-        type="number"
-        placeholder="Price"
-        value={form.price}
-        onChange={(e) => handleChange("price", e.target.value)}
-        className="w-full border px-4 py-2 rounded-lg"
-        required
-      />
-
-      <input
-        placeholder="Unit (kg / plate / nos)"
-        value={form.unit}
-        onChange={(e) => handleChange("unit", e.target.value)}
-        className="w-full border px-4 py-2 rounded-lg"
-      />
-
-      <button className="w-full bg-orange-500 text-white py-2 rounded-lg">
-        Save Item
-      </button>
-    </form>
+          <FormField label="Unit">
+            <Input
+              placeholder="kg / plate / nos"
+              value={form.unit}
+              onChange={(e) => handleChange("unit", e.target.value)}
+            />
+          </FormField>
+        </ModalCard>
+      </form>
+    </Modal>
   );
 }
