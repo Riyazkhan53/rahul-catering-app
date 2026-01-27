@@ -237,3 +237,12 @@ export async function getItemByCode(code) {
     req.onerror = () => reject(req.error);
   });
 }
+
+
+export async function clearIndexedDB(dbName) {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.deleteDatabase(dbName);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}

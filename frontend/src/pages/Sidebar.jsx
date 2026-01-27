@@ -8,7 +8,8 @@ const MENU_CONFIG = {
     
     { key: "add-order", label: "New Order ⭐" },
     { key: "listcreator", label: "Item/Menu List Creator" },
-    {key: "invoice",label:"Invoice & Billing"}
+    {key: "invoice",label:"Invoice & Billing"},
+    { key: "appsettings", label: "🧩 App Settings" },
   ],
   admin: [
     { key: "dashboard", label: "Dashboard" },
@@ -16,6 +17,7 @@ const MENU_CONFIG = {
     { key: "menu", label: "Menu & Items Catalogue" },
     { key: "settings", label: "Settings" },
     { key: "setup", label: "Setup" },
+    { key: "appsettings", label: "🧩 App Settings" },
   ],
 };
 

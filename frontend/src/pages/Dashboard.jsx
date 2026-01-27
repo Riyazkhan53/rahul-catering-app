@@ -12,6 +12,7 @@ import MenuList from "./MenuList/MenuList";
 import Invoice from "./InvoiceBilling/Invoice"
 import MenuListCreator from "./MenuListCreator/MenuListCreator"
 import useIsDesktop from "../hooks/uselsDesktop";
+import AppSettings from "./AppSettings/AppSettings";
 
 export default function Dashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -69,7 +70,8 @@ export default function Dashboard({ user, onLogout }) {
             setup: <Setup />,
             list: <MenuList />,
             invoice: <Invoice />,
-            listcreator: <MenuListCreator />
+            listcreator: <MenuListCreator />,
+            appsettings: <AppSettings />,
           }[activeTab]}
         </div>
       </main>

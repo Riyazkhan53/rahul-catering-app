@@ -85,8 +85,8 @@ const handleOnline = () => {
   if (loading) return <CateringLoader />;
 
   return (
-    <AppLayout>
-      <ThemeToggle isDark={isDark} toggleTheme={toggleTheme} />
+    <AppLayout isDark={isDark}>
+      {/* <ThemeToggle isDark={isDark} toggleTheme={toggleTheme} /> */}
 
       {user ? (
         <Dashboard user={user} onLogout={handleLogout} />
