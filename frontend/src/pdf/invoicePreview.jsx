@@ -1,5 +1,6 @@
 import { PDFViewer } from "@react-pdf/renderer";
 import InvoicePDF from "./invoicePDF";
+import ListPDF from "./listPDF";
 
 export default function InvoicePreview({ invoice, onClose }) {
   return (
@@ -16,7 +17,7 @@ export default function InvoicePreview({ invoice, onClose }) {
         </div>
 
         <PDFViewer width="100%" height="100%">
-          <InvoicePDF invoice={invoice} />
+          <ListPDF invoice={invoice} />
         </PDFViewer>
       </div>
     </div>
