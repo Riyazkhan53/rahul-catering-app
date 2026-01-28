@@ -105,6 +105,18 @@ export async function getAllLists() {
   });
 }
 
+export async function getListById(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("generated_lists", "readonly");
+    const store = tx.objectStore("generated_lists");
+    const req = store.get(id);
+
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
 /* ---------- ITEM MASTER ---------- */
 
 export async function saveItem(item) {

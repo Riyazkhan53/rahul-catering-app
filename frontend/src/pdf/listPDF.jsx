@@ -87,10 +87,10 @@ const styles = StyleSheet.create({
     },
 });
 
-export default function ListPDF({ invoice }) {
-    const mid = Math.ceil(invoice.items.length / 2);
-const leftItems = invoice.items.slice(0, mid);
-const rightItems = invoice.items.slice(mid);
+export default function ListPDF({ items }) {
+    const mid = Math.ceil(items.items.length / 2);
+const leftItems = items.items.slice(0, mid);
+const rightItems = items.items.slice(mid);
     return (
         <Document>
   <Page size="LEGAL" style={styles.page}>
@@ -119,10 +119,6 @@ const rightItems = invoice.items.slice(mid);
             <Text style={styles.cellQty}>{item.qty}</Text>
           </View>
         ))}
-        <View style={styles.row}>
-            <Text style={styles.cellItem}>Salt</Text>
-            <Text style={styles.cellQty}>30kg</Text>
-          </View>
       </View>
 
       {/* RIGHT TABLE */}
@@ -138,10 +134,6 @@ const rightItems = invoice.items.slice(mid);
             <Text style={styles.cellQty}>{item.qty}</Text>
           </View>
         ))}
-        <View style={styles.row}>
-            <Text style={styles.cellItem}>Sugar</Text>
-            <Text style={styles.cellQty}>20kg</Text>
-          </View>
       </View>
 
     </View>

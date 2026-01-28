@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import { FileText, Eye, Pencil, Printer } from "lucide-react";
-import { getAllLists } from "../../db/indexedDB";
+import { getAllLists, getListById } from "../../db/indexedDB";
 import AnimatedPage from "../AnimatedPage";
+import ListPreviewModal from "./ListPreviewModal";
+import { pdf } from "@react-pdf/renderer";
+import ListPDF from "../../pdf/listPDF";
+
 
 export default function CreatedItemLists() {
   const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [previewList, setPreviewList] = useState(null);
 
   useEffect(() => {
     async function loadLists() {
@@ -74,9 +79,27 @@ export default function CreatedItemLists() {
 
                     <td className="py-3 px-2">
                       <div className="flex justify-center gap-4">
-                        <DisabledAction icon={Eye} />
+                        {/* <DisabledAction icon={Eye} /> */}
+                        <ActiveAction
+                          icon={Eye}
+                          onClick={async () => {
+                            const data = await getListById(list.id);
+                            setPreviewList(data);
+                          }}
+                        />
                         <DisabledAction icon={Pencil} />
-                        <DisabledAction icon={Printer} />
+                        {/* <DisabledAction icon={Printer} /> */}
+                        <ActiveAction
+                          icon={Printer}
+                          onClick={async () => {
+                            const data = await getListById(list.id);
+                            const blob = await pdf(<ListPDF items={data} />).toBlob();
+                            const url = URL.createObjectURL(blob);
+
+                            const win = window.open(url);
+                            win.onload = () => win.print();
+                          }}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -86,6 +109,12 @@ export default function CreatedItemLists() {
           </div>
         )}
       </div>
+      {previewList && (
+        <ListPreviewModal
+          list={previewList}
+          onClose={() => setPreviewList(null)}
+        />
+      )}
     </AnimatedPage>
   );
 }
@@ -106,5 +135,24 @@ function DisabledAction({ icon: Icon }) {
         Under Development
       </span>
     </div>
+  );
+}
+
+/* ✅ Active action button */
+function ActiveAction({ icon: Icon, onClick, title }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className="
+        p-1 rounded-md
+        text-gray-600 dark:text-gray-300
+        hover:text-orange-500
+        hover:bg-orange-100 dark:hover:bg-orange-400/20
+        transition
+      "
+    >
+      <Icon className="w-4 h-4" />
+    </button>
   );
 }
