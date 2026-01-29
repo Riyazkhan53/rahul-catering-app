@@ -5,6 +5,8 @@ import AnimatedPage from "../AnimatedPage";
 import ListPreviewModal from "./ListPreviewModal";
 import { pdf } from "@react-pdf/renderer";
 import ListPDF from "../../pdf/listPDF";
+import { handleListPDF } from "../../utils/pdfActions";
+import { isDesktop } from "../../utils/device";
 
 
 export default function CreatedItemLists() {
@@ -91,13 +93,10 @@ export default function CreatedItemLists() {
                         {/* <DisabledAction icon={Printer} /> */}
                         <ActiveAction
                           icon={Printer}
+                          title={isDesktop() ? "Print" : "Download PDF"}
                           onClick={async () => {
                             const data = await getListById(list.id);
-                            const blob = await pdf(<ListPDF items={data} />).toBlob();
-                            const url = URL.createObjectURL(blob);
-
-                            const win = window.open(url);
-                            win.onload = () => win.print();
+                            await handleListPDF(data);
                           }}
                         />
                       </div>
