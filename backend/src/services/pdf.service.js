@@ -1,11 +1,14 @@
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
 import path from "path";
 import fs from "fs";
 
 export async function generateListPDF(list) {
+  console.log("Using Chrome at:", process.env.CHROME_PATH);
   const browser = await puppeteer.launch({
-    headless: "new",
-    args: ["--no-sandbox", "--disable-setuid-sandbox","--disable-dev-shm-usage"],
+    executablePath: process.env.CHROME_PATH || 
+      "/opt/render/.cache/puppeteer/chrome/linux-144.0.7559.96/chrome-linux64/chrome",
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    headless: true,
   });
 
   const page = await browser.newPage();
