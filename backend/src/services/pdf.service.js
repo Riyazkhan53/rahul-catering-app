@@ -1,10 +1,7 @@
-import puppeteer from "puppeteer";
-import puppeteerCore from "puppeteer-core";
+import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium";
 import fs from "fs";
 import path from "path";
-
-const isProd = process.env.NODE_ENV === "production";
 
 export async function generateListPDF(list) {
   console.log("🖨️ PDF generation started");
@@ -25,15 +22,12 @@ export async function generateListPDF(list) {
     JSON.stringify(list)
   );
 
-  const browser = isProd
-    ? await puppeteerCore.launch({
-        executablePath: process.env.CHROME_PATH,
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        headless: true,
-      })
-    : await puppeteer.launch({
-        headless: true,
-      });
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless,
+    defaultViewport: chromium.defaultViewport,
+  });
 
   try {
     const page = await browser.newPage();
