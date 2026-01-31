@@ -3,18 +3,16 @@ import { FileText, Eye, Pencil, Printer } from "lucide-react";
 import { getAllLists, getListById } from "../../db/indexedDB";
 import AnimatedPage from "../AnimatedPage";
 import ListPreviewModal from "./ListPreviewModal";
-import { pdf } from "@react-pdf/renderer";
-import ListPDF from "../../pdf/listPDF";
-import { handleListPDF } from "../../utils/pdfActions";
-import { isDesktop } from "../../utils/device";
-import { printService } from "../../api/service";
-import { openOrDownloadPDF } from "../../utils/fileDownload";
-
+import ListPrintView from "../../print/listPrintView";
+import { useNavigate } from "react-router-dom";
 
 export default function CreatedItemLists() {
   const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [previewList, setPreviewList] = useState(null);
+  const [printList, setPrintList] = useState(null);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     async function loadLists() {
@@ -22,16 +20,27 @@ export default function CreatedItemLists() {
       setLists(data || []);
       setLoading(false);
     }
-
     loadLists();
   }, []);
 
+  /* 🔑 PRINT TIMING FIX */
+ useEffect(() => {
+  if (!printList) return;
+
+  const timer = setTimeout(() => {
+    window.print();
+  }, 500); // 👈 allow DOM + images to load
+
+  window.onafterprint = () => {
+    setPrintList(null);
+    window.onafterprint = null;
+  };
+
+  return () => clearTimeout(timer);
+}, [printList]);
+
   if (loading) {
-    return (
-      <div className="text-center py-10 opacity-70">
-        Loading lists...
-      </div>
-    );
+    return <div className="text-center py-10 opacity-70">Loading lists...</div>;
   }
 
   return (
@@ -42,145 +51,70 @@ export default function CreatedItemLists() {
           Created Item Lists
         </h2>
 
-        {lists.length === 0 ? (
-          <div className="text-center py-16 opacity-70">
-            <p className="text-lg font-semibold">
-              No lists created yet
-            </p>
-            <p className="text-sm text-gray-400 mt-1">
-              Generated item lists will appear here
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="border-b text-left opacity-80">
-                  <th className="py-3 px-2">List ID</th>
-                  <th className="py-3 px-2">List Name</th>
-                  <th className="py-3 px-2">Date</th>
-                  <th className="py-3 px-2 text-center">Actions</th>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b">
+                <th>List ID</th>
+                <th>List Name</th>
+                <th>Date</th>
+                <th className="text-center">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {lists.map((list) => (
+                <tr key={list.id} className="border-b">
+                  <td>{list.id}</td>
+                  <td>{list.name}</td>
+                  <td>{new Date(list.date).toDateString()}</td>
+
+                  <td className="text-center">
+                    <div className="flex justify-center gap-4">
+
+                      {/* PREVIEW */}
+                      <button
+                        onClick={async () => {
+                          const data = await getListById(list.id);
+                          setPreviewList(data);
+                        }}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+
+                      {/* EDIT (disabled) */}
+                      <button disabled>
+                        <Pencil className="w-4 h-4 opacity-50" />
+                      </button>
+
+                      {/* PRINT (FIXED) */}
+                      <button
+    onClick={() => {
+      navigate(`/print/list/${list.id}`);
+    }}
+  >
+    <Printer className="w-4 h-4" />
+  </button>
+
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-
-              <tbody>
-                {lists.map((list) => (
-                  <tr
-                    key={list.id}
-                    className="border-b hover:bg-orange-50 dark:hover:bg-white/5 transition"
-                  >
-                    <td className="py-3 px-2 font-medium">
-                      {list.id}
-                    </td>
-
-                    <td className="py-3 px-2">
-                      {list.name}
-                    </td>
-
-                    <td className="py-3 px-2">
-                      {new Date(list.date).toDateString()}
-                    </td>
-
-                    <td className="py-3 px-2">
-                      <div className="flex justify-center gap-4">
-                        {/* <DisabledAction icon={Eye} /> */}
-                        <ActiveAction
-                          icon={Eye}
-                          onClick={async () => {
-                            const data = await getListById(list.id);
-                            setPreviewList(data);
-                          }}
-                        />
-                        <DisabledAction icon={Pencil} />
-                        {/* <DisabledAction icon={Printer} /> */}
-                        <ActiveAction
-  icon={Printer}
-  title={isDesktop() ? "Open PDF" : "Download PDF"}
-  onClick={async () => {
-    try {
-      const data = await getListById(list.id);
-
-      // 1️⃣ Call backend print API
-      const blob = await printService.printList(data);
-
-      // 2️⃣ Create browser URL
-      const url = URL.createObjectURL(blob);
-
-      // 3️⃣ Desktop vs Mobile handling
-      if (isDesktop()) {
-        // Desktop → open in new tab
-        window.open(url, "_blank");
-      } else {
-        // Mobile / Android / iOS → download
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${data.id}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }
-
-      // 4️⃣ Cleanup
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to open PDF");
-    }
-  }}
-/>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      {/* PREVIEW MODAL */}
       {previewList && (
         <ListPreviewModal
           list={previewList}
           onClose={() => setPreviewList(null)}
         />
       )}
+
+      {/* PRINT VIEW (DOM ONLY) */}
+      {printList && <ListPrintView list={printList} />}
     </AnimatedPage>
-  );
-}
-
-/* 🔒 Disabled action button */
-function DisabledAction({ icon: Icon }) {
-  return (
-    <div className="relative group cursor-not-allowed opacity-50">
-      <Icon className="w-4 h-4" />
-
-      {/* Tooltip */}
-      <span
-        className="absolute -top-8 left-1/2 -translate-x-1/2
-        whitespace-nowrap text-xs px-2 py-1 rounded
-        bg-black text-white opacity-0
-        group-hover:opacity-100 transition"
-      >
-        Under Development
-      </span>
-    </div>
-  );
-}
-
-/* ✅ Active action button */
-function ActiveAction({ icon: Icon, onClick, title }) {
-  return (
-    <button
-      onClick={onClick}
-      title={title}
-      className="
-        p-1 rounded-md
-        text-gray-600 dark:text-gray-300
-        hover:text-orange-500
-        hover:bg-orange-100 dark:hover:bg-orange-400/20
-        transition
-      "
-    >
-      <Icon className="w-4 h-4" />
-    </button>
   );
 }

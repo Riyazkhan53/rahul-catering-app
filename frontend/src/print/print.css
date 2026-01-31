@@ -1,59 +1,77 @@
-/* Only for printing */
+/* Hide buttons during print */
 @media print {
-  body {
-    background: white !important;
+  .no-print {
+    display: none !important;
   }
+}
+
+/* Page setup */
+@page {
+  margin: 10mm;
 }
 
 .print-page {
   font-family: "Noto Sans Tamil", Arial, sans-serif;
-  padding: 16px;
-  width: 100%;
+  font-size: 12px;
+  padding: 12px;
+  position: relative;
 }
 
+/* HEADER */
 .print-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  border-bottom: 2px solid #adc455;
+  margin-bottom: 8px;
 }
 
-.print-logo {
+.print-header-img {
+  width: 100%;
   height: 60px;
+  object-fit: contain;
 }
 
-.print-divider {
-  border: none;
-  border-top: 3px solid #adc455;
-  margin: 8px 0 12px;
+/* WATERMARK */
+.print-watermark {
+  position: absolute;
+  top: 40%;
+  left: 25%;
+  width: 300px;
+  opacity: 0.2;
 }
 
-.print-tables {
+/* SPLIT */
+.print-split {
   display: flex;
-  gap: 16px;
+  gap: 12px;
 }
 
+/* TABLE */
 .print-table {
   width: 100%;
   border-collapse: collapse;
-  border: 1px solid #ccc;
-}
-
-.print-table th,
-.print-table td {
-  border-bottom: 1px solid #ddd;
-  padding: 6px 8px;
-  font-size: 13px;
 }
 
 .print-table th {
-  background: #f4f4f4;
+  background: #f3f4f6;
+  border-bottom: 1px solid #ccc;
+  padding: 6px;
   text-align: left;
 }
 
+.print-table td {
+  border-bottom: 1px solid #eee;
+  padding: 6px;
+}
+
+.qty {
+  text-align: right;
+}
+
+/* TAMIL */
 .ta {
   font-family: "Noto Sans Tamil";
 }
 
+/* FOOTER */
 .print-footer {
   margin-top: 24px;
   text-align: center;

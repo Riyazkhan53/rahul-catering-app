@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import ListPrintRoute from "./print/listPrintRoute";
+
 import { apiRequest } from "./api/api";
 import AppLayout from "./Layouts/AppLayout";
-import ThemeToggle from "./Components/ThemeToggle";
 import CateringLoader from "./utils/welcomeScreen";
 import { syncPendingItems, pullItemsFromServer } from "./sync/itemSync";
 
@@ -16,15 +19,11 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [isDark, setIsDark] = useState(getInitialTheme);
 
-  // 🌗 GLOBAL THEME EFFECT
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
     localStorage.setItem("theme", isDark ? "dark" : "light");
   }, [isDark]);
 
-  const toggleTheme = () => setIsDark((prev) => !prev);
-
-  // 🔐 AUTH CHECK
   useEffect(() => {
     async function checkAuth() {
       const token = localStorage.getItem("token");
@@ -34,12 +33,8 @@ function App() {
       }
 
       try {
-        const data = await apiRequest("/api/auth/me", {
-          method: "GET",
-          token,
-        });
+        const data = await apiRequest("/api/auth/me");
         setUser(data.user);
-        localStorage.setItem("user", JSON.stringify(data.user));
       } catch {
         localStorage.clear();
         setUser(null);
@@ -50,28 +45,7 @@ function App() {
     checkAuth();
   }, []);
 
-  
-
-//   useEffect(() => {
-//   // Initial pull on app start
-//   if (navigator.onLine) {
-//     pullItemsFromServer();
-//   }
-
-//   // Sync when internet comes back
-//   const handleOnline = () => {
-//     syncPendingItems();
-//     pullItemsFromServer();
-//   };
-
-//   window.addEventListener("online", handleOnline);
-
-//   return () => {
-//     window.removeEventListener("online", handleOnline);
-//   };
-// }, []);
-
-const handleOnline = () => {
+  const handleOnline = () => {
     syncPendingItems();
     pullItemsFromServer();
   };
@@ -85,31 +59,45 @@ const handleOnline = () => {
   if (loading) return <CateringLoader />;
 
   return (
-    <AppLayout isDark={isDark}>
-      {/* <ThemeToggle isDark={isDark} toggleTheme={toggleTheme} /> */}
+    <BrowserRouter>
+      <AppLayout isDark={isDark}>
+        {!user ? (
+          showLogin ? (
+            <Login onLoginSuccess={setUser} handleOnline={handleOnline} />
+          ) : (
+            <div className="app-container">
+              <div className="app-card">
+                <div className="logo-circle">🍽️</div>
+                <h1 className="app-title">Rahul Catering & Events</h1>
+                <p className="app-tagline">
+                  Delicious moments for every occasion
+                </p>
+                <button
+                  className="primary-btn"
+                  onClick={() => setShowLogin(true)}
+                >
+                  Enter App →
+                </button>
+              </div>
+            </div>
+          )
+        ) : (
+          <Routes>
+            {/* Existing dashboard */}
+            <Route
+              path="/*"
+              element={<Dashboard user={user} onLogout={handleLogout} />}
+            />
 
-      {user ? (
-        <Dashboard user={user} onLogout={handleLogout} />
-      ) : showLogin ? (
-        <Login onLoginSuccess={setUser} handleOnline={handleOnline} />
-      ) : (
-        <div className="app-container">
-          <div className="app-card">
-            <div className="logo-circle">🍽️</div>
-            <h1 className="app-title">Rahul Catering & Events</h1>
-            <p className="app-tagline">
-              Delicious moments for every occasion
-            </p>
-            <button
-              className="primary-btn"
-              onClick={() => setShowLogin(true)}
-            >
-              Enter App →
-            </button>
-          </div>
-        </div>
-      )}
-    </AppLayout>
+            {/* PRINT PREVIEW ROUTE */}
+            <Route
+              path="/print/list/:id"
+              element={<ListPrintRoute />}
+            />
+          </Routes>
+        )}
+      </AppLayout>
+    </BrowserRouter>
   );
 }
 
