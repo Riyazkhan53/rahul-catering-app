@@ -16,6 +16,11 @@ export async function generateListPDF(list) {
     "utf8"
   );
 
+  const templatePath = path.join(process.cwd(), "src/templates/list.html");
+
+  console.log("📄 TEMPLATE PATH:", templatePath);
+console.log("📁 FILE EXISTS:", fs.existsSync(templatePath));
+
   // Inject data
   const finalHTML = html.replace(
     "__DATA__",
