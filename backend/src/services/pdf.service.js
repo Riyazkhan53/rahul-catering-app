@@ -1,6 +1,7 @@
-import puppeteer from "puppeteer";
-import path from "path";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import fs from "fs";
+import path from "path";
 
 export async function generateListPDF(list) {
   console.log("🖨️ PDF generation started");
@@ -11,53 +12,37 @@ export async function generateListPDF(list) {
   );
 
   if (!fs.existsSync(templatePath)) {
-    throw new Error(`Template not found: ${templatePath}`);
+    throw new Error("Template not found");
   }
 
-  const htmlTemplate = fs.readFileSync(templatePath, "utf8");
+  const html = fs.readFileSync(templatePath, "utf8");
 
-  const finalHTML = htmlTemplate.replace(
+  const finalHTML = html.replace(
     "__DATA__",
     JSON.stringify(list)
   );
 
   const browser = await puppeteer.launch({
-    headless: "new",
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-gpu",
-      "--single-process",
-    ],
+    args: chromium.args,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless,
+    defaultViewport: chromium.defaultViewport,
   });
 
   try {
     const page = await browser.newPage();
 
-    await page.setViewport({
-      width: 1240,
-      height: 1754, // A4
-    });
-
     await page.setContent(finalHTML, {
       waitUntil: "networkidle0",
-      timeout: 60000,
     });
 
-    const pdfBuffer = await page.pdf({
+    const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: {
-        top: "12mm",
-        bottom: "12mm",
-        left: "10mm",
-        right: "10mm",
-      },
     });
 
-    console.log("✅ PDF generated successfully");
-    return pdfBuffer;
+    console.log("✅ PDF generated");
+    return pdf;
   } finally {
     await browser.close();
   }

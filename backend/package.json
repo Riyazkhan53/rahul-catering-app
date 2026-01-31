@@ -8,6 +8,7 @@
     "start": "node src/server.js"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^143.0.4",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -16,7 +17,7 @@
     "jsreport-chrome-pdf": "^1.10.0",
     "jsreport-handlebars": "^2.1.0",
     "mongoose": "^9.1.2",
-    "puppeteer": "^24.36.1"
+    "puppeteer-core": "^24.36.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
