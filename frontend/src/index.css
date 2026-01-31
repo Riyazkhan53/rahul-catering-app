@@ -329,3 +329,28 @@ body {
 .glass-button:active {
   transform: translateY(0);
 }
+
+
+/* Print Styles */
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .print-only,
+  .print-only * {
+    visibility: visible;
+  }
+
+  .print-only {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+}

@@ -1,0 +1,63 @@
+/* Only for printing */
+@media print {
+  body {
+    background: white !important;
+  }
+}
+
+.print-page {
+  font-family: "Noto Sans Tamil", Arial, sans-serif;
+  padding: 16px;
+  width: 100%;
+}
+
+.print-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.print-logo {
+  height: 60px;
+}
+
+.print-divider {
+  border: none;
+  border-top: 3px solid #adc455;
+  margin: 8px 0 12px;
+}
+
+.print-tables {
+  display: flex;
+  gap: 16px;
+}
+
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #ccc;
+}
+
+.print-table th,
+.print-table td {
+  border-bottom: 1px solid #ddd;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.print-table th {
+  background: #f4f4f4;
+  text-align: left;
+}
+
+.ta {
+  font-family: "Noto Sans Tamil";
+}
+
+.print-footer {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 11px;
+  border-top: 1px solid #ccc;
+  padding-top: 6px;
+}

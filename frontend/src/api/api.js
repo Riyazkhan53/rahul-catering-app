@@ -1,37 +1,45 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
 export async function apiRequest(path, options = {}) {
-  let res;
   const token = localStorage.getItem("token");
-  if (token) {
-    options.token = token;
-  }
+
+  const {
+    method = "GET",
+    body,
+    responseType = "json",
+  } = options;
+
+  let res;
 
   try {
     res = await fetch(`${API_URL}${path}`, {
-      method: options.method || "GET",
+      method,
       headers: {
-        "Content-Type": "application/json",
-        ...(options.token && {
-          Authorization: `Bearer ${options.token}`,
-        }),
+        ...(body ? { "Content-Type": "application/json" } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: options.body ? JSON.stringify(options.body) : undefined,
+      body: body ? JSON.stringify(body) : undefined,
       cache: "no-store",
     });
   } catch {
     throw new Error("Network error");
   }
 
-  const contentType = res.headers.get("content-type");
-  const data =
-    contentType && contentType.includes("application/json")
-      ? await res.json()
-      : null;
-
   if (!res.ok) {
-    throw new Error(data?.message || "Server error");
+    // Try to extract error message safely
+    let errorMessage = "Server error";
+    try {
+      const err = await res.json();
+      errorMessage = err?.message || errorMessage;
+    } catch {}
+    throw new Error(errorMessage);
   }
 
-  return data;
+  // ✅ THIS IS THE KEY FIX
+  if (responseType === "blob") {
+    return await res.blob();
+  }
+
+  // Default JSON
+  return await res.json();
 }

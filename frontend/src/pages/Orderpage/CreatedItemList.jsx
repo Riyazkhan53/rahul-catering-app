@@ -7,6 +7,8 @@ import { pdf } from "@react-pdf/renderer";
 import ListPDF from "../../pdf/listPDF";
 import { handleListPDF } from "../../utils/pdfActions";
 import { isDesktop } from "../../utils/device";
+import { printService } from "../../api/service";
+import { openOrDownloadPDF } from "../../utils/fileDownload";
 
 
 export default function CreatedItemLists() {
@@ -92,13 +94,40 @@ export default function CreatedItemLists() {
                         <DisabledAction icon={Pencil} />
                         {/* <DisabledAction icon={Printer} /> */}
                         <ActiveAction
-                          icon={Printer}
-                          title={isDesktop() ? "Print" : "Download PDF"}
-                          onClick={async () => {
-                            const data = await getListById(list.id);
-                            await handleListPDF(data);
-                          }}
-                        />
+  icon={Printer}
+  title={isDesktop() ? "Open PDF" : "Download PDF"}
+  onClick={async () => {
+    try {
+      const data = await getListById(list.id);
+
+      // 1️⃣ Call backend print API
+      const blob = await printService.printList(data);
+
+      // 2️⃣ Create browser URL
+      const url = URL.createObjectURL(blob);
+
+      // 3️⃣ Desktop vs Mobile handling
+      if (isDesktop()) {
+        // Desktop → open in new tab
+        window.open(url, "_blank");
+      } else {
+        // Mobile / Android / iOS → download
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${data.id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+
+      // 4️⃣ Cleanup
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to open PDF");
+    }
+  }}
+/>
                       </div>
                     </td>
                   </tr>

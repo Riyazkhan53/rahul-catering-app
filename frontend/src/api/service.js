@@ -75,3 +75,18 @@ export const picklistService = {
     });
   },
 };
+
+
+/* -------------------- */
+/* PRINT SERVICES       */
+/* -------------------- */
+
+export const printService = {
+  printList(list) {
+    return apiRequest("/api/print/list", {
+      method: "POST",
+      body: list,
+      responseType: "blob",
+    });
+  },
+};

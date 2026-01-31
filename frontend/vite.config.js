@@ -5,6 +5,9 @@ const isElectron = process.env.ELECTRON === 'true'
 
 export default defineConfig({
   base: './',
+  optimizeDeps: {
+    exclude: ["demotion/is-prop-valid"],
+  },
   plugins: [
     react(),
     VitePWA({
