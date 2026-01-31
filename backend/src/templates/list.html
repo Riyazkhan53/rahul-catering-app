@@ -2,16 +2,24 @@
 <html lang="ta">
 <head>
   <meta charset="UTF-8" />
+
   <style>
     @font-face {
-      font-family: 'Tamil';
-  src: url('https://fonts.gstatic.com/s/notosanstamil/v29/LhW0MV7ZMfIPdMxeBjBvFNQ.ttf');
+      font-family: "TamilPrint";
+      src: url("/fonts/NotoSansTamil-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
     }
 
     body {
-      font-family: Arial, 'Tamil', sans-serif;
+      font-family: Arial, sans-serif;
       font-size: 14px;
       margin: 24px;
+    }
+
+    .tamil {
+      font-family: "TamilPrint", sans-serif;
+      font-weight: 400;
     }
 
     .header {
@@ -46,21 +54,27 @@
   <table id="table"></table>
 
   <script>
-    const data = __DATA__;
-    const table = document.getElementById("table");
+  const data = __DATA__;
+  const table = document.getElementById("table");
 
-    table.innerHTML = `
+  table.innerHTML = `
+    <tr>
+      <th>Items</th>
+      <th>Qty</th>
+    </tr>
+    ${data.items.map(i => `
       <tr>
-        <th>Items</th>
-        <th>Qty</th>
+        <td>
+          <span>${i.name}</span>
+          ${i.tamilName ? `
+            <span> / </span>
+            <span class="tamil" lang="ta">${i.tamilName}</span>
+          ` : ""}
+        </td>
+        <td>${i.quantity} ${i.unit}</td>
       </tr>
-      ${data.items.map(i => `
-        <tr>
-          <td>${i.name} / ${i.tamilName || ""}</td>
-          <td>${i.quantity} ${i.unit}</td>
-        </tr>
-      `).join("")}
-    `;
-  </script>
+    `).join("")}
+  `;
+</script>
 </body>
 </html>

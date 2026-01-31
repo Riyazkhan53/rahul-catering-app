@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ListPrintView from "./listPrintView";
 import { getListById } from "../db/indexedDB";
+import { printService } from "../api/service";
 
-export default function ListPrintRoute() {debugger;
+export default function ListPrintRoute() {
   const { id } = useParams();
   const [list, setList] = useState(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -15,22 +17,36 @@ export default function ListPrintRoute() {debugger;
     load();
   }, [id]);
 
-  if (!list?.id) return <p style={{ padding: 20 }}>Loading preview…</p>;
+  const downloadPDF = async () => {
+    try {
+      setDownloading(true);
+      const blob = await printService.printList(list);
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${list.id}.pdf`;
+      a.click();
+
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } catch (e) {
+      alert("Download failed");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  if (!list) return <div className="p-6">Loading preview…</div>;
 
   return (
-    <div style={{ background: "white", minHeight: "100vh" }}>
-      {/* ACTION BAR (hidden during print) */}
-      <div className="print-actions no-print">
-        <button onClick={() => window.print()}>
-          🖨 Print
-        </button>
-        <button onClick={() => window.history.back()}>
-          ← Back
+    <div className="print-route">
+      <div className="print-actions">
+        <button onClick={downloadPDF} disabled={downloading}>
+          ⬇ Download PDF
         </button>
       </div>
 
-      {/* PRINT CONTENT */}
-      {list?.id && <ListPrintView list={list} />}
+      <ListPrintView list={list} />
     </div>
   );
 }

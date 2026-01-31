@@ -1,47 +1,65 @@
-/* Hide buttons during print */
-@media print {
-  .no-print {
-    display: none !important;
-  }
-}
-
-/* Page setup */
 @page {
-  margin: 10mm;
+  size: legal;
+  margin: 20mm;
+}
+.print-route {
+  background: #fff;
+  min-height: 100vh;
 }
 
+.print-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 24px;
+}
+
+.print-actions button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #f97316;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* PAGE */
 .print-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
   font-family: "Noto Sans Tamil", Arial, sans-serif;
-  font-size: 12px;
-  padding: 12px;
-  position: relative;
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* HEADER */
 .print-header {
-  border-bottom: 2px solid #adc455;
-  margin-bottom: 8px;
+  border-bottom: 3px solid #adc455;
+  padding-bottom: 10px;
+  margin-bottom: 16px;
 }
 
 .print-header-img {
   width: 100%;
-  height: 60px;
+  height: 70px;
   object-fit: contain;
 }
 
-/* WATERMARK */
-.print-watermark {
-  position: absolute;
-  top: 40%;
-  left: 25%;
-  width: 300px;
-  opacity: 0.2;
+/* BODY */
+.print-body {
+  flex: 1; /* 👈 pushes footer to bottom */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
-/* SPLIT */
-.print-split {
-  display: flex;
-  gap: 12px;
+.print-column {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 /* TABLE */
@@ -52,18 +70,19 @@
 
 .print-table th {
   background: #f3f4f6;
-  border-bottom: 1px solid #ccc;
-  padding: 6px;
+  padding: 8px;
   text-align: left;
+  font-weight: 700;
 }
 
 .print-table td {
-  border-bottom: 1px solid #eee;
-  padding: 6px;
+  padding: 8px;
+  border-top: 1px solid #eee;
 }
 
-.qty {
+.print-table .qty {
   text-align: right;
+  white-space: nowrap;
 }
 
 /* TAMIL */
@@ -73,9 +92,27 @@
 
 /* FOOTER */
 .print-footer {
-  margin-top: 24px;
-  text-align: center;
-  font-size: 11px;
   border-top: 1px solid #ccc;
-  padding-top: 6px;
+  padding-top: 10px;
+  text-align: center;
+  font-size: 12px;
+  color: #444;
+}
+
+.print-watermark {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 320px;
+  opacity: 0.12;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.print-header,
+.print-body,
+.print-footer {
+  position: relative;
+  z-index: 1;
 }

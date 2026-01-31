@@ -1,15 +1,20 @@
+// backend/src/controllers/print.controller.js
 import { generateListPDF } from "../services/pdf.service.js";
 
-export async function printList(req, res) {
+export function printList(req, res) {
   try {
-    const pdfBuffer = await generateListPDF(req.body);
+    const list = req.body;
 
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": "inline; filename=list.pdf",
-    });
+    const doc = generateListPDF(list);
 
-    res.send(pdfBuffer);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${list.id}.pdf`
+    );
+
+    doc.pipe(res);
+    doc.end();
   } catch (err) {
     console.error("PDF ERROR:", err);
     res.status(500).json({ message: "PDF generation failed" });

@@ -1,49 +1,39 @@
 import "./print.css";
 
-export default function ListPrintView({ list={items:[]} }) {
+export default function ListPrintView({ list }) {
   const ROWS_PER_COLUMN = 18;
-
-  const leftItems = list.items.slice(0, ROWS_PER_COLUMN);
-  const rightItems =
-    list.items.length > ROWS_PER_COLUMN
-      ? list.items.slice(ROWS_PER_COLUMN)
-      : [];
+  const left = list.items.slice(0, ROWS_PER_COLUMN);
+  const right = list.items.slice(ROWS_PER_COLUMN);
 
   return (
-    <div className="print-root">
-      <div className="print-page">
+    <div className="print-page">
 
-        {/* WATERMARK */}
-        <img src="/roundlogo3.png" className="print-watermark" />
+      <img
+    src="/roundlogo3.png"
+    className="print-watermark"
+    alt="watermark"
+  />
 
-        {/* HEADER */}
-        <div className="print-header">
-          <img src="/headerLogo.png" className="print-header-img" />
+      {/* HEADER */}
+      <div className="print-header">
+        <img src="/headerLogo.png" className="print-header-img" />
+      </div>
+
+      {/* TABLES */}
+      <div className="print-body">
+        <div className="print-column">
+          <Table items={left} />
         </div>
 
-        {/* TABLES */}
-        <div className="print-split">
-
-          {/* LEFT TABLE */}
-          <div className="print-table-box">
-            <Table items={leftItems} />
-          </div>
-
-          {/* RIGHT TABLE */}
-          {rightItems.length > 0 && (
-            <div className="print-table-box">
-              <Table items={rightItems} />
-            </div>
-          )}
-
+        <div className="print-column">
+          {right.length > 0 && <Table items={right} />}
         </div>
+      </div>
 
-        {/* FOOTER */}
-        <div className="print-footer">
-          <p>📍 Coonoor, The Nilgiris – 643105 | India</p>
-          <p>Instagram: @rahul_catering_events</p>
-        </div>
-
+      {/* FOOTER */}
+      <div className="print-footer">
+        <p>📍 Coonoor, The Nilgiris – 643105 | India</p>
+        <p>Instagram: @rahul_catering_events</p>
       </div>
     </div>
   );
@@ -59,17 +49,13 @@ function Table({ items }) {
         </tr>
       </thead>
       <tbody>
-        {items.map((item, i) => (
-          <tr key={i}>
+        {items.map((i, idx) => (
+          <tr key={idx}>
             <td>
-              {item.name}
-              {item.tamilName && (
-                <span className="ta"> / {item.tamilName}</span>
-              )}
+              {i.name}
+              {i.tamilName && <span className="ta"> / {i.tamilName}</span>}
             </td>
-            <td className="qty">
-              {item.quantity} {item.unit}
-            </td>
+            <td className="qty">{i.quantity} {i.unit}</td>
           </tr>
         ))}
       </tbody>
