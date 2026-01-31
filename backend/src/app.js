@@ -5,6 +5,7 @@ import userRoutes from "./routes/user.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import itemsRoutes from "./routes/item.routes.js";
 import picklistRoutes from "./routes/picklist.routes.js";
+import printRoutes from "./routes/print.routes.js";
 
 
 const app = express();
@@ -16,5 +17,6 @@ app.use("/api/users", userRoutes);
 app.use("/api", healthRoutes);
 app.use("/api/items", itemsRoutes);
 app.use("/api/picklist", picklistRoutes);
+app.use("/api/print", printRoutes);
 
 export default app;

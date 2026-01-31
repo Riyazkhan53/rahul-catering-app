@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    @font-face {
+      font-family: "Tamil";
+      src: url("./NotoSansTamil-Regular.ttf");
+    }
+
+    body {
+      font-family: Tamil, Arial;
+      font-size: 14px;
+      margin: 24px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      border-bottom: 2px solid #ADC455;
+      padding-bottom: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+
+    th {
+      background: #f3f4f6;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h2>Rahul Catering & Events</h2>
+  </div>
+
+  <table id="table"></table>
+
+  <script>
+    const data = __DATA__;
+    const table = document.getElementById("table");
+
+    table.innerHTML = `
+      <tr>
+        <th>Items</th>
+        <th>Qty</th>
+      </tr>
+      ${data.items.map(i => `
+        <tr>
+          <td>${i.name} / ${i.tamilName || ""}</td>
+          <td>${i.quantity} ${i.unit}</td>
+        </tr>
+      `).join("")}
+    `;
+  </script>
+</body>
+</html>

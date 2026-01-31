@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: "Noto Sans Tamil", Arial, sans-serif;
+      font-size: 13px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid #adc455;
+      margin-bottom: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 6px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    th {
+      background: #f3f4f6;
+      text-align: left;
+    }
+
+    .ta {
+      font-family: "Noto Sans Tamil";
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="{{logo}}" height="60" />
+  <div>
+    📞 9655264032<br/>
+    📱 8248403710
+  </div>
+</header>
+
+<table>
+  <thead>
+    <tr>
+      <th>Items</th>
+      <th>Qty</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each items}}
+    <tr>
+      <td>
+        {{name}}
+        {{#if tamilName}}
+          / <span class="ta">{{tamilName}}</span>
+        {{/if}}
+      </td>
+      <td>{{quantity}} {{unit}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+</body>
+</html>
