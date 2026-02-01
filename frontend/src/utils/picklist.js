@@ -1,15 +1,15 @@
 const itemsCategory = [
-    { value: "essentials", label: "Staples & Essentials" },
-    { value: "spices", label: "Spices & Condiments" },
-    { value: "grains", label: "Grains & Pulses" },
-    { value: "oil", label: "Oil & Fats" },
-    { value: "veg", label: "Vegetables" },
-    { value: "fruits", label: "Fruits" },
-    { value: "dry_fruits", label: "Dry Fruits" },
-    { value: "nonveg", label: "Meat & Poultry" },
-    { value: "dessert", label: "Dessert" },
-    { value: "diary", label: "Dairy Products" },
-    { value: "utensils", label: "Utensils" }
+    { value: "essentials", label: "Staples & Essentials",code: "ES" },
+    { value: "spices", label: "Spices & Condiments",code: "SP" },
+    { value: "grains", label: "Grains & Pulses",code: "GP" },
+    { value: "oil", label: "Oil & Fats",code: "OF" },
+    { value: "veg", label: "Vegetables",code: "VE" },
+    { value: "fruits", label: "Fruits",code: "FR" },
+    { value: "dry_fruits", label: "Dry Fruits",code: "DF" },
+    { value: "nonveg", label: "Meat & Poultry",code: "NV" },
+    { value: "dessert", label: "Dessert",code: "DE" },
+    { value: "diary", label: "Dairy Products",code: "DP" },
+    { value: "utensils", label: "Utensils",code: "UT" }
 ]
 
 

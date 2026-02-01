@@ -1,10 +1,16 @@
-const CATEGORY_CODE_MAP = {
-  essentials: "ES",
-  veg: "VG",
-  nonveg: "NV",
-  dessert: "DS",
-  service: "SV"
-};
+// const CATEGORY_CODE_MAP = {
+//   essentials: "ES",
+//   veg: "VG",
+//   nonveg: "NV",
+//   dessert: "DS",
+//   service: "SV"
+// };
+import { itemsCategory } from "./picklist";
+
+const CATEGORY_CODE_MAP = itemsCategory.reduce((acc, curr) => {
+  acc[curr.value] = curr.code;
+  return acc;
+}, {});
 
 export function generateNextItemCode(items, category) {
   const prefix = CATEGORY_CODE_MAP[category] || "OT";
