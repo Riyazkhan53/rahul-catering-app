@@ -4,6 +4,7 @@ const DB_VERSION = 3;
 const LIST_STORE = "generated_lists";
 const ITEM_STORE = "items_master";
 const AUTH_STORE = "auth_cache";
+const GENERATED_LIST_STORE = "generated_lists";
 
 export function openDB() {
   return new Promise((resolve, reject) => {
@@ -127,18 +128,22 @@ export async function getPendingGeneratedLists() {
 
 export async function saveGeneratedList(list, options = {}) {
   const db = await openDB();
+  const tx = db.transaction(GENERATED_LIST_STORE, "readwrite");
+  const store = tx.objectStore(GENERATED_LIST_STORE);
   const record = {
     ...list,
     syncStatus: options.fromServer ? "synced" : "pending",
     updatedAt: list.updatedAt || Date.now(),
   };
 
-  await db.generatedLists.put(record);
+  await store.put(record);
 }
 
 export async function updateGeneratedList(list) {
   const db = await openDB();
-  await db.generatedLists.put(list);
+  const tx = db.transaction(GENERATED_LIST_STORE, "readwrite");
+  const store = tx.objectStore(GENERATED_LIST_STORE);
+  await store.put(list);
 }
 
 export async function getAllGeneratedListsLocal() {
