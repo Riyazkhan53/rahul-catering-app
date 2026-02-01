@@ -11,3 +11,6 @@ const itemsCategory = [
     { value: "diary", label: "Dairy Products" },
     { value: "utensils", label: "Utensils" }
 ]
+
+
+export { itemsCategory };
