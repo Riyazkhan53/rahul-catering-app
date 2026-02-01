@@ -15,70 +15,95 @@ export function generateListPDF(list) {
   doc.registerFont("Tamil", fontTamil);
   doc.font("Tamil");
 
-  /* ---------- LAYOUT CONSTANTS ---------- */
-  const PAGE_WIDTH = 595;
-  const PAGE_HEIGHT = 1008;
+  /* ---------- PAGE CONSTANTS ---------- */
+  const PAGE_WIDTH = doc.page.width;
+  const PAGE_HEIGHT = doc.page.height;
+
+  const HEADER_Y = 30;
+  const HEADER_HEIGHT = 80;
+
+  const FOOTER_HEIGHT = 60;
+  const FOOTER_Y = PAGE_HEIGHT - FOOTER_HEIGHT - 20;
+
+  const START_Y = HEADER_Y + HEADER_HEIGHT + 20;
 
   const TABLE_WIDTH = 235;
-  const ROW_HEIGHT = 28;
-  const ROWS_PER_COLUMN = 10;
-  const ITEMS_PER_PAGE = ROWS_PER_COLUMN * 2;
-
   const LEFT_X = 40;
   const RIGHT_X = 320;
-  const START_Y = 120;
+
+  const ROW_PADDING = 6;
 
   /* ---------- PAGINATION ---------- */
-  const pages = chunkArray(list.items, ITEMS_PER_PAGE);
+  let index = 0;
 
-  pages.forEach((pageItems, pageIndex) => {
-    if (pageIndex > 0) doc.addPage();
+  while (index < list.items.length) {
+    if (index > 0) doc.addPage();
 
     drawHeader(doc, headerLogo);
     drawWatermark(doc, watermark);
+    drawFooter(doc, FOOTER_Y);
 
-    const leftItems = pageItems.slice(0, ROWS_PER_COLUMN);
-    const rightItems = pageItems.slice(ROWS_PER_COLUMN);
+    let leftY = START_Y;
+    let rightY = START_Y;
 
-    drawTable(doc, LEFT_X, START_Y, TABLE_WIDTH, leftItems);
-    if (rightItems.length) {
-      drawTable(doc, RIGHT_X, START_Y, TABLE_WIDTH, rightItems);
+    while (index < list.items.length) {
+      const item = list.items[index];
+
+      const column = leftY <= rightY ? "left" : "right";
+      const x = column === "left" ? LEFT_X : RIGHT_X;
+      let y = column === "left" ? leftY : rightY;
+
+      const textHeight = doc.heightOfString(
+        `${item.name} / ${item.tamilName || ""}`,
+        { width: TABLE_WIDTH - 70 }
+      );
+
+      const rowHeight = Math.max(28, textHeight + ROW_PADDING * 2);
+
+      if (y + rowHeight > FOOTER_Y - 10) break;
+
+      drawRow(doc, x, y, TABLE_WIDTH, rowHeight, item);
+
+      if (column === "left") leftY += rowHeight;
+      else rightY += rowHeight;
+
+      index++;
     }
-
-    drawFooter(doc);
-  });
+  }
 
   return doc;
 }
 
-/* ================= HELPERS ================= */
+/* ================= HEADER ================= */
 
 function drawHeader(doc, headerLogo) {
-  doc.image(headerLogo, 40, 30, { width: 220 });
+  const logoWidth = 260;
+  const x = (doc.page.width - logoWidth) / 2;
+
+  doc.image(headerLogo, x, 30, { width: logoWidth });
 
   doc
-    .fontSize(10)
-    .text("9655264032", 430, 35)
-    .text("8248403710", 430, 50);
-
-  doc
-    .moveTo(40, 90)
-    .lineTo(555, 90)
+    .moveTo(40, 100)
+    .lineTo(doc.page.width - 40, 100)
     .lineWidth(2)
     .strokeColor("#ADC455")
     .stroke();
 }
 
+/* ================= WATERMARK ================= */
+
 function drawWatermark(doc, watermark) {
-  doc.opacity(0.15);
-  doc.image(watermark, 170, 320, { width: 260 });
+  doc.opacity(0.12);
+  doc.image(watermark, (doc.page.width - 300) / 2, 320, { width: 300 });
   doc.opacity(1);
 }
 
-function drawFooter(doc) {
+/* ================= FOOTER ================= */
+
+function drawFooter(doc, y) {
   doc
-    .moveTo(40, 700)
-    .lineTo(555, 700)
+    .moveTo(40, y)
+    .lineTo(doc.page.width - 40, y)
     .lineWidth(1)
     .strokeColor("#ccc")
     .stroke();
@@ -88,68 +113,42 @@ function drawFooter(doc) {
     .text(
       "📍 Coonoor, The Nilgiris – 643105 | India",
       40,
-      715,
-      { align: "center", width: 515 }
+      y + 15,
+      { align: "center", width: doc.page.width - 80 }
     )
     .text(
-      "Instagram: @rahul_catering_events",
+      "Instagram: @rahul_catering_events | 📞 9655264032, 8248403710",
       40,
-      730,
-      { align: "center", width: 515 }
+      y + 30,
+      { align: "center", width: doc.page.width - 80 }
     );
 }
 
-function drawTable(doc, x, y, width, items) {
-  const tableHeight = items.length * 28 + 28;
+/* ================= ROW ================= */
 
+function drawRow(doc, x, y, width, height, item) {
   doc
-    .roundedRect(x, y, width, tableHeight, 10)
-    .strokeColor("#ccc")
+    .roundedRect(x, y, width, height, 8)
+    .strokeColor("#ddd")
     .lineWidth(1)
     .stroke();
 
-  doc.rect(x, y, width, 28).fill("#f4f4f4");
+  doc
+    .fontSize(11)
+    .fillColor("#000")
+    .text(
+      `${item.name} / ${item.tamilName || ""}`,
+      x + 10,
+      y + 6,
+      { width: width - 70 }
+    );
 
   doc
-    .fillColor("#000")
-    .fontSize(12)
-    .text("Items", x + 10, y + 8)
-    .text("Qty", x + width - 45, y + 8);
-
-  let currentY = y + 28;
-
-  items.forEach((item) => {
-    doc
-      .moveTo(x, currentY)
-      .lineTo(x + width, currentY)
-      .strokeColor("#eee")
-      .stroke();
-
-    doc
-      .fontSize(11)
-      .text(
-        `${item.name} / ${item.tamilName || ""}`,
-        x + 10,
-        currentY + 8,
-        { width: width - 70 }
-      );
-
-    doc
-      .text(
-        `${item.quantity} ${item.unit}`,
-        x + width - 55,
-        currentY + 8,
-        { width: 45, align: "right" }
-      );
-
-    currentY += 28;
-  });
-}
-
-function chunkArray(arr, size) {
-  const chunks = [];
-  for (let i = 0; i < arr.length; i += size) {
-    chunks.push(arr.slice(i, i + size));
-  }
-  return chunks;
+    .fontSize(11)
+    .text(
+      `${item.quantity} ${item.unit}`,
+      x + width - 55,
+      y + height / 2 - 6,
+      { width: 45, align: "right" }
+    );
 }
