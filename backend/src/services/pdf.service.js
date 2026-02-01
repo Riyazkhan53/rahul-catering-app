@@ -46,29 +46,35 @@ export function generateListPDF(list) {
     let leftY = START_Y;
     let rightY = START_Y;
 
-    while (index < list.items.length) {
-      const item = list.items[index];
+   let renderedAnyRow = false;
 
-      const column = leftY <= rightY ? "left" : "right";
-      const x = column === "left" ? LEFT_X : RIGHT_X;
-      let y = column === "left" ? leftY : rightY;
+while (index < list.items.length) {
+  const item = list.items[index];
 
-      const textHeight = doc.heightOfString(
-        `${item.name} / ${item.tamilName || ""}`,
-        { width: TABLE_WIDTH - 70 }
-      );
+  const column = leftY <= rightY ? "left" : "right";
+  const x = column === "left" ? LEFT_X : RIGHT_X;
+  const y = column === "left" ? leftY : rightY;
 
-      const rowHeight = Math.max(28, textHeight + ROW_PADDING * 2);
+  const textHeight = doc.heightOfString(
+    `${item.name} / ${item.tamilName || ""}`,
+    { width: TABLE_WIDTH - 70 }
+  );
 
-      if (y + rowHeight > FOOTER_Y - 10) break;
+  const rowHeight = Math.max(28, textHeight + ROW_PADDING * 2);
 
-      drawRow(doc, x, y, TABLE_WIDTH, rowHeight, item);
+  // 🔑 IMPORTANT FIX
+  if (renderedAnyRow && y + rowHeight > FOOTER_Y - 10) {
+    break;
+  }
 
-      if (column === "left") leftY += rowHeight;
-      else rightY += rowHeight;
+  drawRow(doc, x, y, TABLE_WIDTH, rowHeight, item);
 
-      index++;
-    }
+  if (column === "left") leftY += rowHeight;
+  else rightY += rowHeight;
+
+  renderedAnyRow = true;
+  index++;
+}
   }
 
   return doc;
