@@ -10,8 +10,7 @@ const ItemSchema = new mongoose.Schema(
 
     category: {
       type: String,
-      enum: ["essentials", "veg", "nonveg", "dessert", "service"],
-      required: true,
+      required: true, // 🔥 no enum here
     },
 
     description: String,
