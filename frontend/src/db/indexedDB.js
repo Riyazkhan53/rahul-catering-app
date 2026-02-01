@@ -118,6 +118,7 @@ export async function getListById(id) {
 }
 
 export async function getPendingGeneratedLists() {
+  const db = await openDB();
   return db.generatedLists
     .where("syncStatus")
     .equals("pending")
@@ -125,6 +126,7 @@ export async function getPendingGeneratedLists() {
 }
 
 export async function saveGeneratedList(list, options = {}) {
+  const db = await openDB();
   const record = {
     ...list,
     syncStatus: options.fromServer ? "synced" : "pending",
@@ -135,10 +137,12 @@ export async function saveGeneratedList(list, options = {}) {
 }
 
 export async function updateGeneratedList(list) {
+  const db = await openDB();
   await db.generatedLists.put(list);
 }
 
 export async function getAllGeneratedListsLocal() {
+  const db = await openDB();
   return db.generatedLists.toArray();
 }
 

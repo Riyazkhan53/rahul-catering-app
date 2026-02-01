@@ -89,6 +89,21 @@ export const TAMIL_MEANING_MAP = {
   paneer: "பன்னீர்",
   cheese: "சீஸ்",
 
+
+  /*-------------------- POULTRY ------------------*/
+
+  mutton: "மட்டன்",
+  chicken: "கோழி",
+  fish: "மீன்",
+  egg: "முட்டை",
+  prawn: "சிக்கி",
+  crab: "நண்டு",
+  lobster: "லாப்ஸ்டர்", 
+  meat : "கறி",
+  goat : "ஆடு",
+  beef : "மாடு",
+  pork : "பன்றி",
+
   /* ---------------- VEGETABLES ---------------- */
   onion: "வெங்காயம்",
   tomato: "தக்காளி",
