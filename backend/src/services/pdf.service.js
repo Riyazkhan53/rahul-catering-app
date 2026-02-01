@@ -2,7 +2,10 @@ import PDFDocument from "pdfkit";
 import path from "path";
 
 export function generateListPDF(list) {
-  const doc = new PDFDocument({ size: "LEGAL", margin: 40 });
+  const doc = new PDFDocument({
+    size: "LEGAL", // 612 x 1008 points
+    margin: 40,
+  });
 
   /* ---------- ASSETS ---------- */
   const fontTamil = path.join(process.cwd(), "public/fonts/NotoSansTamil-Regular.ttf");
@@ -12,154 +15,153 @@ export function generateListPDF(list) {
   doc.registerFont("Tamil", fontTamil);
   doc.font("Tamil");
 
-  /* ---------- LAYOUT ---------- */
+  /* ---------- LAYOUT CONSTANTS ---------- */
   const PAGE_WIDTH = doc.page.width;
   const PAGE_HEIGHT = doc.page.height;
 
-  const HEADER_Y = 30;
-  const HEADER_HEIGHT = 80;
+  const START_Y = 120;
+  const FOOTER_HEIGHT = 60; 
+  const FOOTER_Y = PAGE_HEIGHT - FOOTER_HEIGHT - 40; // 40 is bottom margin
 
-  const FOOTER_HEIGHT = 70;
-  const FOOTER_Y = PAGE_HEIGHT - FOOTER_HEIGHT;
+  const TABLE_WIDTH = 245; // Adjusted for Legal width
+  const ROW_HEIGHT = 28;
+  
+  // DYNAMIC CALCULATION:
+  // Available height = Footer start - Table start - Header row height
+  const AVAILABLE_TABLE_HEIGHT = FOOTER_Y - START_Y - ROW_HEIGHT;
+  const ROWS_PER_COLUMN = Math.floor(AVAILABLE_TABLE_HEIGHT / ROW_HEIGHT);
+  const ITEMS_PER_PAGE = ROWS_PER_COLUMN * 2;
 
-  const START_Y = HEADER_Y + HEADER_HEIGHT + 20;
-
-  const TABLE_WIDTH = 235;
   const LEFT_X = 40;
-  const RIGHT_X = 320;
+  const RIGHT_X = PAGE_WIDTH - TABLE_WIDTH - 40;
 
-  const ROW_PADDING = 6;
-  const COLUMN_GAP = 20;
+  /* ---------- PAGINATION ---------- */
+  const pages = chunkArray(list.items, ITEMS_PER_PAGE);
 
-  let index = 0;
-  let pageNo = 1;
-
-  while (index < list.items.length) {
-    if (pageNo > 1) doc.addPage();
+  pages.forEach((pageItems, pageIndex) => {
+    if (pageIndex > 0) doc.addPage();
 
     drawHeader(doc, headerLogo);
-    drawWatermark(doc, watermark);
-    drawFooter(doc, FOOTER_Y, pageNo);
+    drawWatermark(doc, watermark, PAGE_WIDTH, PAGE_HEIGHT);
 
-    let leftY = START_Y;
-    let rightY = START_Y;
+    const leftItems = pageItems.slice(0, ROWS_PER_COLUMN);
+    const rightItems = pageItems.slice(ROWS_PER_COLUMN);
 
-    const maxY = FOOTER_Y - 10;
-
-    while (index < list.items.length) {
-      const item = list.items[index];
-
-      const column = leftY <= rightY ? "left" : "right";
-      const x = column === "left" ? LEFT_X : RIGHT_X;
-      const y = column === "left" ? leftY : rightY;
-
-      const textHeight = doc.heightOfString(
-        `${item.name} / ${item.tamilName || ""}`,
-        { width: TABLE_WIDTH - 70 }
-      );
-
-      const rowHeight = Math.max(28, textHeight + ROW_PADDING * 2);
-
-      // 🚫 STOP only when page is FULL
-      if (y + rowHeight > maxY) break;
-
-      drawRow(doc, x, y, TABLE_WIDTH, rowHeight, item);
-
-      if (column === "left") leftY += rowHeight + COLUMN_GAP;
-      else rightY += rowHeight + COLUMN_GAP;
-
-      index++;
+    // Pass the calculated ROWS_PER_COLUMN so tables stay equal height
+    drawTable(doc, LEFT_X, START_Y, TABLE_WIDTH, leftItems, ROWS_PER_COLUMN);
+    
+    if (rightItems.length) {
+      drawTable(doc, RIGHT_X, START_Y, TABLE_WIDTH, rightItems, ROWS_PER_COLUMN);
     }
 
-    pageNo++;
-  }
+    drawFooter(doc, FOOTER_Y, PAGE_WIDTH);
+  });
 
   return doc;
 }
 
-/* ================= HEADER ================= */
+/* ================= HELPERS ================= */
 
-function drawHeader(doc, logo) {
-  const width = 260;
-  const x = (doc.page.width - width) / 2;
-
-  doc.image(logo, x, 30, { width });
+function drawHeader(doc, headerLogo) {
+  // Use the cropped image you requested
+  doc.image(headerLogo, 40, 30, { width: 530 }); 
 
   doc
     .moveTo(40, 100)
-    .lineTo(doc.page.width - 40, 100)
+    .lineTo(572, 100)
     .lineWidth(2)
     .strokeColor("#ADC455")
     .stroke();
 }
 
-/* ================= WATERMARK ================= */
-
-function drawWatermark(doc, watermark) {
-  doc.opacity(0.12);
-  doc.image(watermark, (doc.page.width - 300) / 2, 320, { width: 300 });
-  doc.opacity(1);
+function drawWatermark(doc, watermark, pw, ph) {
+  doc.save(); // Save state
+  doc.opacity(0.1);
+  doc.image(watermark, (pw/2) - 150, (ph/2) - 150, { width: 300 });
+  doc.restore(); // Restore opacity for rest of content
 }
 
-/* ================= FOOTER ================= */
-
-function drawFooter(doc, y, pageNo) {
+function drawFooter(doc, y, pw) {
   doc
     .moveTo(40, y)
-    .lineTo(doc.page.width - 40, y)
+    .lineTo(pw - 40, y)
     .lineWidth(1)
     .strokeColor("#ccc")
     .stroke();
 
   doc
+    .fillColor("#444")
     .fontSize(10)
-    .fillColor("#000")
     .text(
       "📍 Coonoor, The Nilgiris – 643105 | India",
       40,
-      y + 12,
-      { align: "center", width: doc.page.width - 80 }
+      y + 15,
+      { align: "center", width: pw - 80 }
     )
     .text(
       "Instagram: @rahul_catering_events",
       40,
-      y + 26,
-      { align: "center", width: doc.page.width - 80 }
-    )
-    .fontSize(9)
-    .text(
-      `Page ${pageNo}`,
-      40,
-      y + 42,
-      { align: "center", width: doc.page.width - 80 }
+      y + 30,
+      { align: "center", width: pw - 80 }
     );
 }
 
-/* ================= ROW ================= */
+function drawTable(doc, x, y, width, items, maxRows) {
+  const ROW_H = 28;
+  // Make table height consistent based on max possible rows
+  const tableHeight = (maxRows + 1) * ROW_H; 
 
-function drawRow(doc, x, y, width, height, item) {
+  // Border
   doc
-    .roundedRect(x, y, width, height, 8)
-    .strokeColor("#ddd")
+    .roundedRect(x, y, width, tableHeight, 8)
+    .strokeColor("#ccc")
     .lineWidth(1)
     .stroke();
 
-  doc
-    .fontSize(11)
-    .fillColor("#000")
-    .text(
-      `${item.name} / ${item.tamilName || ""}`,
-      x + 10,
-      y + 6,
-      { width: width - 70 }
-    );
+  // Header Background
+  doc.rect(x + 1, y + 1, width - 2, ROW_H - 1).fill("#f4f4f4");
 
   doc
+    .fillColor("#000")
     .fontSize(11)
-    .text(
-      `${item.quantity} ${item.unit}`,
-      x + width - 55,
-      y + height / 2 - 6,
-      { width: 45, align: "right" }
-    );
+    .text("Items", x + 10, y + 8)
+    .text("Qty", x + width - 50, y + 8, { width: 40, align: 'right' });
+
+  let currentY = y + ROW_H;
+
+  items.forEach((item) => {
+    doc
+      .moveTo(x, currentY)
+      .lineTo(x + width, currentY)
+      .strokeColor("#eee")
+      .stroke();
+
+    doc
+      .fillColor("#333")
+      .fontSize(10)
+      .text(
+        `${item.name} / ${item.tamilName || ""}`,
+        x + 10,
+        currentY + 8,
+        { width: width - 75, height: 20, lineBreak: false }
+      );
+
+    doc
+      .text(
+        `${item.quantity} ${item.unit}`,
+        x + width - 60,
+        currentY + 8,
+        { width: 50, align: "right" }
+      );
+
+    currentY += ROW_H;
+  });
+}
+
+function chunkArray(arr, size) {
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
 }
