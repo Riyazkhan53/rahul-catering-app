@@ -1,6 +1,4 @@
-// backend/src/services/pdf.service.js
 import PDFDocument from "pdfkit";
-import fs from "fs";
 import path from "path";
 
 export function generateListPDF(list) {
@@ -9,26 +7,53 @@ export function generateListPDF(list) {
     margin: 40,
   });
 
-  const fontTamil = path.join(
-    process.cwd(),
-    "public/fonts/NotoSansTamil-Regular.ttf"
-  );
-
-  const headerLogo = path.join(
-    process.cwd(),
-    "/assets/headerLogo.png"
-  );
-
-  const watermark = path.join(
-    process.cwd(),
-    "/assets/roundlogo3.png"
-  );
+  /* ---------- ASSETS ---------- */
+  const fontTamil = path.join(process.cwd(), "public/fonts/NotoSansTamil-Regular.ttf");
+  const headerLogo = path.join(process.cwd(), "assets/headerLogo.png");
+  const watermark = path.join(process.cwd(), "assets/roundlogo3.png");
 
   doc.registerFont("Tamil", fontTamil);
   doc.font("Tamil");
 
-  /* ================= HEADER ================= */
+  /* ---------- LAYOUT CONSTANTS ---------- */
+  const PAGE_WIDTH = 595;
+  const PAGE_HEIGHT = 1008;
 
+  const TABLE_WIDTH = 235;
+  const ROW_HEIGHT = 28;
+  const ROWS_PER_COLUMN = 10;
+  const ITEMS_PER_PAGE = ROWS_PER_COLUMN * 2;
+
+  const LEFT_X = 40;
+  const RIGHT_X = 320;
+  const START_Y = 120;
+
+  /* ---------- PAGINATION ---------- */
+  const pages = chunkArray(list.items, ITEMS_PER_PAGE);
+
+  pages.forEach((pageItems, pageIndex) => {
+    if (pageIndex > 0) doc.addPage();
+
+    drawHeader(doc, headerLogo);
+    drawWatermark(doc, watermark);
+
+    const leftItems = pageItems.slice(0, ROWS_PER_COLUMN);
+    const rightItems = pageItems.slice(ROWS_PER_COLUMN);
+
+    drawTable(doc, LEFT_X, START_Y, TABLE_WIDTH, leftItems);
+    if (rightItems.length) {
+      drawTable(doc, RIGHT_X, START_Y, TABLE_WIDTH, rightItems);
+    }
+
+    drawFooter(doc);
+  });
+
+  return doc;
+}
+
+/* ================= HELPERS ================= */
+
+function drawHeader(doc, headerLogo) {
   doc.image(headerLogo, 40, 30, { width: 220 });
 
   doc
@@ -42,33 +67,15 @@ export function generateListPDF(list) {
     .lineWidth(2)
     .strokeColor("#ADC455")
     .stroke();
+}
 
-  /* ================= WATERMARK ================= */
-
+function drawWatermark(doc, watermark) {
   doc.opacity(0.15);
-  doc.image(watermark, 170, 220, { width: 260 });
+  doc.image(watermark, 170, 320, { width: 260 });
   doc.opacity(1);
+}
 
-  /* ================= TABLE LAYOUT ================= */
-
-  const startY = 120;
-  const tableWidth = 235;
-  const rowHeight = 28;
-  const rowsPerColumn = 10;
-
-  const leftX = 40;
-  const rightX = 320;
-
-  const leftItems = list.items.slice(0, rowsPerColumn);
-  const rightItems = list.items.slice(rowsPerColumn);
-
-  drawTable(doc, leftX, startY, tableWidth, leftItems);
-  if (rightItems.length > 0) {
-    drawTable(doc, rightX, startY, tableWidth, rightItems);
-  }
-
-  /* ================= FOOTER ================= */
-
+function drawFooter(doc) {
   doc
     .moveTo(40, 700)
     .lineTo(555, 700)
@@ -90,26 +97,18 @@ export function generateListPDF(list) {
       730,
       { align: "center", width: 515 }
     );
-
-  return doc;
 }
 
-/* ================= TABLE FUNCTION ================= */
-
 function drawTable(doc, x, y, width, items) {
-  const rowHeight = 28;
+  const tableHeight = items.length * 28 + 28;
 
-  // Outer box
   doc
-    .roundedRect(x, y, width, 330, 10)
+    .roundedRect(x, y, width, tableHeight, 10)
     .strokeColor("#ccc")
     .lineWidth(1)
     .stroke();
 
-  // Header
-  doc
-    .rect(x, y, width, rowHeight)
-    .fill("#f4f4f4");
+  doc.rect(x, y, width, 28).fill("#f4f4f4");
 
   doc
     .fillColor("#000")
@@ -117,7 +116,7 @@ function drawTable(doc, x, y, width, items) {
     .text("Items", x + 10, y + 8)
     .text("Qty", x + width - 45, y + 8);
 
-  let currentY = y + rowHeight;
+  let currentY = y + 28;
 
   items.forEach((item) => {
     doc
@@ -143,6 +142,14 @@ function drawTable(doc, x, y, width, items) {
         { width: 45, align: "right" }
       );
 
-    currentY += rowHeight;
+    currentY += 28;
   });
+}
+
+function chunkArray(arr, size) {
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
 }
