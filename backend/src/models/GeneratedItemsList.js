@@ -7,6 +7,7 @@ const ItemSchema = new mongoose.Schema(
     tamilName: String,
     quantity: Number,
     unit: String,
+    comment: String,
   },
   { _id: false }
 );

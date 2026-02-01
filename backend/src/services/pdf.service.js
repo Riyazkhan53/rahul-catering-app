@@ -108,10 +108,9 @@ function drawFooter(doc, y, pw) {
 
 function drawTable(doc, x, y, width, items, maxRows) {
   const ROW_H = 28;
-  // Make table height consistent based on max possible rows
-  const tableHeight = (maxRows + 1) * ROW_H; 
+  const tableHeight = (maxRows + 1) * ROW_H;
 
-  // Border
+  // Draw Table Border
   doc
     .roundedRect(x, y, width, tableHeight, 8)
     .strokeColor("#ccc")
@@ -130,27 +129,50 @@ function drawTable(doc, x, y, width, items, maxRows) {
   let currentY = y + ROW_H;
 
   items.forEach((item) => {
+    // 1. Draw the row separator line
     doc
       .moveTo(x, currentY)
       .lineTo(x + width, currentY)
       .strokeColor("#eee")
       .stroke();
 
+    const mainText = `${item.name} / ${item.tamilName || ""}`;
+    const commentText = item.comment ? ` (${item.comment})` : "";
+    const fullText = mainText + commentText;
+
+    // 2. Dynamic Font Sizing
+    // If the text is very long, we shrink it slightly to prevent overflow
+    const fontSize = fullText.length > 40 ? 8 : 9;
+
+    // 3. Draw the Item Text (with Comment)
     doc
       .fillColor("#333")
-      .fontSize(10)
-      .text(
-        `${item.name} / ${item.tamilName || ""}`,
-        x + 10,
-        currentY + 8,
-        { width: width - 75, height: 20, lineBreak: false }
-      );
+      .font("Tamil")
+      .fontSize(fontSize)
+      .text(mainText, x + 10, currentY + 5, { // Adjusted Y offset for better centering
+        width: width - 75,
+        height: ROW_H - 5,
+        ellipsis: true, // Adds "..." if it still doesn't fit
+        continued: !!item.comment
+      });
 
+    if (item.comment) {
+      doc
+        .fillColor("#777") // Lighter color for comments
+        .text(commentText, {
+          width: width - 75,
+        });
+    }
+
+    // 4. Draw the Quantity (Aligned to the right)
+    // We use the same Y as the start of the row to keep it clean
     doc
+      .fillColor("#000")
+      .fontSize(10)
       .text(
         `${item.quantity} ${item.unit}`,
         x + width - 60,
-        currentY + 8,
+        currentY + 8, 
         { width: 50, align: "right" }
       );
 

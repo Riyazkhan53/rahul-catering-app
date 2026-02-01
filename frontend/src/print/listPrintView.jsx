@@ -54,6 +54,7 @@ function Table({ items }) {
             <td>
               {i.name}
               {i.tamilName && <span className="ta"> / {i.tamilName}</span>}
+              {i.comment && (<i> ({i.comment})</i>)}
             </td>
             <td className="qty">{i.quantity} {i.unit}</td>
           </tr>
