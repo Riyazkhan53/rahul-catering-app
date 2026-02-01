@@ -3,9 +3,12 @@ import {
   updateItem,
   saveItem,
   clearIndexedDB,
+  getPendingGeneratedLists,
+  saveGeneratedList,
+  updateGeneratedList,
 } from "../db/indexedDB";
 
-import { itemService } from "../api/service";
+import { itemService, generatedListService } from "../api/service";
 
 /* ---------------- APP SYNC ---------------- */
 /* Safe: does NOT delete local data */
@@ -14,46 +17,92 @@ export async function appSync() {
     throw new Error("You are offline");
   }
 
-  // 1️⃣ Push local pending → server
+  // Items
   await pushPendingItems();
-
-  // 2️⃣ Pull server → local
   await pullItemsFromServer();
+
+  // Generated Lists
+  await pushPendingGeneratedLists();
+  await pullGeneratedListsFromServer();
 
   localStorage.setItem("lastAppSync", Date.now());
 }
 
 /* ---------------- MASTER SYNC ---------------- */
 /* Destructive: clears IndexedDB */
+
+function withTimeout(promise, ms = 10000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Request timed out")), ms)
+    ),
+  ]);
+}
+
 export async function masterSync(setProgress) {
   if (!navigator.onLine) {
     throw new Error("Internet required for Master Sync");
   }
 
-  // 1️⃣ Clear local DB
-  setProgress(20);
-  await clearIndexedDB("rahul_catering_db");
+  try {
+    setProgress(10);
 
-  // 2️⃣ Pull from server
-  setProgress(50);
-  const items = await itemService.getItems();
+    // 1️⃣ Clear local DB
+    await clearIndexedDB("rahul_catering_db");
+    setProgress(20);
 
-  // 3️⃣ Save locally
-  let count = 0;
-  for (const item of items) {
-    await saveItem({
-      ...item,
-      syncStatus: "synced",
-      serverId: item._id,
-    });
+    // 2️⃣ Pull from server (with timeout)
+    const [items, lists] = await Promise.all([
+      withTimeout(itemService.getItems(), 10000),
+      withTimeout(generatedListService.fetchGeneratedLists(), 10000),
+    ]);
 
-    count++;
-    const percent = 50 + Math.floor((count / items.length) * 40);
-    setProgress(percent);
+    setProgress(40);
+
+    // 3️⃣ Save ITEMS locally
+    let count = 0;
+    for (const item of items) {
+      await saveItem({
+        ...item,
+        syncStatus: "synced",
+        serverId: item._id,
+      });
+
+      count++;
+      setProgress(40 + Math.floor((count / items.length) * 30));
+    }
+
+    // 4️⃣ Save LISTS locally
+    count = 0;
+    for (const list of lists) {
+      await saveGeneratedList(
+        {
+          ...list,
+          syncStatus: "synced",
+        },
+        { fromServer: true }
+      );
+
+      count++;
+      setProgress(70 + Math.floor((count / lists.length) * 25));
+    }
+
+    // 5️⃣ Done
+    setProgress(100);
+    return true;
+  } catch (err) {
+    console.error("MASTER SYNC FAILED:", err);
+
+    setProgress(0);
+
+    // 🔴 VERY IMPORTANT: stop execution
+    throw new Error(
+      err.message === "Request timed out"
+        ? "Sync failed: Server not responding"
+        : "Sync failed: Please try again"
+    );
   }
-
-  // 4️⃣ Done
-  setProgress(100);
 }
 
 /* ---------------- PUSH ---------------- */
@@ -78,6 +127,20 @@ async function pushPendingItems() {
   }
 }
 
+async function pushPendingGeneratedLists() {
+  const pendingLists = await getPendingGeneratedLists();
+
+  for (const list of pendingLists) {
+    const response = await generatedListService.saveGeneratedList(list);
+
+    await updateGeneratedList({
+      ...list,
+      syncStatus: "synced",
+      updatedAt: Date.now(),
+    });
+  }
+}
+
 /* ---------------- PULL ---------------- */
 async function pullItemsFromServer() {
   const serverItems = await itemService.getItems();
@@ -91,5 +154,20 @@ async function pullItemsFromServer() {
       syncStatus: "synced",
       updatedAt: serverUpdatedAt,
     });
+  }
+}
+
+async function pullGeneratedListsFromServer() {
+  const serverLists = await generatedListService.fetchGeneratedLists();
+
+  for (const list of serverLists) {
+    await saveGeneratedList(
+      {
+        ...list,
+        syncStatus: "synced",
+        updatedAt: Date.now(),
+      },
+      { fromServer: true }
+    );
   }
 }

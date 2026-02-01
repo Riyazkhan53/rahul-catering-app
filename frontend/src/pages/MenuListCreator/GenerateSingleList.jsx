@@ -4,6 +4,7 @@ import { CheckCircle, ListChecks } from "lucide-react";
 import { saveListToDB,getAllItems } from "../../db/indexedDB";
 import { useToast } from "../../context/ToastContext";
 import { Checkbox, Input, Button } from "../../Components/BasicComponents";
+import { generatedListService } from "../../api/service";
 
 export default function GenerateSingleList() {
     const [selected, setSelected] = useState({});
@@ -60,42 +61,53 @@ export default function GenerateSingleList() {
     };
 
     const handleGenerate = async () => {
-        if (!listName || !listDate) {
-            showToast("Please enter list name and date", "error");
-            return;
-        }
+  if (!listName || !listDate) {
+    showToast("Please enter list name and date", "error");
+    return;
+  }
 
-        const selectedItems = items
-            .filter((i) => selected[i.itemId])
-            .map((i) => ({
-                itemId: i.itemId,
-                name: i.name,
-                tamilName: i.tamilName,
-                quantity: selected[i.itemId].quantity,
-                unit: selected[i.itemId].unit,
-            }));
+  const selectedItems = items
+    .filter((i) => selected[i.itemId])
+    .map((i) => ({
+      itemId: i.itemId,
+      name: i.name,
+      tamilName: i.tamilName,
+      quantity: selected[i.itemId].quantity,
+      unit: selected[i.itemId].unit,
+    }));
 
-        if (selectedItems.length === 0) {
-            showToast("Please select at least one item", "error");
-            return;
-        }
+  if (selectedItems.length === 0) {
+    showToast("Please select at least one item", "error");
+    return;
+  }
 
-        const payload = {
-            id: generateListId(),
-            name: listName,
-            date: listDate,
-            createdAt: new Date().toISOString(),
-            items: selectedItems,
-        };
+  const payload = {
+    id: generateListId(),
+    name: listName,
+    date: listDate,
+    createdAt: new Date().toISOString(),
+    items: selectedItems,
+  };
 
-        await saveListToDB(payload);
+  try {
+    // 1️⃣ Save offline
+    await saveListToDB(payload);
 
-        console.log("✅ Saved to IndexedDB:", payload);
-        showToast(`List ${payload.id} saved successfully`, "success");
-        setSelected({});
-        setListName("");
-        setListDate("");
-    };
+    // 2️⃣ Save to MongoDB (online)
+    if (navigator.onLine) {
+      await generatedListService.saveGeneratedList(payload);
+    }
+
+    showToast(`List ${payload.id} saved successfully`, "success");
+
+    setSelected({});
+    setListName("");
+    setListDate("");
+  } catch (err) {
+    console.error(err);
+    showToast("Failed to save list", "error");
+  }
+};
 
     return (
         <div className="card p-6 w-full max-w-5xl">

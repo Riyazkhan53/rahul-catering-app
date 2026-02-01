@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ListPrintView from "./listPrintView";
 import { getListById } from "../db/indexedDB";
-import { printService } from "../api/service";
+import { isDesktop } from "../utils/device";
 
 export default function ListPrintRoute() {
   const { id } = useParams();
@@ -12,40 +12,41 @@ export default function ListPrintRoute() {
   useEffect(() => {
     async function load() {
       const data = await getListById(id);
+
       setList(data);
     }
     load();
   }, [id]);
 
-  const downloadPDF = async () => {
-    try {
-      setDownloading(true);
-      const blob = await printService.printList(list);
-      const url = URL.createObjectURL(blob);
+  const downloadPDF = () => {
+    setDownloading(true);
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${list.id}.pdf`;
-      a.click();
+    const url = `${import.meta.env.VITE_API_URL}/api/print/list/${id}`;
 
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
-    } catch (e) {
-      alert("Download failed");
-    } finally {
-      setDownloading(false);
+    if (isDesktop()) {
+      // Desktop → open preview tab
+      window.open(url, "_blank");
+    } else {
+      // Android / iOS → native download
+      window.location.href = url;
     }
+
+    // Just UI state reset
+    setTimeout(() => setDownloading(false), 800);
   };
 
   if (!list) return <div className="p-6">Loading preview…</div>;
 
   return (
     <div className="print-route">
+      {/* ACTION BAR */}
       <div className="print-actions">
         <button onClick={downloadPDF} disabled={downloading}>
-          ⬇ Download PDF
+          {downloading ? "Preparing…" : "⬇ Download PDF"}
         </button>
       </div>
 
+      {/* PREVIEW */}
       <ListPrintView list={list} />
     </div>
   );

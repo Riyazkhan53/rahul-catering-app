@@ -76,6 +76,33 @@ export const picklistService = {
   },
 };
 
+/*------------------------ */
+/* GENERATED LIST SERVICES */
+/*------------------------ */
+
+export const generatedListService = {
+  saveGeneratedList(list) {
+    return apiRequest("/api/generated-lists", {
+      method: "POST",
+      body: list,
+    });
+  },
+
+  downloadGeneratedList(id) {
+    return fetch(`/api/print/list/${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+  },
+  fetchGeneratedLists() {
+  return apiRequest("/api/generated-lists", {
+    method: "GET",
+  });
+}
+};
+
+
 
 /* -------------------- */
 /* PRINT SERVICES       */

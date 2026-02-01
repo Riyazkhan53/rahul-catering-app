@@ -117,6 +117,31 @@ export async function getListById(id) {
   });
 }
 
+export async function getPendingGeneratedLists() {
+  return db.generatedLists
+    .where("syncStatus")
+    .equals("pending")
+    .toArray();
+}
+
+export async function saveGeneratedList(list, options = {}) {
+  const record = {
+    ...list,
+    syncStatus: options.fromServer ? "synced" : "pending",
+    updatedAt: list.updatedAt || Date.now(),
+  };
+
+  await db.generatedLists.put(record);
+}
+
+export async function updateGeneratedList(list) {
+  await db.generatedLists.put(list);
+}
+
+export async function getAllGeneratedListsLocal() {
+  return db.generatedLists.toArray();
+}
+
 /* ---------- ITEM MASTER ---------- */
 
 export async function saveItem(item) {

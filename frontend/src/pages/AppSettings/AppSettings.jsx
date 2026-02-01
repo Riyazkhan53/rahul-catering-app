@@ -119,8 +119,12 @@ export default function AppSettings() {
                     danger
                     onCancel={() => setConfirmOpen(false)}
                     onConfirm={async (setProgress) => {
-                        await masterSync(setProgress);
-                        showToast("Master sync completed", "success");
+                        try {
+                            await masterSync(setProgress);
+                            showToast("Master sync completed successfully", "success");
+                        } catch (err) {
+                            showToast(err.message, "error");
+                        }
                         setConfirmOpen(false);
                     }}
                 />
