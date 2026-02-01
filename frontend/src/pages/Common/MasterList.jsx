@@ -6,25 +6,11 @@ import { getAllItems } from "../../db/indexedDB";
 import { updateItem, deleteItem } from "../../db/indexedDB";
 import { itemService } from "../../api/service";
 import { useToast } from "../../context/ToastContext";
+import { itemsCategory } from "../../utils/picklist";
 
 const TABS = [
   { id: "all", label: "All Items" },
-  { id: "essentials", label: "Staples & Essentials" },
-  { id: "grains_pulses", label: "Grains & Pulses" },
-  { id: "oils_fats", label: "Oils & Fats" },
-  { id: "spices_whole", label: "Spices (Whole)" },
-  { id: "spices_powder", label: "Spices (Powdered)" },
-  { id: "dry_fruits", label: "Dry Fruits" },
-  { id: "condiments", label: "Condiments" },
-  { id: "misc", label: "Miscellaneous" },
-  { id: "vegs", label: "Vegetables" },
-  { id: "fruits", label: "Fruits" },
-  { id: "dairy", label: "Dairy Products" },
-  { id: "meat", label: "Meat & Poultry" },
-  { id: "beverages", label: "Beverages" },
-  { id: "snacks", label: "Snacks" },
-  { id: "utensils", label: "Utensils" },
-];
+  ...itemsCategory];
 
 export default function ItemsList() {
   const [activeTab, setActiveTab] = useState("all");
