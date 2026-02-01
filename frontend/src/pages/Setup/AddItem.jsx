@@ -11,6 +11,7 @@ import { uuid } from "../../utils/uuid";
 import Modal from "../../Components/BasicComponents/Modal";
 import ModalCard from "../../Components/BasicComponents/ModalCard";
 import { Input, Select, Textarea, FormField, PrimaryButton } from "../../Components/BasicComponents/index";
+import {itemsCategory} from "../../utils/picklist"
 
 export default function AddItem(props) {
   const [aiLoading, setAiLoading] = useState(false);
@@ -196,11 +197,10 @@ export default function AddItem(props) {
               required
             >
               <option value="">Select Category</option>
-              <option value="essentials">Essentials</option>
-              <option value="veg">Veg</option>
-              <option value="nonveg">Non-Veg</option>
-              <option value="dessert">Dessert</option>
-              <option value="service">Service</option>
+              {itemsCategory && itemsCategory.map((cat)=>(
+                <option key={cat.value} value={cat.value}>{cat.label}</option>
+              ))}
+              
             </Select>
           </FormField>
 
