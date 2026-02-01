@@ -12,6 +12,9 @@ export const TAMIL_MEANING_MAP = {
   chopped: "நறுக்கிய",
   sliced: "வெட்டிய",
   rock : "கல்",
+  biriyani: "பிரியாணி",
+  maharaja: "மகாராஜா",
+  raw_rice: "பச்சை அரிசி",
 
   /* ---------------- SALT & SUGAR ---------------- */
   salt: "உப்பு",
@@ -75,6 +78,7 @@ export const TAMIL_MEANING_MAP = {
   ghee: "நெய்",
   butter: "வெண்ணெய்",
   margarine: "மார்கரின்",
+  dalda: "டால்டா",
 
   /* ---------------- DAIRY ---------------- */
   milk: "பால்",
@@ -125,4 +129,5 @@ export const TAMIL_MEANING_MAP = {
   boiled: "வேகவைத்த",
   fried: "வறுத்த",
   roasted: "வாட்டிய",
+  refined: "சுத்தம் செய்த",
 };
