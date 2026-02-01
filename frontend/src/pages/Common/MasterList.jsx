@@ -50,7 +50,7 @@ const handleDelete = async (item) => {
   const filteredItems =
     activeTab === "all"
       ? visibleItems
-      : visibleItems.filter(item => item.category === activeTab);
+      : visibleItems.filter(item => item.category === (TABS.find(tab => tab.id === activeTab)?.value || "all"));
 
   return (
     <div className="w-full">

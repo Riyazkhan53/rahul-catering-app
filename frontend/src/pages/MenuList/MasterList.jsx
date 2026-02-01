@@ -23,8 +23,8 @@ export default function ItemsList() {
   };
   const filteredItems =
     activeTab === "all"
-      ? items
-      : items.filter(item => item.category === activeTab);
+      ? visibleItems
+      : visibleItems.filter(item => item.category === (TABS.find(tab => tab.id === activeTab)?.value || "all"));
 
   return (
     <div className="w-full">

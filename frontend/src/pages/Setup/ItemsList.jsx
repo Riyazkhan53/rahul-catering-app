@@ -9,7 +9,7 @@ const TABS = [
   { id: "all", label: "All Items" },
   ...itemsCategory];
 
-export default function ItemsList() {debugger;
+export default function ItemsList() {
   const [activeTab, setActiveTab] = useState("all");
   const [items, setItems] = useState([]);
 
@@ -23,8 +23,8 @@ export default function ItemsList() {debugger;
   };
   const filteredItems =
     activeTab === "all"
-      ? items
-      : items.filter(item => item.category === activeTab);
+      ? visibleItems
+      : visibleItems.filter(item => item.category === (TABS.find(tab => tab.id === activeTab)?.value || "all"));
 
   return (
     <div className="w-full">
