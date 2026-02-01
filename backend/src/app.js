@@ -7,6 +7,7 @@ import itemsRoutes from "./routes/item.routes.js";
 import picklistRoutes from "./routes/picklist.routes.js";
 import printRoutes from "./routes/print.routes.js";
 import generatedListRoutes from "./routes/generatedList.routes.js";
+import aiRoutes  from "./routes/ai.routes.js";
 
 
 const app = express();
@@ -22,5 +23,6 @@ app.use("/api/items", itemsRoutes);
 app.use("/api/picklist", picklistRoutes);
 app.use("/api/print", printRoutes);
 app.use("/api/generated-lists", generatedListRoutes);
+app.use("/api/ai", aiRoutes); // AI routes
 
 export default app;

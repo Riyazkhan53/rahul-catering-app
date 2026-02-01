@@ -15,6 +15,7 @@ export const TAMIL_MEANING_MAP = {
   biriyani: "பிரியாணி",
   maharaja: "மகாராஜா",
   raw_rice: "பச்சை அரிசி",
+  ponni: "பொன்னி",
 
   /* ---------------- SALT & SUGAR ---------------- */
   salt: "உப்பு",

@@ -18,6 +18,7 @@
     "jsreport-chrome-pdf": "^1.10.0",
     "jsreport-handlebars": "^2.1.0",
     "mongoose": "^9.1.2",
+    "openai": "^6.17.0",
     "pdf-lib": "^1.17.1",
     "pdfkit": "^0.17.2",
     "puppeteer-core": "^24.36.1"

@@ -117,3 +117,16 @@ export const printService = {
     });
   },
 };
+
+/* -------------------- */
+/* AI SERVICES          */
+/* -------------------- */
+
+export const aiService = {
+  autoGenerateItem(prompt) {
+    return apiRequest("/api/ai/generate-item", {
+      method: "POST",
+      body: { name: prompt },
+    });
+  },
+};
