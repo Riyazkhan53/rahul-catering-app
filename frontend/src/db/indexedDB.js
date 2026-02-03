@@ -1,10 +1,11 @@
 const DB_NAME = "rahul_catering_db";
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 const LIST_STORE = "generated_lists";
 const ITEM_STORE = "items_master";
 const AUTH_STORE = "auth_cache";
 const GENERATED_LIST_STORE = "generated_lists";
+const EVENT_DATES = "event_dates";
 
 export function openDB() {
   return new Promise((resolve, reject) => {
@@ -30,6 +31,12 @@ export function openDB() {
           keyPath: "username",
         });
       }
+
+      if (!db.objectStoreNames.contains(EVENT_DATES)) {
+    db.createObjectStore(EVENT_DATES, {
+      keyPath: "date", // YYYY-MM-DD
+    });
+  }
     };
 
     request.onsuccess = () => resolve(request.result);
@@ -289,6 +296,121 @@ export async function clearIndexedDB(dbName) {
   return new Promise((resolve, reject) => {
     const req = indexedDB.deleteDatabase(dbName);
     req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+
+//Orders Calender Events
+
+export async function saveEventsForDate(date, events) {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(EVENT_DATES, "readwrite");
+    const store = tx.objectStore(EVENT_DATES);
+
+    store.put({ date, events });
+
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+
+export async function getEventsByDate(date) {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(EVENT_DATES, "readonly");
+    const store = tx.objectStore(EVENT_DATES);
+    const req = store.get(date);
+
+    req.onsuccess = () => resolve(req.result?.events || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+
+export async function getAllEventDates() {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(EVENT_DATES, "readonly");
+    const store = tx.objectStore(EVENT_DATES);
+    const req = store.getAll();
+
+    req.onsuccess = () => {
+      const result = {};
+      req.result.forEach((r) => {
+        result[r.date] = r.events;
+      });
+      resolve(result);
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getAllEvents() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(EVENT_DATES, "readonly");
+    const store = tx.objectStore(EVENT_DATES);
+    const req = store.getAll();
+
+    req.onsuccess = () => {
+      const result = {};
+      req.result.forEach((r) => {
+        result[r.date] = r.events;
+      });
+      resolve(result);
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/* Save events for a date */
+export async function saveEventsByDate(date, events) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(EVENT_DATES, "readwrite");
+    const store = tx.objectStore(EVENT_DATES);
+
+    store.put({ date, events });
+
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+
+export async function deleteEventsByDate(date) {
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(EVENT_DATES, "readwrite");
+    const store = tx.objectStore(EVENT_DATES);
+
+    store.delete(date);
+
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function deleteEventById(date, eventId) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(EVENT_DATES, "readwrite");
+    const store = tx.objectStore(EVENT_DATES);
+    const req = store.get(date);
+
+    req.onsuccess = () => {
+      if (!req.result) return resolve();
+      const updated = req.result.events.filter(e => e.id !== eventId);
+      store.put({ date, events: updated });
+      resolve();
+    };
     req.onerror = () => reject(req.error);
   });
 }

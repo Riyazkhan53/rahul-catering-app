@@ -47,7 +47,7 @@ function App() {
 
   const handleOnline = () => {
     syncPendingItems();
-    pullItemsFromServer();
+    // pullItemsFromServer();
   };
 
   const handleLogout = () => {

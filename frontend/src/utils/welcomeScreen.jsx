@@ -53,7 +53,7 @@ export default function CateringLoader() {
       </div>
 
       {/* KEYFRAMES */}
-      <style jsx>{`
+      <style>{`
         @keyframes catering-loading {
           0% { transform: translateX(-100%); }
           100% { transform: translateX(300%); }

@@ -174,7 +174,7 @@ export default function GenerateSingleList() {
                     >
                         <option value="all">All Categories</option>
                         {itemsCategory && itemsCategory.map((_obj) => (
-                            <option value={_obj?.value}>{_obj?.label}</option>
+                            <option key={_obj?.value} value={_obj?.value}>{_obj?.label}</option>
                         ))}
                     </Select>
                 </div>
@@ -207,11 +207,14 @@ export default function GenerateSingleList() {
                             {/* Checkbox */}
                             <div className="col-span-1 flex justify-center">
                                 <Checkbox
-                                    type="checkbox"
-                                    checked={isChecked}
-                                    // onChange={() => toggleItem(item)}
-                                    className="w-4 h-4 accent-orange-500"
-                                />
+  type="checkbox"
+  checked={isChecked}
+  onChange={(e) => {
+    // e.stopPropagation();
+    // toggleItem(item);
+  }}
+  className="w-4 h-4 accent-orange-500"
+/>
                             </div>
 
                             {/* Name */}

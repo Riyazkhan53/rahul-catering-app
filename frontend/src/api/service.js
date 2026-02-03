@@ -130,3 +130,30 @@ export const aiService = {
     });
   },
 };
+
+/* -------------------- */
+/* EVENT DATES SERVICES */
+/* -------------------- */
+
+export const eventDatesService = {
+  getAll() {
+    return apiRequest("/api/event-dates");
+  },
+
+  getByDate(date) {
+    return apiRequest(`/api/event-dates/${date}`);
+  },
+
+  saveByDate(date, events) {
+    return apiRequest(`/api/event-dates/${date}`, {
+      method: "POST",
+      body: { events },
+    });
+  },
+
+  deleteEvent(date, eventId) {
+    return apiRequest(`/api/event-dates/${date}/${eventId}`, {
+      method: "DELETE",
+    });
+  },
+};
