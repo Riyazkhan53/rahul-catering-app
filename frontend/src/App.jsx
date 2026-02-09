@@ -7,7 +7,7 @@ import ListPrintRoute from "./print/listPrintRoute";
 
 import { apiRequest } from "./api/api";
 import AppLayout from "./Layouts/AppLayout";
-import CateringLoader from "./utils/welcomeScreen";
+import CateringLoader from "./Components/CateringLoader";
 import { syncPendingItems, pullItemsFromServer } from "./sync/itemSync";
 
 const getInitialTheme = () =>
@@ -56,7 +56,13 @@ function App() {
     setShowLogin(false);
   };
 
-  if (loading) return <CateringLoader />;
+  if (loading) {
+    return (
+      <div className="fade-in">
+        <CateringLoader />
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
