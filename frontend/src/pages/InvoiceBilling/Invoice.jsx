@@ -74,13 +74,13 @@ export default function InvoiceBillingPage() {
                         onBack={() => setView("home")}
                     />
 
-                    <div className="bg-white rounded-2xl shadow-xl p-10 max-w-3xl mx-auto">
-                        <h2 className="text-2xl font-bold mb-2">📂 Documents</h2>
-                        <p className="text-gray-500 mb-8">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 sm:p-10 max-w-3xl mx-auto">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">📂 Documents</h2>
+                        <p className="text-gray-500 dark:text-gray-400 mb-6 sm:mb-8 text-sm sm:text-base">
                             View and manage all your invoices, quotations, and bills
                         </p>
 
-                        <div className="text-center text-gray-500 py-20 border-dashed border-4 border-gray-200 rounded-xl">
+                        <div className="text-center text-gray-500 dark:text-gray-400 py-16 sm:py-20 border-dashed border-4 border-gray-200 dark:border-gray-700 rounded-xl">
                             No documents available.
                         </div>
                     </div>

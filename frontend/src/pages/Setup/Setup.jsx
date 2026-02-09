@@ -12,13 +12,13 @@ export default function Setup() {
   return (
     <AnimatedPage>
       {!itemOpen && !dishesOpen && (
-        <div className="card p-6 text-app w-full max-w-5xl">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <ClipboardList className="w-6 h-6 text-orange-400" />
+        <div className="card p-5 sm:p-6 text-app w-full max-w-5xl">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center gap-2">
+            <ClipboardList className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400 dark:text-orange-500" />
             Setup
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <CardButton
               icon={Package}
               title="Items Setup"

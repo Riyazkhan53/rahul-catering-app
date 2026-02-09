@@ -65,15 +65,15 @@ function App() {
           showLogin ? (
             <Login onLoginSuccess={setUser} handleOnline={handleOnline} />
           ) : (
-            <div className="app-container">
-              <div className="app-card">
-                <div className="logo-circle">🍽️</div>
-                <h1 className="app-title">Rahul Catering & Events</h1>
-                <p className="app-tagline">
+            <div className="app-container min-h-screen flex items-center justify-center px-4">
+              <div className="app-card card p-8 sm:p-12 max-w-lg w-full text-center rounded-3xl shadow-2xl">
+                <div className="logo-circle text-6xl sm:text-7xl mb-6">🍽️</div>
+                <h1 className="app-title text-3xl sm:text-4xl font-bold mb-4 text-app">Rahul Catering & Events</h1>
+                <p className="app-tagline text-base sm:text-lg opacity-80 mb-8 text-app">
                   Delicious moments for every occasion
                 </p>
                 <button
-                  className="primary-btn"
+                  className="primary-btn bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white px-8 py-3 rounded-full font-semibold transition-all hover:scale-105"
                   onClick={() => setShowLogin(true)}
                 >
                   Enter App →

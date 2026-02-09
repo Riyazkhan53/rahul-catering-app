@@ -34,7 +34,7 @@ export default function Toast({ message, type = "info" }) {
   return (
     <div
       className={`
-        relative overflow-hidden min-w-[300px]
+        relative overflow-hidden min-w-[280px] sm:min-w-[300px] max-w-[90vw] sm:max-w-md
         rounded-xl backdrop-blur-xl
         bg-white/70 dark:bg-black/40
         border border-white/30 dark:border-white/10
@@ -48,15 +48,15 @@ export default function Toast({ message, type = "info" }) {
       />
 
       {/* Content */}
-      <div className="flex items-start gap-3 px-4 py-4">
+      <div className="flex items-start gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4">
         <div
-          className={`p-2 rounded-full bg-gradient-to-br ${gradient} text-white`}
+          className={`p-1.5 sm:p-2 rounded-full bg-gradient-to-br ${gradient} text-white flex-shrink-0`}
         >
-          <Icon className="w-5 h-5" />
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
 
-        <div className="flex-1">
-          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white break-words">
             {message}
           </p>
         </div>

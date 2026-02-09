@@ -32,20 +32,20 @@ export default function Menu() {
 function CategoryGrid({ onSelect }) {
   return (
     <div className="w-full max-w-5xl">
-      <h2 className="text-2xl font-bold mb-6 text-center">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center text-app">
         🍽️ Menu Categories
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
         {MENU_CATEGORIES.map(cat => (
           <div
             key={cat.key}
             onClick={() => onSelect(cat)}
-            className="bg-white shadow-lg rounded-xl p-6 text-center cursor-pointer
-                       hover:scale-105 transition-transform"
+            className="bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/50 rounded-xl p-4 sm:p-6 text-center cursor-pointer
+                       hover:scale-105 active:scale-95 transition-transform"
           >
-            <div className="text-5xl mb-3">{cat.icon}</div>
-            <h3 className="text-lg font-semibold">{cat.label}</h3>
+            <div className="text-4xl sm:text-5xl mb-2 sm:mb-3">{cat.icon}</div>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">{cat.label}</h3>
           </div>
         ))}
       </div>

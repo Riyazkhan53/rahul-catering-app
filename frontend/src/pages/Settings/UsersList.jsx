@@ -21,14 +21,14 @@ export default function ChefListModal({ onClose }) {
         {chefs.map((chef) => (
           <div
             key={chef._id}
-            className="flex justify-between items-center border rounded-lg px-4 py-3"
+            className="flex justify-between items-center border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 bg-gray-50 dark:bg-gray-700/50"
           >
             <div>
-              <p className="font-semibold">{chef.name}</p>
-              <p className="text-sm text-gray-500">{chef.username}</p>
+              <p className="font-semibold text-gray-900 dark:text-gray-100">{chef.name}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{chef.username}</p>
             </div>
 
-            <span className="text-xs bg-gray-100 px-3 py-1 rounded-full">
+            <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full">
               CHEF
             </span>
           </div>

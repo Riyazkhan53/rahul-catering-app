@@ -8,12 +8,14 @@
     --bg-app: linear-gradient(135deg, #fff5e6, #ffe0b2);
     --text-app: #1f2937;
     --card-bg: rgba(255, 255, 255, 0.95);
+    --border-color: rgba(229, 231, 235, 0.8);
   }
 
   html.dark {
     --bg-app: linear-gradient(135deg, #0f172a, #1e293b);
     --text-app: #f8fafc;
-    --card-bg: rgba(255, 255, 255, 0.08);
+    --card-bg: rgba(30, 41, 59, 0.85);
+    --border-color: rgba(55, 65, 81, 0.6);
   }
 
   body {
@@ -30,7 +32,12 @@
 
   input::placeholder,
   textarea::placeholder {
-    color: rgba(156, 163, 175, 0.8); /* gray-400 */
+    color: rgba(156, 163, 175, 0.8);
+  }
+
+  html.dark input::placeholder,
+  html.dark textarea::placeholder {
+    color: rgba(156, 163, 175, 0.5);
   }
 
   input:focus,
@@ -228,14 +235,16 @@ body {
   box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* Dark mode */
 .dark .glass-card {
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(30, 41, 59, 0.85);
   box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.6),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(55, 65, 81, 0.5);
 }
 
 
@@ -276,7 +285,7 @@ body {
 
 /* Dark mode */
 .dark .glass-input {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(30, 41, 59, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #f9fafb;
 
@@ -287,6 +296,17 @@ body {
 
 .dark .glass-input::placeholder {
   color: rgba(255, 255, 255, 0.4);
+}
+
+.dark .glass-input:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.dark .glass-input:focus {
+  border-color: rgba(249, 115, 22, 0.6);
+  box-shadow:
+    0 0 0 2px rgba(249, 115, 22, 0.25),
+    0 6px 16px rgba(249, 115, 22, 0.2);
 }
 
 
@@ -328,6 +348,71 @@ body {
 
 .glass-button:active {
   transform: translateY(0);
+}
+
+/* Menu Item Slide In Animation */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Tab Switch Animation */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Pulse Animation for Active Indicator */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Bounce Animation */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Rotate Animation */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 

@@ -24,7 +24,7 @@ export function ToastProvider({ children }) {
       {children}
 
       {/* Toast Container */}
-      <div className="fixed top-6 right-6 z-50 space-y-3">
+      <div className="fixed top-4 sm:top-6 right-3 sm:right-6 z-50 space-y-2 sm:space-y-3 max-w-[calc(100vw-1.5rem)] sm:max-w-none">
         {toasts.map((toast) => (
           <Toast key={toast.id} {...toast} />
         ))}
