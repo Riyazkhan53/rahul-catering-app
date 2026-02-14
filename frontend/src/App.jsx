@@ -8,6 +8,7 @@ import ListPrintRoute from "./print/listPrintRoute";
 import { apiRequest } from "./api/api";
 import AppLayout from "./Layouts/AppLayout";
 import CateringLoader from "./Components/CateringLoader";
+import UpdatePrompt from "./Components/UpdatePrompt";
 import { syncPendingItems, pullItemsFromServer } from "./sync/itemSync";
 
 const getInitialTheme = () =>
@@ -66,6 +67,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <UpdatePrompt />
       <AppLayout isDark={isDark}>
         {!user ? (
           showLogin ? (
