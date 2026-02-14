@@ -14,6 +14,8 @@ import Invoice from "./InvoiceBilling/Invoice"
 import MenuListCreator from "./MenuListCreator/MenuListCreator"
 import useIsDesktop from "../hooks/uselsDesktop";
 import AppSettings from "./AppSettings/AppSettings";
+import { useSwipe } from "../hooks/useSwipe";
+import SwipeIndicator from "../Components/SwipeIndicator";
 
 export default function Dashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState(() => {
@@ -21,6 +23,7 @@ export default function Dashboard({ user, onLogout }) {
   });
   const isDesktop = useIsDesktop();
   const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
+  const [swipeDirection, setSwipeDirection] = useState(null);
 
   useEffect(() => {
     localStorage.setItem("activeTab", activeTab);
@@ -83,8 +86,61 @@ export default function Dashboard({ user, onLogout }) {
     return pages[activeTab] || <DashboardHome />;
   };
 
+  // Get tab order based on user role
+  const getTabOrder = () => {
+    if (user?.role === "admin") {
+      return ["dashboard", "orders", "menu", "settings", "setup", "appsettings"];
+    }
+    return ["dashboard", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"];
+  };
+
+  // Navigate to previous/next tab
+  const navigateTabs = (direction) => {
+    const tabs = getTabOrder();
+    const currentIndex = tabs.indexOf(activeTab);
+    
+    if (direction === "next" && currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1]);
+      showSwipeIndicator('left');
+    } else if (direction === "prev" && currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1]);
+      showSwipeIndicator('right');
+    }
+  };
+
+  // Show swipe indicator briefly
+  const showSwipeIndicator = (direction) => {
+    setSwipeDirection(direction);
+    setTimeout(() => setSwipeDirection(null), 500);
+  };
+
+  // Swipe handlers - only on mobile
+  const swipeRef = useSwipe(
+    !isDesktop ? {
+      onSwipeRight: () => {
+        if (!sidebarOpen) {
+          setSidebarOpen(true); // Open sidebar on right swipe
+        } else {
+          navigateTabs("prev"); // Navigate back
+        }
+      },
+      onSwipeLeft: () => {
+        if (sidebarOpen) {
+          setSidebarOpen(false); // Close sidebar on left swipe
+        } else {
+          navigateTabs("next"); // Navigate forward
+        }
+      },
+    } : {},
+    60, // min swipe distance
+    300 // max swipe time
+  );
+
   return (
-    <div className="flex min-h-screen bg-app text-app">
+    <div className="flex min-h-screen bg-app text-app" ref={swipeRef}>
+
+      {/* Swipe Direction Indicator */}
+      {!isDesktop && <SwipeIndicator direction={swipeDirection} show={!!swipeDirection} />}
 
       {/* Sidebar */}
       <Sidebar
