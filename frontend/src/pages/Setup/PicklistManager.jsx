@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -9,9 +9,15 @@ import {
   Loader2,
   Search,
   ListFilter,
+  RefreshCw,
 } from "lucide-react";
 import { picklistService } from "../../api/service";
 import { useToast } from "../../context/ToastContext";
+import {
+  savePicklistCache,
+  getPicklistCache,
+  getAllPicklistCache,
+} from "../../db/indexedDB";
 
 const PICKLIST_TYPES = [
   {
@@ -49,9 +55,10 @@ const PICKLIST_TYPES = [
 export default function PicklistManager() {
   const { showToast } = useToast();
   const [activeType, setActiveType] = useState(PICKLIST_TYPES[0].key);
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [allData, setAllData] = useState({});
+  const [initialLoading, setInitialLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const fetchedRef = useRef(false);
 
   // Add form
   const [showAdd, setShowAdd] = useState(false);
@@ -66,21 +73,68 @@ export default function PicklistManager() {
   // Delete state
   const [deleteLoading, setDeleteLoading] = useState(null);
 
-  useEffect(() => {
-    loadItems();
-  }, [activeType]);
+  // Sync status
+  const [syncing, setSyncing] = useState(false);
 
-  const loadItems = async () => {
-    setLoading(true);
+  // On mount: load from IDB first, then sync from API once
+  useEffect(() => {
+    loadAllFromIDB().then(() => {
+      if (!fetchedRef.current) {
+        fetchedRef.current = true;
+        syncAllFromAPI();
+      }
+    });
+  }, []);
+
+  const loadAllFromIDB = async () => {
     try {
-      const data = await picklistService.get(activeType);
-      setItems(data);
+      const cached = await getAllPicklistCache();
+      if (Object.keys(cached).length > 0) {
+        setAllData(cached);
+      }
     } catch (err) {
-      console.error("Failed to load picklist:", err);
-      showToast("Failed to load data", "error");
+      console.error("Failed to load from IDB:", err);
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
     }
+  };
+
+  const syncAllFromAPI = async () => {
+    setSyncing(true);
+    const newData = {};
+    try {
+      const results = await Promise.allSettled(
+        PICKLIST_TYPES.map(async (type) => {
+          const items = await picklistService.get(type.key);
+          return { key: type.key, items: Array.isArray(items) ? items : [] };
+        })
+      );
+
+      for (const result of results) {
+        if (result.status === "fulfilled") {
+          newData[result.value.key] = result.value.items;
+          await savePicklistCache(result.value.key, result.value.items);
+        }
+      }
+
+      // Merge: keep IDB data for types that failed, update with API data for those that succeeded
+      setAllData((prev) => ({ ...prev, ...newData }));
+    } catch (err) {
+      console.error("API sync failed:", err);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const items = allData[activeType] || [];
+
+  const updateLocalData = (type, updater) => {
+    setAllData((prev) => {
+      const updated = updater(prev[type] || []);
+      // Also update IDB in background
+      savePicklistCache(type, updated).catch(console.error);
+      return { ...prev, [type]: updated };
+    });
   };
 
   const handleAdd = async () => {
@@ -97,7 +151,7 @@ export default function PicklistManager() {
         value: addForm.value.trim() || addForm.label.trim().toLowerCase().replace(/\s+/g, "_"),
         order: items.length,
       });
-      setItems((prev) => [...prev, newItem]);
+      updateLocalData(activeType, (prev) => [...prev, newItem]);
       setAddForm({ code: "", label: "", value: "" });
       setShowAdd(false);
       showToast("Item added", "success");
@@ -132,7 +186,9 @@ export default function PicklistManager() {
         label: editForm.label.trim(),
         value: editForm.value.trim() || editForm.label.trim().toLowerCase().replace(/\s+/g, "_"),
       });
-      setItems((prev) => prev.map((i) => (i._id === id ? updated : i)));
+      updateLocalData(activeType, (prev) =>
+        prev.map((i) => (i._id === id ? updated : i))
+      );
       cancelEdit();
       showToast("Item updated", "success");
     } catch (err) {
@@ -149,7 +205,9 @@ export default function PicklistManager() {
     setDeleteLoading(id);
     try {
       await picklistService.delete(activeType, id);
-      setItems((prev) => prev.filter((i) => i._id !== id));
+      updateLocalData(activeType, (prev) =>
+        prev.filter((i) => i._id !== id)
+      );
       showToast("Item deleted", "success");
     } catch (err) {
       console.error("Delete failed:", err);
@@ -201,6 +259,12 @@ export default function PicklistManager() {
           <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full">
             {items.length}
           </span>
+          {syncing && (
+            <span className="flex items-center gap-1 text-xs text-orange-500">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Syncing...
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -214,6 +278,14 @@ export default function PicklistManager() {
               className="pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 w-40 sm:w-48 focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 outline-none"
             />
           </div>
+          <button
+            onClick={() => syncAllFromAPI()}
+            disabled={syncing}
+            className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition disabled:opacity-50"
+            title="Refresh from server"
+          >
+            <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
+          </button>
           <button
             onClick={() => {
               setShowAdd(!showAdd);
@@ -295,7 +367,7 @@ export default function PicklistManager() {
       </AnimatePresence>
 
       {/* Items List */}
-      {loading ? (
+      {initialLoading ? (
         <div className="flex items-center justify-center py-16 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin mr-2" />
           Loading...

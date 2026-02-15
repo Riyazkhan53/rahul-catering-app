@@ -1,5 +1,5 @@
 const DB_NAME = "rahul_catering_db";
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 const LIST_STORE = "generated_lists";
 const ITEM_STORE = "items_master";
@@ -8,6 +8,7 @@ const GENERATED_LIST_STORE = "generated_lists";
 const EVENT_DATES = "event_dates";
 const QUOTATION_STORE = "quotations";
 const MENU_PLAN_STORE = "menu_plans";
+const PICKLIST_CACHE_STORE = "picklist_cache";
 
 export function openDB() {
   return new Promise((resolve, reject) => {
@@ -46,6 +47,10 @@ export function openDB() {
 
       if (!db.objectStoreNames.contains(MENU_PLAN_STORE)) {
         db.createObjectStore(MENU_PLAN_STORE, { keyPath: "id" });
+      }
+
+      if (!db.objectStoreNames.contains(PICKLIST_CACHE_STORE)) {
+        db.createObjectStore(PICKLIST_CACHE_STORE, { keyPath: "type" });
       }
     };
 
@@ -514,5 +519,46 @@ export async function deleteMenuPlan(id) {
     store.delete(id);
     tx.oncomplete = () => resolve(true);
     tx.onerror = () => reject(tx.error);
+  });
+}
+
+/* ---------- PICKLIST CACHE ---------- */
+
+export async function savePicklistCache(type, items) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(PICKLIST_CACHE_STORE, "readwrite");
+    const store = tx.objectStore(PICKLIST_CACHE_STORE);
+    store.put({ type, items, updatedAt: Date.now() });
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getPicklistCache(type) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(PICKLIST_CACHE_STORE, "readonly");
+    const store = tx.objectStore(PICKLIST_CACHE_STORE);
+    const req = store.get(type);
+    req.onsuccess = () => resolve(req.result?.items || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getAllPicklistCache() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(PICKLIST_CACHE_STORE, "readonly");
+    const store = tx.objectStore(PICKLIST_CACHE_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => {
+      const map = {};
+      req.result.forEach((r) => {
+        map[r.type] = r.items || [];
+      });
+      resolve(map);
+    };
+    req.onerror = () => reject(req.error);
   });
 }
