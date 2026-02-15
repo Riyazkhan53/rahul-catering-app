@@ -24,6 +24,13 @@ export default function InvoiceBillingHome({ onSelect }) {
 
                 <CardButton
                     icon={null}
+                    title="Event Menu Plan"
+                    description="Plan multi-day event menus"
+                    onClick={() => onSelect("event-menu-plan")}
+                />
+
+                <CardButton
+                    icon={null}
                     title="View Documents"
                     description="Invoices, bills & quotations"
                     onClick={() => onSelect("documents")}

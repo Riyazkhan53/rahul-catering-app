@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import InvoiceBillingHome from "./Invoice/InvoiceBillingHome";
 import CreateInvoice from "./Invoice/CreateInvoice";
+import CreateQuotation from "./Invoice/CreateQuotation";
+import EventMenuPlan from "./Invoice/EventMenuPlan";
 import PdfLayout from "../../utils/InvoiceTemplate";
 import InvoicePreview from "../../pdf/invoicePreview";
 import BackHeader from "../../Components/BackHeader";
@@ -10,7 +12,7 @@ export default function InvoiceBillingPage() {
     const [view, setView] = useState("home");
     const [invoice, setInvoice] = useState({
         type: "INVOICE",
-        invoiceNo: "INV-0001", // later auto-generate
+        invoiceNo: "INV-0001",
         date: new Date().toISOString().slice(0, 10),
 
         client: {
@@ -33,7 +35,6 @@ export default function InvoiceBillingPage() {
             tax: 0
         }
     });
-    // home | create-invoice | create-quotation | documents
 
     return (
         <motion.div
@@ -50,13 +51,11 @@ export default function InvoiceBillingPage() {
             )}
 
             {view === "create-quotation" && (
-                <CreateInvoice
-                    type="QUOTATION"
-                    onSelect={setView}
-                    invoice={invoice}
-                    setInvoice={setInvoice}
-                    onBack={() => setView("home")}
-                />
+                <CreateQuotation onBack={() => setView("home")} />
+            )}
+
+            {view === "event-menu-plan" && (
+                <EventMenuPlan onBack={() => setView("home")} />
             )}
 
             {view === "preview" && (

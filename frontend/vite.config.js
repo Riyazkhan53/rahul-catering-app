@@ -14,6 +14,7 @@ export default defineConfig({
       disable: isElectron,
       registerType: 'prompt',
       workbox: {
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
         cleanupOutdatedCaches: true,
         skipWaiting: false,
         clientsClaim: true,
