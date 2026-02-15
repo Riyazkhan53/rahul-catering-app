@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Plus, Trash2, Download, X, ChevronDown, ChevronUp } from "lucide-react";
 import { saveAs } from "file-saver";
 import { generateMenuPlanPDF } from "../../../utils/generateMenuPlanPDF";
+import { saveMenuPlan } from "../../../db/indexedDB";
 
 // Menu categories
 const MENU_CATEGORIES = [
@@ -143,7 +144,13 @@ export default function EventMenuPlan({ onBack }) {
       const blob = new Blob([pdfBytes], { type: "application/pdf" });
       saveAs(blob, `MenuPlan_${formData.eventName}_${Date.now()}.pdf`);
 
-      alert("Menu Plan PDF generated successfully!");
+      await saveMenuPlan({
+        id: menuPlanData.planNumber,
+        ...menuPlanData,
+        createdAt: Date.now(),
+      });
+
+      alert("Menu Plan saved & PDF generated successfully!");
     } catch (error) {
       console.error("PDF generation error:", error);
       alert("Failed to generate PDF. Please try again.");

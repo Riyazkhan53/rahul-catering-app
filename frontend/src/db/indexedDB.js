@@ -1,11 +1,13 @@
 const DB_NAME = "rahul_catering_db";
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 const LIST_STORE = "generated_lists";
 const ITEM_STORE = "items_master";
 const AUTH_STORE = "auth_cache";
 const GENERATED_LIST_STORE = "generated_lists";
 const EVENT_DATES = "event_dates";
+const QUOTATION_STORE = "quotations";
+const MENU_PLAN_STORE = "menu_plans";
 
 export function openDB() {
   return new Promise((resolve, reject) => {
@@ -25,7 +27,7 @@ export function openDB() {
         });
       }
 
-      // 🔐 AUTH STORE
+      // AUTH STORE
       if (!db.objectStoreNames.contains(AUTH_STORE)) {
         db.createObjectStore(AUTH_STORE, {
           keyPath: "username",
@@ -33,10 +35,18 @@ export function openDB() {
       }
 
       if (!db.objectStoreNames.contains(EVENT_DATES)) {
-    db.createObjectStore(EVENT_DATES, {
-      keyPath: "date", // YYYY-MM-DD
-    });
-  }
+        db.createObjectStore(EVENT_DATES, {
+          keyPath: "date", // YYYY-MM-DD
+        });
+      }
+
+      if (!db.objectStoreNames.contains(QUOTATION_STORE)) {
+        db.createObjectStore(QUOTATION_STORE, { keyPath: "id" });
+      }
+
+      if (!db.objectStoreNames.contains(MENU_PLAN_STORE)) {
+        db.createObjectStore(MENU_PLAN_STORE, { keyPath: "id" });
+      }
     };
 
     request.onsuccess = () => resolve(request.result);
@@ -412,5 +422,97 @@ export async function deleteEventById(date, eventId) {
       resolve();
     };
     req.onerror = () => reject(req.error);
+  });
+}
+
+/* ---------- QUOTATIONS ---------- */
+
+export async function saveQuotation(quotation) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(QUOTATION_STORE, "readwrite");
+    const store = tx.objectStore(QUOTATION_STORE);
+    store.put(quotation);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getAllQuotations() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(QUOTATION_STORE, "readonly");
+    const store = tx.objectStore(QUOTATION_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getQuotationById(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(QUOTATION_STORE, "readonly");
+    const store = tx.objectStore(QUOTATION_STORE);
+    const req = store.get(id);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function deleteQuotation(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(QUOTATION_STORE, "readwrite");
+    const store = tx.objectStore(QUOTATION_STORE);
+    store.delete(id);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/* ---------- MENU PLANS ---------- */
+
+export async function saveMenuPlan(menuPlan) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(MENU_PLAN_STORE, "readwrite");
+    const store = tx.objectStore(MENU_PLAN_STORE);
+    store.put(menuPlan);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getAllMenuPlans() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(MENU_PLAN_STORE, "readonly");
+    const store = tx.objectStore(MENU_PLAN_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getMenuPlanById(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(MENU_PLAN_STORE, "readonly");
+    const store = tx.objectStore(MENU_PLAN_STORE);
+    const req = store.get(id);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function deleteMenuPlan(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(MENU_PLAN_STORE, "readwrite");
+    const store = tx.objectStore(MENU_PLAN_STORE);
+    store.delete(id);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
   });
 }

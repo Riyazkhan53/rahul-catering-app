@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Plus, Trash2, Download, X } from "lucide-react";
 import { saveAs } from "file-saver";
 import { generateQuotationPDF } from "../../../utils/generateQuotationPDF";
+import { saveQuotation } from "../../../db/indexedDB";
 
 // Sample dishes for catering
 const SAMPLE_DISHES = [
@@ -132,8 +133,14 @@ export default function CreateQuotation({ onBack }) {
       const pdfBytes = await generateQuotationPDF(quotationData);
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       saveAs(blob, `Quotation_${formData.customerName}_${Date.now()}.pdf`);
-      
-      alert("Quotation PDF generated successfully!");
+
+      await saveQuotation({
+        id: quotationData.quotationNumber,
+        ...quotationData,
+        createdAt: Date.now(),
+      });
+
+      alert("Quotation saved & PDF generated successfully!");
     } catch (error) {
       console.error("PDF generation error:", error);
       alert("Failed to generate PDF. Please try again.");
