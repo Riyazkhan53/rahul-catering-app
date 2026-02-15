@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Trash2, FileText, Calendar, X, Download } from "lucide-react";
-import { saveAs } from "file-saver";
 import {
   getAllQuotations,
   deleteQuotation,
@@ -10,8 +9,11 @@ import {
 } from "../../../db/indexedDB";
 import { generateQuotationPDF } from "../../../utils/generateQuotationPDF";
 import { generateMenuPlanPDF } from "../../../utils/generateMenuPlanPDF";
+import { savePdfFile } from "../../../utils/savePdf";
+import { useToast } from "../../../context/ToastContext";
 
 export default function ViewDocuments({ onBack }) {
+  const { showToast } = useToast();
   const [tab, setTab] = useState("quotations");
   const [quotations, setQuotations] = useState([]);
   const [menuPlans, setMenuPlans] = useState([]);
@@ -49,22 +51,22 @@ export default function ViewDocuments({ onBack }) {
   const handleRedownloadQuotation = async (quotation) => {
     try {
       const pdfBytes = await generateQuotationPDF(quotation);
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
-      saveAs(blob, `Quotation_${quotation.customerName}_${quotation.id}.pdf`);
+      await savePdfFile(pdfBytes, `Quotation_${quotation.customerName}_${quotation.id}.pdf`);
+      showToast("PDF generated successfully!", "success");
     } catch (err) {
       console.error("PDF re-generation error:", err);
-      alert("Failed to generate PDF.");
+      showToast("Failed to generate PDF.", "error");
     }
   };
 
   const handleRedownloadMenuPlan = async (plan) => {
     try {
       const pdfBytes = await generateMenuPlanPDF(plan);
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
-      saveAs(blob, `MenuPlan_${plan.eventName}_${plan.id}.pdf`);
+      await savePdfFile(pdfBytes, `MenuPlan_${plan.eventName}_${plan.id}.pdf`);
+      showToast("PDF generated successfully!", "success");
     } catch (err) {
       console.error("PDF re-generation error:", err);
-      alert("Failed to generate PDF.");
+      showToast("Failed to generate PDF.", "error");
     }
   };
 

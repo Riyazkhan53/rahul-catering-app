@@ -50,6 +50,10 @@ export const itemService = {
 /* -------------------- */
 
 export const picklistService = {
+  getAll() {
+    return apiRequest("/api/picklist");
+  },
+
   get(picklist, category) {
     const q = category ? `?category=${category}` : "";
     return apiRequest(`/api/picklist/${picklist}${q}`);

@@ -1,6 +1,7 @@
 import express from "express";
 import auth from "../middleware/auth.middleware.js";
 import {
+  getAllPicklists,
   getPicklist,
   addPicklistItem,
   updatePicklistItem,
@@ -9,6 +10,7 @@ import {
 
 const router = express.Router();
 
+router.get("/", auth, getAllPicklists);
 router.get("/:picklist", auth, getPicklist);
 router.post("/:picklist", auth, addPicklistItem);
 router.put("/:picklist/:id", auth, updatePicklistItem);

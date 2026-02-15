@@ -101,24 +101,27 @@ export default function PicklistManager() {
 
   const syncAllFromAPI = async () => {
     setSyncing(true);
-    const newData = {};
     try {
-      const results = await Promise.allSettled(
-        PICKLIST_TYPES.map(async (type) => {
-          const items = await picklistService.get(type.key);
-          return { key: type.key, items: Array.isArray(items) ? items : [] };
-        })
-      );
+      const allItems = await picklistService.getAll();
+      const arr = Array.isArray(allItems) ? allItems : [];
 
-      for (const result of results) {
-        if (result.status === "fulfilled") {
-          newData[result.value.key] = result.value.items;
-          await savePicklistCache(result.value.key, result.value.items);
+      // Group items by their picklist type
+      const grouped = {};
+      PICKLIST_TYPES.forEach((t) => (grouped[t.key] = []));
+      arr.forEach((item) => {
+        if (grouped[item.picklist]) {
+          grouped[item.picklist].push(item);
+        } else {
+          grouped[item.picklist] = [item];
         }
+      });
+
+      // Save each type to IDB cache
+      for (const key of Object.keys(grouped)) {
+        await savePicklistCache(key, grouped[key]);
       }
 
-      // Merge: keep IDB data for types that failed, update with API data for those that succeeded
-      setAllData((prev) => ({ ...prev, ...newData }));
+      setAllData(grouped);
     } catch (err) {
       console.error("API sync failed:", err);
     } finally {

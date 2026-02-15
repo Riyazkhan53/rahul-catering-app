@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Trash2, Download, X } from "lucide-react";
-import { saveAs } from "file-saver";
 import { generateQuotationPDF } from "../../../utils/generateQuotationPDF";
+import { savePdfFile } from "../../../utils/savePdf";
 import { saveQuotation } from "../../../db/indexedDB";
+import { useToast } from "../../../context/ToastContext";
 
 // Sample dishes for catering
 const SAMPLE_DISHES = [
@@ -33,6 +34,7 @@ const ADDITIONAL_SERVICES = [
 ];
 
 export default function CreateQuotation({ onBack }) {
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     customerName: "",
     customerPhone: "",
@@ -114,7 +116,7 @@ export default function CreateQuotation({ onBack }) {
 
   const handleGeneratePDF = async () => {
     if (!formData.customerName || !formData.eventDate || selectedDishes.length === 0) {
-      alert("Please fill customer name, event date and select at least one dish");
+      showToast("Please fill customer name, event date and select at least one dish", "error");
       return;
     }
 
@@ -131,8 +133,7 @@ export default function CreateQuotation({ onBack }) {
       };
 
       const pdfBytes = await generateQuotationPDF(quotationData);
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      saveAs(blob, `Quotation_${formData.customerName}_${Date.now()}.pdf`);
+      await savePdfFile(pdfBytes, `Quotation_${formData.customerName}_${Date.now()}.pdf`);
 
       await saveQuotation({
         id: quotationData.quotationNumber,
@@ -140,10 +141,10 @@ export default function CreateQuotation({ onBack }) {
         createdAt: Date.now(),
       });
 
-      alert("Quotation saved & PDF generated successfully!");
+      showToast("Quotation saved & PDF generated successfully!", "success");
     } catch (error) {
       console.error("PDF generation error:", error);
-      alert("Failed to generate PDF. Please try again.");
+      showToast("Failed to generate PDF. Please try again.", "error");
     } finally {
       setLoading(false);
     }

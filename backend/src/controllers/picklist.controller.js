@@ -1,5 +1,11 @@
 import Picklist from "../models/Picklist.js";
 
+/* ---------------- GET ALL ------------ */
+export async function getAllPicklists(req, res) {
+  const items = await Picklist.find({ active: true }).sort({ picklist: 1, order: 1 });
+  res.json(items);
+}
+
 /* ---------------- GET ---------------- */
 export async function getPicklist(req, res) {
   const { picklist } = req.params;

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Trash2, Download, X, ChevronDown, ChevronUp } from "lucide-react";
-import { saveAs } from "file-saver";
 import { generateMenuPlanPDF } from "../../../utils/generateMenuPlanPDF";
+import { savePdfFile } from "../../../utils/savePdf";
 import { saveMenuPlan } from "../../../db/indexedDB";
+import { useToast } from "../../../context/ToastContext";
 
 // Menu categories
 const MENU_CATEGORIES = [
@@ -22,6 +23,7 @@ const SESSIONS = [
 ];
 
 export default function EventMenuPlan({ onBack }) {
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     eventName: "",
     eventDate: "",
@@ -115,7 +117,7 @@ export default function EventMenuPlan({ onBack }) {
 
   const handleGeneratePDF = async () => {
     if (!formData.eventName || !formData.eventDate) {
-      alert("Please fill event name and date");
+      showToast("Please fill event name and date", "error");
       return;
     }
 
@@ -126,7 +128,7 @@ export default function EventMenuPlan({ onBack }) {
     );
 
     if (!hasMenuItems) {
-      alert("Please add at least one menu item");
+      showToast("Please add at least one menu item", "error");
       return;
     }
 
@@ -141,8 +143,7 @@ export default function EventMenuPlan({ onBack }) {
       };
 
       const pdfBytes = await generateMenuPlanPDF(menuPlanData);
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
-      saveAs(blob, `MenuPlan_${formData.eventName}_${Date.now()}.pdf`);
+      await savePdfFile(pdfBytes, `MenuPlan_${formData.eventName}_${Date.now()}.pdf`);
 
       await saveMenuPlan({
         id: menuPlanData.planNumber,
@@ -150,10 +151,10 @@ export default function EventMenuPlan({ onBack }) {
         createdAt: Date.now(),
       });
 
-      alert("Menu Plan saved & PDF generated successfully!");
+      showToast("Menu Plan saved & PDF generated successfully!", "success");
     } catch (error) {
       console.error("PDF generation error:", error);
-      alert("Failed to generate PDF. Please try again.");
+      showToast("Failed to generate PDF. Please try again.", "error");
     } finally {
       setLoading(false);
     }
