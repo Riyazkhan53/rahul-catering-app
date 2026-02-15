@@ -31,10 +31,47 @@ export default function GenerateSingleList() {
         setItems(data);
     };
 
-    const filteredItems =
-        categoryFilter === "all"
-            ? items
-            : items.filter((i) => i.category === categoryFilter);
+    // Filter and group items by category
+    const getGroupedItems = () => {
+        if (categoryFilter === "all") {
+            // Group items by category in the order defined in itemsCategory
+            const grouped = {};
+            
+            // Initialize groups in category order
+            itemsCategory.forEach((cat) => {
+                grouped[cat.value] = [];
+            });
+            
+            // Add items to their respective categories
+            items.forEach((item) => {
+                const category = item.category || "Uncategorized";
+                if (grouped[category]) {
+                    grouped[category].push(item);
+                } else {
+                    // Handle uncategorized items
+                    if (!grouped["Uncategorized"]) {
+                        grouped["Uncategorized"] = [];
+                    }
+                    grouped["Uncategorized"].push(item);
+                }
+            });
+            
+            return grouped;
+        } else {
+            // Single category - return as single group
+            return {
+                [categoryFilter]: items.filter((i) => i.category === categoryFilter)
+            };
+        }
+    };
+
+    const groupedItems = getGroupedItems();
+    
+    // Get category display name
+    const getCategoryLabel = (categoryValue) => {
+        const cat = itemsCategory.find(c => c.value === categoryValue);
+        return cat ? cat.label : categoryValue;
+    };
 
     const generateListId = () => {
         const random = Math.floor(1000 + Math.random() * 9000);
@@ -188,117 +225,136 @@ export default function GenerateSingleList() {
                 <div className="col-span-3">Quantity</div>
             </div>
 
-            {/* Items */}
-            <div className="space-y-3 max-h-[420px] overflow-y-auto pr-2">
-                {filteredItems && filteredItems.map((item) => {
-                    const isChecked = !!selected[item.itemId];
+            {/* Items - Grouped by Category */}
+            <div className="space-y-6 max-h-[420px] overflow-y-auto pr-2">
+                {Object.keys(groupedItems).map((categoryKey) => {
+                    const categoryItems = groupedItems[categoryKey];
+                    
+                    if (!categoryItems || categoryItems.length === 0) return null;
 
                     return (
-                        <div
-                            key={item.itemId}
-                            onClick={() => toggleItem(item)}
-                            className={`grid grid-cols-12 items-center gap-2 p-3 rounded-lg border
-                transition
-                ${isChecked
-                                    ? "border-orange-400 bg-orange-50 dark:bg-white/5"
-                                    : "border-gray-200 dark:border-white/10"
-                                }`}
-                        >
-                            {/* Checkbox */}
-                            <div className="col-span-1 flex justify-center">
-                                <Checkbox
-  type="checkbox"
-  checked={isChecked}
-  onChange={(e) => {
-    // e.stopPropagation();
-    // toggleItem(item);
-  }}
-  className="w-4 h-4 accent-orange-500"
-/>
-                            </div>
+                        <div key={categoryKey} className="space-y-3">
+                            {/* Category Header - Only show when "All" is selected */}
+                            {categoryFilter === "all" && (
+                                <div className="sticky top-0 z-10 bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 backdrop-blur-sm px-4 py-2 rounded-lg border border-orange-200 dark:border-orange-700/50">
+                                    <h3 className="font-bold text-lg text-orange-700 dark:text-orange-300">
+                                        {getCategoryLabel(categoryKey)}
+                                    </h3>
+                                </div>
+                            )}
 
-                            {/* Name */}
-                            <div className="col-span-5 font-medium" >
-                                {item.name}
-                                <p className="text-xs italic opacity-40">
-                                    {item.description}
-                                </p>
-                            </div>
+                            {/* Category Items */}
+                            {categoryItems.map((item) => {
+                                const isChecked = !!selected[item.itemId];
 
-                            {/* Tamil */}
-                            <div className="col-span-3 opacity-80">
-                                {item.tamilName}
-                            </div>
-
-                            {/* Quantity */}
-                            <div className="col-span-3" onClick={(e) => e.stopPropagation()}>
-                                {isChecked ? (
-                                    <div className="flex gap-2 items-center">
-                                        <Input
-                                            type="text"
-                                            value={selected[item.itemId]?.quantity || ""}
-                                            onChange={(e) => updateQty(item.itemId, e.target.value)}
-                                            className="
-                                                        min-w-[52px]
-                                                        sm:min-w-[72px]
-                                                        px-2 py-2
-                                                        text-base
-                                                        text-black
-                                                        bg-white
-                                                        border
-                                                        rounded-md
-                                                        focus:outline-none
-                                                        focus:ring-2
-                                                        focus:ring-orange-400
-                                                        "
-                                        />
-
-                                        <Input
-                                            type="text"
-                                            value={selected[item.itemId]?.unit || ""}
-                                            onChange={(e) => updateUnit(item.itemId, e.target.value)}
-                                            className="
-                                                        min-w-[52px]
-                                                        sm:min-w-[72px]
-                                                        px-2 py-2
-                                                        text-base
-                                                        text-black
-                                                        bg-white
-                                                        border
-                                                        rounded-md
-                                                        focus:outline-none
-                                                        focus:ring-2
-                                                        focus:ring-orange-400
-                                                        "
-                                            placeholder="unit"
-                                        />
-
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setCommentFor(item.itemId);
-                                                setCommentText(selected[item.itemId]?.comment || "");
-                                            }}
-                                            className={`text-lg ${selected[item.itemId]?.comment
-                                                ? "text-green-500"
-                                                : "text-gray-400"
-                                                }`}
-                                            title="Add comment"
-                                        >
-                                            <MessageSquare
-                                                size={18}
-                                                className={
-                                                    selected[item.itemId]?.comment
-                                                        ? "text-green-600"
-                                                        : "text-gray-400"
-                                                }
+                                return (
+                                    <div
+                                        key={item.itemId}
+                                        onClick={() => toggleItem(item)}
+                                        className={`grid grid-cols-12 items-center gap-2 p-3 rounded-lg border
+                                        transition cursor-pointer
+                                        ${isChecked
+                                                ? "border-orange-400 bg-orange-50 dark:bg-orange-900/20"
+                                                : "border-gray-200 dark:border-white/10 hover:border-orange-200 dark:hover:border-orange-800"
+                                            }`}
+                                    >
+                                        {/* Checkbox */}
+                                        <div className="col-span-1 flex justify-center">
+                                            <Checkbox
+                                                type="checkbox"
+                                                checked={isChecked}
+                                                onChange={(e) => {
+                                                    // Handled by parent div click
+                                                }}
+                                                className="w-4 h-4 accent-orange-500"
                                             />
-                                        </button>
+                                        </div>
+
+                                        {/* Name */}
+                                        <div className="col-span-5 font-medium" >
+                                            {item.name}
+                                            <p className="text-xs italic opacity-40">
+                                                {item.description}
+                                            </p>
+                                        </div>
+
+                                        {/* Tamil */}
+                                        <div className="col-span-3 opacity-80">
+                                            {item.tamilName}
+                                        </div>
+
+                                        {/* Quantity */}
+                                        <div className="col-span-3" onClick={(e) => e.stopPropagation()}>
+                                            {isChecked ? (
+                                                <div className="flex gap-2 items-center">
+                                                    <Input
+                                                        type="text"
+                                                        value={selected[item.itemId]?.quantity || ""}
+                                                        onChange={(e) => updateQty(item.itemId, e.target.value)}
+                                                        className="
+                                                                    min-w-[52px]
+                                                                    sm:min-w-[72px]
+                                                                    px-2 py-2
+                                                                    text-base
+                                                                    text-black
+                                                                    bg-white
+                                                                    border
+                                                                    rounded-md
+                                                                    focus:outline-none
+                                                                    focus:ring-2
+                                                                    focus:ring-orange-400
+                                                                    "
+                                                    />
+
+                                                    <Input
+                                                        type="text"
+                                                        value={selected[item.itemId]?.unit || ""}
+                                                        onChange={(e) => updateUnit(item.itemId, e.target.value)}
+                                                        className="
+                                                                    min-w-[52px]
+                                                                    sm:min-w-[72px]
+                                                                    px-2 py-2
+                                                                    text-base
+                                                                    text-black
+                                                                    bg-white
+                                                                    border
+                                                                    rounded-md
+                                                                    focus:outline-none
+                                                                    focus:ring-2
+                                                                    focus:ring-orange-400
+                                                                    "
+                                                        placeholder="unit"
+                                                    />
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setCommentFor(item.itemId);
+                                                            setCommentText(selected[item.itemId]?.comment || "");
+                                                        }}
+                                                        className={`text-lg ${selected[item.itemId]?.comment
+                                                            ? "text-green-500"
+                                                            : "text-gray-400"
+                                                            }`}
+                                                        title="Add comment"
+                                                    >
+                                                        <MessageSquare
+                                                            size={18}
+                                                            className={
+                                                                selected[item.itemId]?.comment
+                                                                    ? "text-green-600"
+                                                                    : "text-gray-400"
+                                                            }
+                                                        />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <span className="text-sm opacity-50">—</span>
+                                            )}
+                                        </div>
                                     </div>
-                                ) : (
-                                    <span className="text-sm opacity-50">—</span>
-                                )}
-                            </div>
+                                );
+                            })}
                         </div>
                     );
                 })}

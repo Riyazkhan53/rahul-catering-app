@@ -562,3 +562,49 @@ export async function getAllPicklistCache() {
     req.onerror = () => reject(req.error);
   });
 }
+
+/* ---------- ITEM LISTS ---------- */
+
+export async function saveItemList(itemList) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(GENERATED_LIST_STORE, "readwrite");
+    const store = tx.objectStore(GENERATED_LIST_STORE);
+    store.put(itemList);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getAllItemLists() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(GENERATED_LIST_STORE, "readonly");
+    const store = tx.objectStore(GENERATED_LIST_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getItemListById(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(GENERATED_LIST_STORE, "readonly");
+    const store = tx.objectStore(GENERATED_LIST_STORE);
+    const req = store.get(id);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function deleteItemList(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(GENERATED_LIST_STORE, "readwrite");
+    const store = tx.objectStore(GENERATED_LIST_STORE);
+    store.delete(id);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
