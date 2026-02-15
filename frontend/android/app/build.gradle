@@ -3,6 +3,17 @@ apply plugin: 'com.android.application'
 android {
     namespace "com.riyaz.catering"
     compileSdk rootProject.ext.compileSdkVersion
+    
+    // Signing configuration for release builds
+    signingConfigs {
+        release {
+            storeFile file('../../../rahulcatering-release.keystore')
+            storePassword 'RahulCatering2026'
+            keyAlias 'rahul-catering-key'
+            keyPassword 'RahulCatering2026'
+        }
+    }
+    
     defaultConfig {
         applicationId "com.riyaz.catering"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -18,9 +29,16 @@ android {
     }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    
+    // Java version compatibility
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
 }
 

@@ -12,11 +12,10 @@
     "electron:build": "ELECTRON=true npm run build && electron-builder"
   },
   "dependencies": {
-    "@capacitor/android": "^8.0.0",
-    "@capacitor/cli": "^7.4.4",
-    "@capacitor/core": "^8.0.0",
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
     "@capacitor/filesystem": "^8.1.2",
-    "@capacitor/ios": "^8.0.0",
+    "@capacitor/ios": "8.0.1",
     "@capacitor/share": "^8.0.1",
     "@react-pdf/renderer": "^4.3.2",
     "file-saver": "^2.0.5",
@@ -35,6 +34,7 @@
     "vite-plugin-pwa": "^1.2.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.1.0",
     "@eslint/js": "^9.39.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",

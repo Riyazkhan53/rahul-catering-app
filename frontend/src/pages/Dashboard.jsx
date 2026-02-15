@@ -14,8 +14,6 @@ import Invoice from "./InvoiceBilling/Invoice"
 import MenuListCreator from "./MenuListCreator/MenuListCreator"
 import useIsDesktop from "../hooks/uselsDesktop";
 import AppSettings from "./AppSettings/AppSettings";
-import { useSwipe } from "../hooks/useSwipe";
-import SwipeIndicator from "../Components/SwipeIndicator";
 
 export default function Dashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState(() => {
@@ -23,7 +21,6 @@ export default function Dashboard({ user, onLogout }) {
   });
   const isDesktop = useIsDesktop();
   const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
-  const [swipeDirection, setSwipeDirection] = useState(null);
 
   useEffect(() => {
     localStorage.setItem("activeTab", activeTab);
@@ -94,53 +91,8 @@ export default function Dashboard({ user, onLogout }) {
     return ["dashboard", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"];
   };
 
-  // Navigate to previous/next tab
-  const navigateTabs = (direction) => {
-    const tabs = getTabOrder();
-    const currentIndex = tabs.indexOf(activeTab);
-    
-    if (direction === "next" && currentIndex < tabs.length - 1) {
-      setActiveTab(tabs[currentIndex + 1]);
-      showSwipeIndicator('left');
-    } else if (direction === "prev" && currentIndex > 0) {
-      setActiveTab(tabs[currentIndex - 1]);
-      showSwipeIndicator('right');
-    }
-  };
-
-  // Show swipe indicator briefly
-  const showSwipeIndicator = (direction) => {
-    setSwipeDirection(direction);
-    setTimeout(() => setSwipeDirection(null), 500);
-  };
-
-  // Swipe handlers - only on mobile
-  const swipeRef = useSwipe(
-    !isDesktop ? {
-      onSwipeRight: () => {
-        if (!sidebarOpen) {
-          setSidebarOpen(true); // Open sidebar on right swipe
-        } else {
-          navigateTabs("prev"); // Navigate back
-        }
-      },
-      onSwipeLeft: () => {
-        if (sidebarOpen) {
-          setSidebarOpen(false); // Close sidebar on left swipe
-        } else {
-          navigateTabs("next"); // Navigate forward
-        }
-      },
-    } : {},
-    60, // min swipe distance
-    300 // max swipe time
-  );
-
   return (
-    <div className="flex min-h-screen bg-app text-app" ref={swipeRef}>
-
-      {/* Swipe Direction Indicator */}
-      {!isDesktop && <SwipeIndicator direction={swipeDirection} show={!!swipeDirection} />}
+    <div className="flex min-h-screen bg-app text-app overflow-x-hidden">
 
       {/* Sidebar */}
       <Sidebar
@@ -154,7 +106,7 @@ export default function Dashboard({ user, onLogout }) {
 
       {/* Main */}
       <main
-        className={`flex-1 transition-all duration-300
+        className={`flex-1 transition-all duration-300 w-full max-w-full overflow-x-hidden
     ${isDesktop && sidebarOpen ? "ml-64" : "ml-0"}
   `}
       >
@@ -165,7 +117,7 @@ export default function Dashboard({ user, onLogout }) {
           isDesktop={isDesktop}
         />
 
-        <div className="p-3 sm:p-4 md:p-6">
+        <div className="p-3 sm:p-4 md:p-6 w-full max-w-full overflow-x-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -173,6 +125,7 @@ export default function Dashboard({ user, onLogout }) {
               initial="initial"
               animate="animate"
               exit="exit"
+              className="w-full max-w-full overflow-x-hidden"
             >
               {renderPage()}
             </motion.div>
