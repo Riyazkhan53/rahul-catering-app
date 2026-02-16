@@ -198,9 +198,9 @@ export default function OrdersCalender() {
       {/* MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
 
-            <h3 className="text-lg font-bold mb-4">
+            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">
               {mode === "add" ? (editingEventId ? "Edit Event" : "Add Event") : `Events on ${selectedDate}`}
             </h3>
 
@@ -208,7 +208,7 @@ export default function OrdersCalender() {
             {mode === "view" && (
               <div className="space-y-3">
                 {(events[selectedDate] || []).map((evt) => (
-                  <div key={evt.id} className="border rounded p-3 text-sm">
+                  <div key={evt.id} className="border border-gray-200 dark:border-gray-600 rounded p-3 text-sm text-gray-800 dark:text-gray-200">
                     <div className="flex gap-3 mt-2 text-xs">
                       <button
                         className="text-orange-500"
@@ -263,7 +263,7 @@ export default function OrdersCalender() {
                 <div className="flex justify-end mt-4">
                   <button
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2 rounded border"
+                    className="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                   >
                     Close
                   </button>
@@ -278,31 +278,31 @@ export default function OrdersCalender() {
                   placeholder="Event name"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-orange-500 outline-none"
                 />
                 <input
                   placeholder="Client name"
                   value={form.client}
                   onChange={(e) => setForm({ ...form, client: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-orange-500 outline-none"
                 />
                 <input
                   placeholder="Contact"
                   value={form.contact}
                   onChange={(e) => setForm({ ...form, contact: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-orange-500 outline-none"
                 />
                 <textarea
                   placeholder="Notes"
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-orange-500 outline-none"
                 />
 
                 <div className="flex justify-end gap-3">
                   <button
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2 rounded border"
+                    className="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                   >
                     Cancel
                   </button>
@@ -342,7 +342,7 @@ export default function OrdersCalender() {
                       setEditingEventId(null);
                       setMode("view");
                     }}
-                    className="px-4 py-2 rounded bg-orange-500 text-white"
+                    className="px-4 py-2 rounded bg-orange-500 hover:bg-orange-600 text-white transition"
                   >
                     Save
                   </button>

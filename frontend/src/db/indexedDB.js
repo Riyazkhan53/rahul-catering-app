@@ -1,5 +1,5 @@
 const DB_NAME = "rahul_catering_db";
-const DB_VERSION = 6;
+const DB_VERSION = 7;
 
 const LIST_STORE = "generated_lists";
 const ITEM_STORE = "items_master";
@@ -9,6 +9,7 @@ const EVENT_DATES = "event_dates";
 const QUOTATION_STORE = "quotations";
 const MENU_PLAN_STORE = "menu_plans";
 const PICKLIST_CACHE_STORE = "picklist_cache";
+const DISH_STORE = "dishes_master";
 
 export function openDB() {
   return new Promise((resolve, reject) => {
@@ -51,6 +52,10 @@ export function openDB() {
 
       if (!db.objectStoreNames.contains(PICKLIST_CACHE_STORE)) {
         db.createObjectStore(PICKLIST_CACHE_STORE, { keyPath: "type" });
+      }
+
+      if (!db.objectStoreNames.contains(DISH_STORE)) {
+        db.createObjectStore(DISH_STORE, { keyPath: "dishId" });
       }
     };
 
@@ -604,6 +609,55 @@ export async function deleteItemList(id) {
     const tx = db.transaction(GENERATED_LIST_STORE, "readwrite");
     const store = tx.objectStore(GENERATED_LIST_STORE);
     store.delete(id);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/* ---------- DISHES MASTER ---------- */
+
+export async function saveDish(dish) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DISH_STORE, "readwrite");
+    const store = tx.objectStore(DISH_STORE);
+    store.put(dish);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getAllDishes() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DISH_STORE, "readonly");
+    const store = tx.objectStore(DISH_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getDishesByCategory(category) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DISH_STORE, "readonly");
+    const store = tx.objectStore(DISH_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => {
+      const filtered = (req.result || []).filter((d) => d.category === category);
+      resolve(filtered);
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function deleteDish(dishId) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DISH_STORE, "readwrite");
+    const store = tx.objectStore(DISH_STORE);
+    store.delete(dishId);
     tx.oncomplete = () => resolve(true);
     tx.onerror = () => reject(tx.error);
   });

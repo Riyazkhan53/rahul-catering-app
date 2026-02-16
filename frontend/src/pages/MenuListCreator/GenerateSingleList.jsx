@@ -173,7 +173,7 @@ export default function GenerateSingleList() {
     };
 
     return (
-        <div className="card p-6 w-full max-w-5xl">
+        <div className="card p-6 w-full max-w-5xl overflow-x-hidden">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                 <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -182,24 +182,19 @@ export default function GenerateSingleList() {
                 </h2>
 
                 {/* Name + Date */}
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                     <Input
                         type="text"
                         value={listName}
                         onChange={(e) => setListName(e.target.value)}
                         placeholder="List name"
-                        className="px-3 py-2 rounded-md border text-sm
-        bg-transparent focus:outline-none focus:ring-2
-        focus:ring-orange-400"
+                        className="px-3 py-2 rounded-md border text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-orange-400"
                     />
-
                     <Input
                         type="date"
                         value={listDate}
                         onChange={(e) => setListDate(e.target.value)}
-                        className="px-3 py-2 rounded-md border text-sm
-        bg-transparent focus:outline-none focus:ring-2
-        focus:ring-orange-400"
+                        className="px-3 py-2 rounded-md border text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-orange-400"
                     />
                 </div>
 
@@ -217,19 +212,19 @@ export default function GenerateSingleList() {
                 </div>
             </div>
 
-            {/* Table Header */}
-            <div className="grid grid-cols-12 text-sm font-semibold text-gray-500 dark:text-gray-300 border-b pb-2 mb-3">
+            {/* Table Header - hidden on mobile */}
+            <div className="hidden sm:grid grid-cols-12 text-sm font-semibold text-gray-500 dark:text-gray-300 border-b pb-2 mb-3">
                 <div className="col-span-1"></div>
-                <div className="col-span-5">Item</div>
+                <div className="col-span-4">Item</div>
                 <div className="col-span-3">Tamil Name</div>
-                <div className="col-span-3">Quantity</div>
+                <div className="col-span-4">Quantity</div>
             </div>
 
             {/* Items - Grouped by Category */}
-            <div className="space-y-6 max-h-[420px] overflow-y-auto pr-2">
+            <div className="space-y-6 max-h-[420px] overflow-y-auto pr-1">
                 {Object.keys(groupedItems).map((categoryKey) => {
                     const categoryItems = groupedItems[categoryKey];
-                    
+
                     if (!categoryItems || categoryItems.length === 0) return null;
 
                     return (
@@ -251,105 +246,104 @@ export default function GenerateSingleList() {
                                     <div
                                         key={item.itemId}
                                         onClick={() => toggleItem(item)}
-                                        className={`grid grid-cols-12 items-center gap-2 p-3 rounded-lg border
-                                        transition cursor-pointer
-                                        ${isChecked
+                                        className={`p-3 rounded-lg border transition cursor-pointer
+                                            ${isChecked
                                                 ? "border-orange-400 bg-orange-50 dark:bg-orange-900/20"
                                                 : "border-gray-200 dark:border-white/10 hover:border-orange-200 dark:hover:border-orange-800"
                                             }`}
                                     >
-                                        {/* Checkbox */}
-                                        <div className="col-span-1 flex justify-center">
-                                            <Checkbox
-                                                type="checkbox"
-                                                checked={isChecked}
-                                                onChange={(e) => {
-                                                    // Handled by parent div click
-                                                }}
-                                                className="w-4 h-4 accent-orange-500"
-                                            />
+                                        {/* Desktop row: checkbox + name + tamil + qty */}
+                                        <div className="grid grid-cols-12 items-center gap-2">
+                                            {/* Checkbox */}
+                                            <div className="col-span-2 sm:col-span-1 flex justify-center">
+                                                <Checkbox
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => {}}
+                                                    className="w-4 h-4 accent-orange-500"
+                                                />
+                                            </div>
+
+                                            {/* Name */}
+                                            <div className="col-span-10 sm:col-span-4 font-medium">
+                                                {item.name}
+                                                <p className="text-xs italic opacity-40">{item.description}</p>
+                                            </div>
+
+                                            {/* Tamil - hidden on mobile */}
+                                            <div className="hidden sm:block sm:col-span-3 opacity-80">
+                                                {item.tamilName}
+                                            </div>
+
+                                            {/* Quantity - hidden on mobile */}
+                                            <div className="hidden sm:block sm:col-span-4" onClick={(e) => e.stopPropagation()}>
+                                                {isChecked ? (
+                                                    <div className="flex gap-2 items-center">
+                                                        <Input
+                                                            type="text"
+                                                            value={selected[item.itemId]?.quantity || ""}
+                                                            onChange={(e) => updateQty(item.itemId, e.target.value)}
+                                                            className="w-20 px-2 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                                            placeholder="qty"
+                                                        />
+                                                        <Input
+                                                            type="text"
+                                                            value={selected[item.itemId]?.unit || ""}
+                                                            onChange={(e) => updateUnit(item.itemId, e.target.value)}
+                                                            className="w-20 px-2 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                                            placeholder="unit"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setCommentFor(item.itemId);
+                                                                setCommentText(selected[item.itemId]?.comment || "");
+                                                            }}
+                                                            className={`shrink-0 ${selected[item.itemId]?.comment ? "text-green-500" : "text-gray-400"}`}
+                                                            title="Add comment"
+                                                        >
+                                                            <MessageSquare size={18} className={selected[item.itemId]?.comment ? "text-green-600" : "text-gray-400"} />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-sm opacity-50">—</span>
+                                                )}
+                                            </div>
                                         </div>
 
-                                        {/* Name */}
-                                        <div className="col-span-5 font-medium" >
-                                            {item.name}
-                                            <p className="text-xs italic opacity-40">
-                                                {item.description}
-                                            </p>
-                                        </div>
-
-                                        {/* Tamil */}
-                                        <div className="col-span-3 opacity-80">
-                                            {item.tamilName}
-                                        </div>
-
-                                        {/* Quantity */}
-                                        <div className="col-span-3" onClick={(e) => e.stopPropagation()}>
-                                            {isChecked ? (
-                                                <div className="flex gap-2 items-center">
+                                        {/* Mobile-only: Tamil + Quantity row stacked below */}
+                                        <div className="sm:hidden mt-2 ml-8">
+                                            {item.tamilName && (
+                                                <span className="text-xs opacity-60 block mb-1">{item.tamilName}</span>
+                                            )}
+                                            {isChecked && (
+                                                <div className="flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                                     <Input
                                                         type="text"
                                                         value={selected[item.itemId]?.quantity || ""}
                                                         onChange={(e) => updateQty(item.itemId, e.target.value)}
-                                                        className="
-                                                                    min-w-[52px]
-                                                                    sm:min-w-[72px]
-                                                                    px-2 py-2
-                                                                    text-base
-                                                                    text-black
-                                                                    bg-white
-                                                                    border
-                                                                    rounded-md
-                                                                    focus:outline-none
-                                                                    focus:ring-2
-                                                                    focus:ring-orange-400
-                                                                    "
+                                                        className="w-20 px-2 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                                        placeholder="qty"
                                                     />
-
                                                     <Input
                                                         type="text"
                                                         value={selected[item.itemId]?.unit || ""}
                                                         onChange={(e) => updateUnit(item.itemId, e.target.value)}
-                                                        className="
-                                                                    min-w-[52px]
-                                                                    sm:min-w-[72px]
-                                                                    px-2 py-2
-                                                                    text-base
-                                                                    text-black
-                                                                    bg-white
-                                                                    border
-                                                                    rounded-md
-                                                                    focus:outline-none
-                                                                    focus:ring-2
-                                                                    focus:ring-orange-400
-                                                                    "
+                                                        className="w-20 px-2 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
                                                         placeholder="unit"
                                                     />
-
                                                     <button
                                                         type="button"
                                                         onClick={() => {
                                                             setCommentFor(item.itemId);
                                                             setCommentText(selected[item.itemId]?.comment || "");
                                                         }}
-                                                        className={`text-lg ${selected[item.itemId]?.comment
-                                                            ? "text-green-500"
-                                                            : "text-gray-400"
-                                                            }`}
+                                                        className={`shrink-0 ${selected[item.itemId]?.comment ? "text-green-500" : "text-gray-400"}`}
                                                         title="Add comment"
                                                     >
-                                                        <MessageSquare
-                                                            size={18}
-                                                            className={
-                                                                selected[item.itemId]?.comment
-                                                                    ? "text-green-600"
-                                                                    : "text-gray-400"
-                                                            }
-                                                        />
+                                                        <MessageSquare size={18} className={selected[item.itemId]?.comment ? "text-green-600" : "text-gray-400"} />
                                                     </button>
                                                 </div>
-                                            ) : (
-                                                <span className="text-sm opacity-50">—</span>
                                             )}
                                         </div>
                                     </div>
@@ -364,17 +358,17 @@ export default function GenerateSingleList() {
             <div className="mt-6 flex justify-end">
                 <Button
                     onClick={handleGenerate}
-                    className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600
-            text-white px-6 py-2.5 rounded-lg font-semibold transition"
+                    className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-lg font-semibold transition"
                 >
                     <CheckCircle className="w-5 h-5" />
                     Generate List
                 </Button>
             </div>
+
             {commentFor && (
                 <Modal onClose={() => setCommentFor(null)}>
                     <ModalCard
-                    onClose={() => setCommentFor(null)}
+                        onClose={() => setCommentFor(null)}
                         title="Add Comment"
                         footer={
                             <Button

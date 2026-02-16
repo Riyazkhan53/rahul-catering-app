@@ -1,6 +1,7 @@
 import { useState } from "react";
 import AnimatedPage from "../AnimatedPage";
 import Items from "./Items";
+import Dishes from "./Dishes";
 import PicklistManager from "./PicklistManager";
 import CardButton from "../../Components/CardButton";
 import BackHeader from "../../Components/BackHeader";
@@ -55,7 +56,7 @@ export default function Setup() {
       {dishesOpen && (
         <div className="w-full max-w-5xl">
           <BackHeader title="Dishes Setup" onBack={() => setDishesOpen(false)} />
-          {/* <Dishes /> – future */}
+          <Dishes />
         </div>
       )}
 

@@ -3,9 +3,15 @@ import OpenAI from "openai";
 import dotenv from "dotenv";
 dotenv.config();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai = null;
+function getOpenAI() {
+  if (!openai) {
+    const key = process.env.OPENAI_API_KEY;
+    if (!key) throw new Error("OPENAI_API_KEY not configured");
+    openai = new OpenAI({ apiKey: key });
+  }
+  return openai;
+}
 
 /* ---------- HELPERS ---------- */
 function safeJsonParse(text) {
@@ -46,7 +52,7 @@ Schema:
 Item name: "${name}"
 `;
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.3,

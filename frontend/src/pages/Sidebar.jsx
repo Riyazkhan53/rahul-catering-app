@@ -55,23 +55,26 @@ export default function Sidebar({
       <aside
         className={`fixed top-0 left-0 z-40 h-full
         w-64 sm:w-72 md:w-64
-        bg-gray-900 dark:bg-gray-950 text-white
+        bg-gray-900/80 dark:bg-gray-950/85 text-white
+        backdrop-blur-xl backdrop-saturate-150
+        border-r border-white/10
+        shadow-[4px_0_24px_rgba(0,0,0,0.3)]
         transition-transform duration-300
         ${open ? "translate-x-0" : "-translate-x-full"}
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-700 dark:border-gray-800">
-          <span className="text-lg sm:text-xl font-bold">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-white/10 bg-gradient-to-r from-orange-500/20 to-transparent">
+          <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-400 to-orange-200 bg-clip-text text-transparent">
             {role === "admin" ? "Admin Panel" : "Chef Panel"}
           </span>
 
           {/* Close button (desktop + mobile) */}
           <button
             onClick={() => setOpen(false)}
-            className="p-1 rounded hover:bg-gray-800 dark:hover:bg-gray-700"
+            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors duration-200"
           >
-            <X />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -89,11 +92,11 @@ export default function Sidebar({
                   if (!isDesktop) setOpen(false);
                 }}
                 className={`
-                  group relative flex items-center gap-3 p-2.5 sm:p-3 rounded-lg 
+                  group relative flex items-center gap-3 p-2.5 sm:p-3 rounded-xl 
                   cursor-pointer transition-all duration-300 text-sm sm:text-base
                   ${isActive
-                    ? "bg-gradient-to-r from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 shadow-lg scale-105 translate-x-1"
-                    : "hover:bg-gray-800 dark:hover:bg-gray-700 hover:translate-x-1 hover:scale-[1.02]"
+                    ? "bg-gradient-to-r from-orange-500/90 to-orange-600/90 shadow-[0_0_20px_rgba(249,115,22,0.3)] scale-105 translate-x-1 backdrop-blur-sm"
+                    : "hover:bg-white/10 hover:shadow-[0_0_12px_rgba(255,255,255,0.05)] hover:translate-x-1 hover:scale-[1.02]"
                   }
                 `}
                 style={{
@@ -134,7 +137,7 @@ export default function Sidebar({
 
                 {/* Active indicator */}
                 {isActive && (
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-l-full animate-pulse" />
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-orange-300 to-white rounded-l-full shadow-[0_0_8px_rgba(255,255,255,0.6)]" />
                 )}
               </div>
             );
