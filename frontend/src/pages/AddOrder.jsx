@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  UtensilsCrossed,
+  FileText,
+  ClipboardList,
+  SkipForward,
+  CheckCircle2,
+} from "lucide-react";
 import { useToast } from "../context/ToastContext";
 import { saveOrder, getEventsByDate, saveEventsByDate } from "../db/indexedDB";
 import { eventDatesService } from "../api/service";
@@ -17,6 +24,8 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
   const { showToast } = useToast();
 
   const [orderDays, setOrderDays] = useState([]);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [savedOrderNumber, setSavedOrderNumber] = useState("");
 
   /* ---------- Apply prefill on mount ---------- */
   useEffect(() => {
@@ -262,7 +271,8 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
               }
 
               showToast("Order saved successfully", "success");
-              setActiveTab("dish-selection");
+              setSavedOrderNumber(order.orderNumber);
+              setShowConfirm(true);
             }
           }}
           className="bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl text-base sm:text-lg transition font-semibold"
@@ -270,6 +280,88 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
           Continue →
         </button>
       </div>
+
+      {/* ── Post-Creation Confirmation Popup ── */}
+      <AnimatePresence>
+        {showConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            >
+              {/* Popup Header */}
+              <div className="bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600 px-5 py-4 text-center">
+                <CheckCircle2 className="w-10 h-10 text-white mx-auto mb-2" />
+                <h3 className="text-lg font-bold text-white">Order Created!</h3>
+                <p className="text-white/80 text-sm mt-0.5">{savedOrderNumber}</p>
+              </div>
+
+              <div className="p-5">
+                <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-4">
+                  What would you like to do next?
+                </p>
+
+                <div className="space-y-2.5">
+                  <button
+                    onClick={() => { setShowConfirm(false); setActiveTab("listcreator"); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:border-orange-300 dark:hover:border-orange-600 transition group"
+                  >
+                    <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-500 group-hover:bg-orange-200 dark:group-hover:bg-orange-800/40 transition">
+                      <UtensilsCrossed className="w-5 h-5" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">Create Menu List</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Plan dishes for this event</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => { setShowConfirm(false); setActiveTab("invoice"); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-600 transition group"
+                  >
+                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-500 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/40 transition">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">Create Quotation</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Generate a quotation for the client</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => { setShowConfirm(false); setActiveTab("listcreator"); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-600 transition group"
+                  >
+                    <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-500 group-hover:bg-green-200 dark:group-hover:bg-green-800/40 transition">
+                      <ClipboardList className="w-5 h-5" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">Create Item List</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Generate ingredient & raw material list</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => { setShowConfirm(false); setActiveTab("orders"); }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition mt-1"
+                  >
+                    <SkipForward className="w-4 h-4" />
+                    <span className="font-medium text-sm">Skip & Go to Orders</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
