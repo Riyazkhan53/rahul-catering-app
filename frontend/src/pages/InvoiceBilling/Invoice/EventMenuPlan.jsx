@@ -328,7 +328,7 @@ export default function EventMenuPlan({ onBack }) {
 
       animate={{ opacity: 1, y: 0 }}
 
-      className="w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 sm:p-8 max-w-6xl mx-auto"
+      className="w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 max-w-6xl mx-auto overflow-x-hidden"
 
     >
 
@@ -512,7 +512,7 @@ export default function EventMenuPlan({ onBack }) {
 
       {/* Actions */}
 
-      <div className="flex justify-end gap-4 mt-8">
+      <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-8">
 
         <button
 
@@ -606,13 +606,13 @@ function DayPlan({
 
         onClick={onToggleExpand}
 
-        className="flex justify-between items-center p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 cursor-pointer hover:from-orange-100 hover:to-amber-100 dark:hover:from-orange-900/30 dark:hover:to-amber-900/30 transition"
+        className="flex flex-wrap justify-between items-center gap-2 p-3 sm:p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 cursor-pointer hover:from-orange-100 hover:to-amber-100 dark:hover:from-orange-900/30 dark:hover:to-amber-900/30 transition"
 
       >
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
 
-          <h4 className="font-bold text-lg text-gray-900 dark:text-gray-100">
+          <h4 className="font-bold text-base sm:text-lg text-gray-900 dark:text-gray-100 shrink-0">
 
             Day {day.day}
 
@@ -634,13 +634,13 @@ function DayPlan({
 
             onClick={(e) => e.stopPropagation()}
 
-            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="border border-gray-300 dark:border-gray-600 rounded px-2 sm:px-3 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 min-w-0"
 
           />
 
         </div>
 
-        {expanded ? <ChevronUp /> : <ChevronDown />}
+        {expanded ? <ChevronUp className="w-5 h-5 shrink-0" /> : <ChevronDown className="w-5 h-5 shrink-0" />}
 
       </div>
 
@@ -734,11 +734,11 @@ function SessionPlan({
 
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
 
-      <div className="flex justify-between items-center mb-3">
+      <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
 
-        <h5 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+        <h5 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100 flex items-center gap-2">
 
-          <span className="text-xl">{session.icon}</span>
+          <span className="text-lg sm:text-xl">{session.icon}</span>
 
           {session.label}
 
@@ -748,7 +748,7 @@ function SessionPlan({
 
           onClick={onToggleSession}
 
-          className={`px-3 py-1 rounded-full text-sm transition ${
+          className={`px-3 py-1 rounded-full text-xs sm:text-sm transition shrink-0 ${
 
             sessionData.enabled
 
@@ -850,13 +850,13 @@ function SessionPlan({
 
           {/* Add Custom Category */}
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
 
             <input
 
               type="text"
 
-              placeholder="Add custom category (e.g., Salads, Juices)"
+              placeholder="Custom category (e.g., Salads)"
 
               value={customCategory}
 
@@ -864,7 +864,7 @@ function SessionPlan({
 
               onKeyPress={(e) => e.key === "Enter" && handleAddCustomCategory()}
 
-              className="flex-1 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
 
             />
 
@@ -872,7 +872,7 @@ function SessionPlan({
 
               onClick={handleAddCustomCategory}
 
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm flex items-center gap-1"
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm flex items-center justify-center gap-1 shrink-0"
 
             >
 
@@ -964,7 +964,7 @@ function CategorySection({
 
         {items.map((item, index) => (
 
-          <div key={index} className="flex gap-2">
+          <div key={index} className="flex gap-2 items-center">
 
             <input
 
@@ -978,7 +978,7 @@ function CategorySection({
 
               }
 
-              className="flex-1 border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 rounded px-2 sm:px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
 
             />
 
@@ -986,7 +986,7 @@ function CategorySection({
 
               onClick={() => onRemoveMenuItem(dayIndex, sessionId, category.id, index)}
 
-              className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+              className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded shrink-0"
 
             >
 
@@ -1004,7 +1004,7 @@ function CategorySection({
 
       {/* Add Item */}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
 
         <input
 
@@ -1018,7 +1018,7 @@ function CategorySection({
 
           onKeyPress={(e) => e.key === "Enter" && handleAddItem()}
 
-          className="flex-1 border border-gray-300 dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+          className="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 rounded px-2 sm:px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
 
         />
 
@@ -1026,7 +1026,7 @@ function CategorySection({
 
           onClick={handleAddItem}
 
-          className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded text-sm"
+          className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded text-sm shrink-0"
 
         >
 
