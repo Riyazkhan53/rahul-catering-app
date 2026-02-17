@@ -1,5 +1,5 @@
 const DB_NAME = "rahul_catering_db";
-const DB_VERSION = 7;
+const DB_VERSION = 8;
 
 const LIST_STORE = "generated_lists";
 const ITEM_STORE = "items_master";
@@ -10,6 +10,7 @@ const QUOTATION_STORE = "quotations";
 const MENU_PLAN_STORE = "menu_plans";
 const PICKLIST_CACHE_STORE = "picklist_cache";
 const DISH_STORE = "dishes_master";
+const ORDER_STORE = "orders_master";
 
 export function openDB() {
   return new Promise((resolve, reject) => {
@@ -56,6 +57,10 @@ export function openDB() {
 
       if (!db.objectStoreNames.contains(DISH_STORE)) {
         db.createObjectStore(DISH_STORE, { keyPath: "dishId" });
+      }
+
+      if (!db.objectStoreNames.contains(ORDER_STORE)) {
+        db.createObjectStore(ORDER_STORE, { keyPath: "orderId" });
       }
     };
 
@@ -658,6 +663,52 @@ export async function deleteDish(dishId) {
     const tx = db.transaction(DISH_STORE, "readwrite");
     const store = tx.objectStore(DISH_STORE);
     store.delete(dishId);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/* ---------- ORDERS MASTER ---------- */
+
+export async function saveOrder(order) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(ORDER_STORE, "readwrite");
+    const store = tx.objectStore(ORDER_STORE);
+    store.put(order);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getAllOrders() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(ORDER_STORE, "readonly");
+    const store = tx.objectStore(ORDER_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getOrderById(orderId) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(ORDER_STORE, "readonly");
+    const store = tx.objectStore(ORDER_STORE);
+    const req = store.get(orderId);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function deleteOrder(orderId) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(ORDER_STORE, "readwrite");
+    const store = tx.objectStore(ORDER_STORE);
+    store.delete(orderId);
     tx.oncomplete = () => resolve(true);
     tx.onerror = () => reject(tx.error);
   });

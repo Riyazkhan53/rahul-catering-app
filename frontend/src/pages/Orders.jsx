@@ -7,10 +7,12 @@ import {
   CalendarDays,
   UtensilsCrossed,
   ListChecks,
+  ScrollText,
 } from "lucide-react";
 import OrdersCalender from "./Orderpage/OrderCalender";
 import CreatedItemLists from "./Orderpage/CreatedItemList";
 import CreatedMenuList from "./Orderpage/CreatedMenuList";
+import OrderMasterList from "./Orderpage/OrderMasterList";
 
 export default function Orders() {
   const [orderSelected, setOrderSelected] = useState(null);
@@ -44,6 +46,13 @@ export default function Orders() {
               title="Item List Manager"
               description="Generated ingredient & service item lists"
               onClick={() => setOrderSelected("items")}
+            />
+
+            <CardButton
+              icon={ScrollText}
+              title="Order Master List"
+              description="View all created orders"
+              onClick={() => setOrderSelected("order-list")}
             />
           </div>
         </div>
@@ -79,6 +88,16 @@ export default function Orders() {
             onBack={() => setOrderSelected(null)}
           />
           <CreatedItemLists/>
+        </div>
+      )}
+
+      {orderSelected === "order-list" && (
+        <div className="w-full max-w-5xl">
+          <BackHeader
+            title="Order Master List"
+            onBack={() => setOrderSelected(null)}
+          />
+          <OrderMasterList />
         </div>
       )}
     </AnimatedPage>

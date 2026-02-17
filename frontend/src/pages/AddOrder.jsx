@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "../context/ToastContext";
+import { saveOrder } from "../db/indexedDB";
+import { uuid } from "../utils/uuid";
 
 const ORDER_TYPE = ["Total Order", "Cooking & Service", "Only Cooking", "Only Service"]
 const FUNCTION_TYPE = ["Wedding","Birthday","Housewarming","Corporate Event","Temple Function", "Church Function", "Puberty Function","Baby Shower Function"]
@@ -214,9 +216,21 @@ export default function AddOrder({ setActiveTab }) {
       {/* CTA */}
       <div className="flex justify-end mt-6">
         <button
-          onClick={() => {
+          onClick={async () => {
             if (validateForm()) {
-              showToast("Order details saved", "success");
+              const order = {
+                orderId: uuid(),
+                orderNumber: `#RCE${Date.now().toString().slice(-6)}`,
+                orderType,
+                clientName,
+                mobile,
+                functionType,
+                days: orderDays,
+                status: "pending",
+                createdAt: Date.now(),
+              };
+              await saveOrder(order);
+              showToast("Order saved successfully", "success");
               setActiveTab("dish-selection");
             }
           }}
