@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "../context/ToastContext";
-import { saveOrder } from "../db/indexedDB";
+import { saveOrder, getEventsByDate, saveEventsByDate } from "../db/indexedDB";
+import { eventDatesService } from "../api/service";
 import { uuid } from "../utils/uuid";
 
 const ORDER_TYPE = ["Total Order", "Cooking & Service", "Only Cooking", "Only Service"]
@@ -230,6 +231,24 @@ export default function AddOrder({ setActiveTab }) {
                 createdAt: Date.now(),
               };
               await saveOrder(order);
+
+              // Bookmark each day in the Orders Calendar
+              for (const d of orderDays) {
+                if (d.date) {
+                  const existing = await getEventsByDate(d.date);
+                  const calendarEvent = {
+                    id: crypto.randomUUID(),
+                    title: `${functionType} - ${order.orderNumber}`,
+                    client: clientName,
+                    contact: mobile,
+                    notes: `${orderType} · Day ${d.day}`,
+                  };
+                  const updated = [...existing, calendarEvent];
+                  await saveEventsByDate(d.date, updated);
+                  eventDatesService.saveByDate(d.date, updated).catch(() => {});
+                }
+              }
+
               showToast("Order saved successfully", "success");
               setActiveTab("dish-selection");
             }
