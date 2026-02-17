@@ -277,6 +277,8 @@ export default function OrdersCalender({ onCreateOrder }) {
                       key={key}
                       onClick={() => {
                         setSelectedDate(key);
+                        setForm({ title: "", client: "", contact: "", notes: "" });
+                        setEditingEventId(null);
                         setMode(hasEvent ? "view" : "add");
                         setShowModal(true);
                       }}
@@ -426,15 +428,13 @@ export default function OrdersCalender({ onCreateOrder }) {
                           <button
                             className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition"
                             onClick={() => {
-                              deleteEventById(selectedDate, evt.id);
+                              const remaining = (events[selectedDate] || []).filter(e => e.id !== evt.id);
+                              setEvents(prev => ({ ...prev, [selectedDate]: remaining }));
+                              saveEventsByDate(selectedDate, remaining);
                               eventDatesService
                                 .deleteEvent(selectedDate, evt.id)
-                                .then(() => showToast("Event deleted", "success"))
-                                .catch(() => showToast("Failed to delete", "error"));
-                              setEvents(prev => ({
-                                ...prev,
-                                [selectedDate]: prev[selectedDate].filter(e => e.id !== evt.id)
-                              }));
+                                .catch(() => {});
+                              showToast("Event deleted", "success");
                             }}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -604,17 +604,14 @@ export default function OrdersCalender({ onCreateOrder }) {
 
                         saveEventsByDate(selectedDate, updatedEvents);
 
+                        showToast(
+                          editingEventId ? "Event updated" : "Event added",
+                          "success"
+                        );
+
                         eventDatesService
                           .saveByDate(selectedDate, updatedEvents)
-                          .then(() => {
-                            showToast(
-                              editingEventId ? "Event updated" : "Event added",
-                              "success"
-                            );
-                          })
-                          .catch(() => {
-                            showToast("Failed to save event", "error");
-                          });
+                          .catch(() => {});
 
                         setForm({ title: "", client: "", contact: "", notes: "" });
                         setEditingEventId(null);
