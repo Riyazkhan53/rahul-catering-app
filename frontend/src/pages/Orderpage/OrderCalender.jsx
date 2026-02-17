@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import AnimatedPage from "../AnimatedPage";
 import {
   ChevronLeft,
@@ -44,6 +45,8 @@ export default function OrdersCalender() {
 
   const [events, setEvents] = useState({});
   const [editingEventId, setEditingEventId] = useState(null);
+  const [direction, setDirection] = useState(0); // -1 = prev, 1 = next
+  const touchStartX = useRef(null);
 
   const [form, setForm] = useState({
     title: "",
@@ -53,23 +56,25 @@ export default function OrdersCalender() {
   });
 
   /* 🔄 Month navigation */
-  const prevMonth = () => {
+  const prevMonth = useCallback(() => {
+    setDirection(-1);
     if (currentMonth === 0) {
       setCurrentMonth(11);
       setCurrentYear((y) => y - 1);
     } else {
       setCurrentMonth((m) => m - 1);
     }
-  };
+  }, [currentMonth]);
 
-  const nextMonth = () => {
+  const nextMonth = useCallback(() => {
+    setDirection(1);
     if (currentMonth === 11) {
       setCurrentMonth(0);
       setCurrentYear((y) => y + 1);
     } else {
       setCurrentMonth((m) => m + 1);
     }
-  };
+  }, [currentMonth]);
 
   const goToToday = () => {
     setCurrentMonth(today.getMonth());
@@ -114,6 +119,37 @@ export default function OrdersCalender() {
   };
 
   const eventCount = Object.values(events).reduce((sum, arr) => sum + (arr?.length || 0), 0);
+
+  /* 👆 Touch swipe handlers */
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    touchStartX.current = null;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) nextMonth();
+      else prevMonth();
+    }
+  };
+
+  /* Animation variants for month transition */
+  const gridVariants = {
+    enter: (dir) => ({
+      x: dir > 0 ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (dir) => ({
+      x: dir > 0 ? -300 : 300,
+      opacity: 0,
+    }),
+  };
 
   return (
     <AnimatedPage>
@@ -203,102 +239,119 @@ export default function OrdersCalender() {
             ))}
           </div>
 
-          {/* CALENDAR GRID */}
-          <div className="grid grid-cols-7">
-            {days.map((date, idx) => {
-              if (!date) {
-                return (
-                  <div
-                    key={`empty-${idx}`}
-                    className="min-h-[48px] sm:min-h-[80px] md:min-h-[100px] border-b border-r border-gray-50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50"
-                  />
-                );
-              }
+          {/* CALENDAR GRID with swipe + animation */}
+          <div
+            className="relative overflow-hidden"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            <AnimatePresence initial={false} custom={direction} mode="wait">
+              <motion.div
+                key={`${currentYear}-${currentMonth}`}
+                custom={direction}
+                variants={gridVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ type: "tween", duration: 0.25, ease: "easeInOut" }}
+                className="grid grid-cols-7"
+              >
+                {days.map((date, idx) => {
+                  if (!date) {
+                    return (
+                      <div
+                        key={`empty-${idx}`}
+                        className="min-h-[48px] sm:min-h-[80px] md:min-h-[100px] border-b border-r border-gray-50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50"
+                      />
+                    );
+                  }
 
-              const key = date.toISOString().split("T")[0];
-              const hasEvent = !!events[key]?.length;
-              const evtCount = events[key]?.length || 0;
-              const isSunday = date.getDay() === 0;
+                  const key = date.toISOString().split("T")[0];
+                  const hasEvent = !!events[key]?.length;
+                  const evtCount = events[key]?.length || 0;
+                  const isSunday = date.getDay() === 0;
 
-              return (
-                <div
-                  key={key}
-                  onClick={() => {
-                    setSelectedDate(key);
-                    setMode(hasEvent ? "view" : "add");
-                    setShowModal(true);
-                  }}
-                  className={`relative min-h-[48px] sm:min-h-[80px] md:min-h-[100px] p-1 sm:p-2 border-b border-r border-gray-100 dark:border-gray-700/50 cursor-pointer transition-all duration-200
-                    ${isToday(date)
-                      ? "bg-orange-50 dark:bg-orange-900/20"
-                      : hasEvent
-                        ? "bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-700/30"
-                    }
-                  `}
-                >
-                  {/* Date number */}
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full text-xs sm:text-sm font-semibold
+                  return (
+                    <div
+                      key={key}
+                      onClick={() => {
+                        setSelectedDate(key);
+                        setMode(hasEvent ? "view" : "add");
+                        setShowModal(true);
+                      }}
+                      className={`relative min-h-[48px] sm:min-h-[80px] md:min-h-[100px] p-1 sm:p-2 border-b border-r border-gray-100 dark:border-gray-700/50 cursor-pointer transition-all duration-200
                         ${isToday(date)
-                          ? "bg-orange-500 text-white shadow-md"
-                          : isSunday
-                            ? "text-red-400"
-                            : isPast(key)
-                              ? "text-gray-400 dark:text-gray-500"
-                              : "text-gray-700 dark:text-gray-300"
-                        }`}
+                          ? "bg-orange-50 dark:bg-orange-900/20"
+                          : hasEvent
+                            ? "bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                            : "hover:bg-gray-50 dark:hover:bg-gray-700/30"
+                        }
+                      `}
                     >
-                      {date.getDate()}
-                    </span>
-
-                    {/* Event dot indicator (mobile) */}
-                    {hasEvent && (
-                      <span className="sm:hidden flex gap-0.5">
-                        {Array.from({ length: Math.min(evtCount, 3) }).map((_, i) => (
-                          <span
-                            key={i}
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              isToday(date)
-                                ? "bg-orange-500"
-                                : isPast(key)
-                                  ? "bg-green-500"
-                                  : "bg-red-500"
-                            }`}
-                          />
-                        ))}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Event preview (desktop) */}
-                  {hasEvent && (
-                    <div className="hidden sm:block mt-1 space-y-0.5 overflow-hidden">
-                      {events[key].slice(0, 2).map((evt, i) => (
-                        <div
-                          key={evt.id || i}
-                          className={`text-[10px] md:text-xs px-1.5 py-0.5 rounded truncate font-medium
+                      {/* Date number */}
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full text-xs sm:text-sm font-semibold
                             ${isToday(date)
-                              ? "bg-orange-100 dark:bg-orange-800/40 text-orange-700 dark:text-orange-300"
-                              : isPast(key)
-                                ? "bg-green-100 dark:bg-green-800/30 text-green-700 dark:text-green-300"
-                                : "bg-red-100 dark:bg-red-800/30 text-red-700 dark:text-red-300"
+                              ? "bg-orange-500 text-white shadow-md"
+                              : isSunday
+                                ? "text-red-400"
+                                : isPast(key)
+                                  ? "text-gray-400 dark:text-gray-500"
+                                  : "text-gray-700 dark:text-gray-300"
                             }`}
                         >
-                          {evt.title}
-                        </div>
-                      ))}
-                      {evtCount > 2 && (
-                        <div className="text-[10px] text-gray-400 dark:text-gray-500 px-1 font-medium">
-                          +{evtCount - 2} more
+                          {date.getDate()}
+                        </span>
+
+                        {/* Event dot indicator (mobile) */}
+                        {hasEvent && (
+                          <span className="sm:hidden flex gap-0.5">
+                            {Array.from({ length: Math.min(evtCount, 3) }).map((_, i) => (
+                              <span
+                                key={i}
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  isToday(date)
+                                    ? "bg-orange-500"
+                                    : isPast(key)
+                                      ? "bg-green-500"
+                                      : "bg-red-500"
+                                }`}
+                              />
+                            ))}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Event preview (desktop) */}
+                      {hasEvent && (
+                        <div className="hidden sm:block mt-1 space-y-0.5 overflow-hidden">
+                          {events[key].slice(0, 2).map((evt, i) => (
+                            <div
+                              key={evt.id || i}
+                              className={`text-[10px] md:text-xs px-1.5 py-0.5 rounded truncate font-medium
+                                ${isToday(date)
+                                  ? "bg-orange-100 dark:bg-orange-800/40 text-orange-700 dark:text-orange-300"
+                                  : isPast(key)
+                                    ? "bg-green-100 dark:bg-green-800/30 text-green-700 dark:text-green-300"
+                                    : "bg-red-100 dark:bg-red-800/30 text-red-700 dark:text-red-300"
+                                }`}
+                            >
+                              {evt.title}
+                            </div>
+                          ))}
+                          {evtCount > 2 && (
+                            <div className="text-[10px] text-gray-400 dark:text-gray-500 px-1 font-medium">
+                              +{evtCount - 2} more
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* Legend */}

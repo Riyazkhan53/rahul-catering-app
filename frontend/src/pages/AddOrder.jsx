@@ -233,20 +233,24 @@ export default function AddOrder({ setActiveTab }) {
               await saveOrder(order);
 
               // Bookmark each day in the Orders Calendar
-              for (const d of orderDays) {
-                if (d.date) {
-                  const existing = await getEventsByDate(d.date);
-                  const calendarEvent = {
-                    id: crypto.randomUUID(),
-                    title: `${functionType} - ${order.orderNumber}`,
-                    client: clientName,
-                    contact: mobile,
-                    notes: `${orderType} · Day ${d.day}`,
-                  };
-                  const updated = [...existing, calendarEvent];
-                  await saveEventsByDate(d.date, updated);
-                  eventDatesService.saveByDate(d.date, updated).catch(() => {});
+              try {
+                for (const d of orderDays) {
+                  if (d.date) {
+                    const existing = await getEventsByDate(d.date);
+                    const calendarEvent = {
+                      id: crypto.randomUUID(),
+                      title: `${functionType} - ${order.orderNumber}`,
+                      client: clientName,
+                      contact: mobile,
+                      notes: `${orderType} · Day ${d.day}`,
+                    };
+                    const updated = [...existing, calendarEvent];
+                    await saveEventsByDate(d.date, updated);
+                    eventDatesService.saveByDate(d.date, updated).catch(() => {});
+                  }
                 }
+              } catch (err) {
+                console.error("Failed to bookmark order in calendar:", err);
               }
 
               showToast("Order saved successfully", "success");
