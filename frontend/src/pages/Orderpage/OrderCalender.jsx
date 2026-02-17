@@ -14,6 +14,7 @@ import {
   Phone,
   FileText,
   Tag,
+  ClipboardPlus,
 } from "lucide-react";
 import {
   getAllEvents,
@@ -33,7 +34,7 @@ const SHORT_MONTHS = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ];
 
-export default function OrdersCalender() {
+export default function OrdersCalender({ onCreateOrder }) {
   const today = new Date();
   const { showToast } = useToast();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -475,6 +476,19 @@ export default function OrdersCalender() {
                     <Plus className="w-4 h-4" />
                     Add another event
                   </button>
+
+                  {onCreateOrder && (
+                    <button
+                      onClick={() => {
+                        setShowModal(false);
+                        onCreateOrder(selectedDate);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold text-sm shadow-md transition"
+                    >
+                      <ClipboardPlus className="w-4 h-4" />
+                      Create New Order
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -541,6 +555,19 @@ export default function OrdersCalender() {
                       />
                     </div>
                   </div>
+
+                  {onCreateOrder && !editingEventId && (
+                    <button
+                      onClick={() => {
+                        setShowModal(false);
+                        onCreateOrder(selectedDate);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold text-sm shadow-md transition"
+                    >
+                      <ClipboardPlus className="w-4 h-4" />
+                      Create New Order
+                    </button>
+                  )}
 
                   <div className="flex gap-3 pt-2">
                     <button

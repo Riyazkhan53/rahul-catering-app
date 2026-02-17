@@ -8,22 +8,30 @@ import { uuid } from "../utils/uuid";
 const ORDER_TYPE = ["Total Order", "Cooking & Service", "Only Cooking", "Only Service"]
 const FUNCTION_TYPE = ["Wedding","Birthday","Housewarming","Corporate Event","Temple Function", "Church Function", "Puberty Function","Baby Shower Function"]
 
-export default function AddOrder({ setActiveTab }) {
+export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
   const [orderType, setOrderType] = useState("");
   const [clientName, setClientName] = useState("");
   const [mobile, setMobile] = useState("");
   const [functionType, setFunctionType] = useState("Wedding");
-  const [days, setDays] = useState(0);
+  const [days, setDays] = useState(prefill?.days || 0);
   const { showToast } = useToast();
 
   const [orderDays, setOrderDays] = useState([]);
+
+  /* ---------- Apply prefill on mount ---------- */
+  useEffect(() => {
+    if (prefill?.date && prefill?.days) {
+      setDays(prefill.days);
+    }
+    return () => { if (clearPrefill) clearPrefill(); };
+  }, []);
 
   /* ---------- Generate Days ---------- */
   useEffect(() => {
     if (days > 0) {
       const generated = Array.from({ length: days }, (_, i) => ({
         day: i + 1,
-        date: "",
+        date: i === 0 && prefill?.date ? prefill.date : "",
         enabled: false,
         services: {
           morning: { pax: "", boys: "" },

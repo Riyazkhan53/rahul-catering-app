@@ -19,6 +19,7 @@ export default function Dashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem("activeTab") || "dashboard";
   });
+  const [orderPrefill, setOrderPrefill] = useState(null);
   const isDesktop = useIsDesktop();
   const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
 
@@ -68,8 +69,8 @@ export default function Dashboard({ user, onLogout }) {
   const renderPage = () => {
     const pages = {
       dashboard: <DashboardHome />,
-      orders: <Orders />,
-      "add-order": <AddOrder setActiveTab={setActiveTab} />,
+      orders: <Orders setActiveTab={setActiveTab} setOrderPrefill={setOrderPrefill} />,
+      "add-order": <AddOrder setActiveTab={setActiveTab} prefill={orderPrefill} clearPrefill={() => setOrderPrefill(null)} />,
       "create-order": <CreateOrder setActiveTab={setActiveTab} />,
       menu: <Menu />,
       settings: <Settings user={user} />,

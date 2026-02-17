@@ -14,7 +14,7 @@ import CreatedItemLists from "./Orderpage/CreatedItemList";
 import CreatedMenuList from "./Orderpage/CreatedMenuList";
 import OrderMasterList from "./Orderpage/OrderMasterList";
 
-export default function Orders() {
+export default function Orders({ setActiveTab, setOrderPrefill }) {
   const [orderSelected, setOrderSelected] = useState(null);
 
   return (
@@ -65,7 +65,10 @@ export default function Orders() {
             subtitle="Plan and track orders by date"
             onBack={() => setOrderSelected(null)}
           />
-          <OrdersCalender />
+          <OrdersCalender onCreateOrder={(date) => {
+            setOrderPrefill({ date, days: 1 });
+            setActiveTab("add-order");
+          }} />
         </div>
       )}
 
