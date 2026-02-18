@@ -267,7 +267,7 @@ export default function OrdersCalender({ onCreateOrder }) {
                     );
                   }
 
-                  const key = date.toISOString().split("T")[0];
+                  const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
                   const hasEvent = !!events[key]?.length;
                   const evtCount = events[key]?.length || 0;
                   const isSunday = date.getDay() === 0;
