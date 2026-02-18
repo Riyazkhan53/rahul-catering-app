@@ -480,8 +480,9 @@ export default function OrdersCalender({ onCreateOrder }) {
                   {onCreateOrder && (
                     <button
                       onClick={() => {
+                        const firstEvt = (events[selectedDate] || [])[0];
                         setShowModal(false);
-                        onCreateOrder(selectedDate);
+                        onCreateOrder(selectedDate, firstEvt?.client || "", firstEvt?.contact || "");
                       }}
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold text-sm shadow-md transition"
                     >
@@ -560,7 +561,7 @@ export default function OrdersCalender({ onCreateOrder }) {
                     <button
                       onClick={() => {
                         setShowModal(false);
-                        onCreateOrder(selectedDate);
+                        onCreateOrder(selectedDate, form.client || "", form.contact || "");
                       }}
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold text-sm shadow-md transition"
                     >

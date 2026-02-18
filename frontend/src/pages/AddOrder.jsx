@@ -47,8 +47,8 @@ const needsBoys = (type) => type !== "Only Cooking";
 
 export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
   const [orderType, setOrderType] = useState("");
-  const [clientName, setClientName] = useState("");
-  const [mobile, setMobile] = useState("");
+  const [clientName, setClientName] = useState(prefill?.clientName || "");
+  const [mobile, setMobile] = useState(prefill?.mobile || "");
   const [functionType, setFunctionType] = useState("Wedding");
   const [days, setDays] = useState(prefill?.days || 0);
   const { showToast } = useToast();
@@ -69,6 +69,8 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
     if (prefill?.date && prefill?.days) {
       setDays(prefill.days);
     }
+    if (prefill?.clientName) setClientName(prefill.clientName);
+    if (prefill?.mobile) setMobile(prefill.mobile);
     return () => { if (clearPrefill) clearPrefill(); };
   }, []);
 
@@ -546,7 +548,7 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
                 <div className="space-y-2.5">
                   <button
                     disabled={saving}
-                    onClick={() => confirmAndSave("listcreator")}
+                    onClick={() => confirmAndSave("listcreator-menu")}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:border-orange-300 dark:hover:border-orange-600 transition group disabled:opacity-50"
                   >
                     <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-500 group-hover:bg-orange-200 dark:group-hover:bg-orange-800/40 transition">
@@ -574,7 +576,7 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
 
                   <button
                     disabled={saving}
-                    onClick={() => confirmAndSave("listcreator")}
+                    onClick={() => confirmAndSave("listcreator-list")}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-600 transition group disabled:opacity-50"
                   >
                     <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-500 group-hover:bg-green-200 dark:group-hover:bg-green-800/40 transition">

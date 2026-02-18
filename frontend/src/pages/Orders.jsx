@@ -65,8 +65,8 @@ export default function Orders({ setActiveTab, setOrderPrefill }) {
             subtitle="Plan and track orders by date"
             onBack={() => setOrderSelected(null)}
           />
-          <OrdersCalender onCreateOrder={(date) => {
-            setOrderPrefill({ date, days: 1 });
+          <OrdersCalender onCreateOrder={(date, client, contact) => {
+            setOrderPrefill({ date, days: 1, clientName: client || "", mobile: contact || "" });
             setActiveTab("add-order");
           }} />
         </div>

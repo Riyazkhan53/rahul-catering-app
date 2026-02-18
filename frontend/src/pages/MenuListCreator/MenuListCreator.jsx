@@ -10,9 +10,9 @@ import {
 import GenerateSingleList from "./GenerateSingleList";
 import GenerateSingleMenu from "./GenerateSingleMenu";
 
-export default function MenuListBuilder() {
-  const [generateMenuOpen, setGenerateMenuOpen] = useState(false);
-  const [generateListOpen, setGenerateListOpen] = useState(false);
+export default function MenuListBuilder({ defaultView }) {
+  const [generateMenuOpen, setGenerateMenuOpen] = useState(defaultView === "menu");
+  const [generateListOpen, setGenerateListOpen] = useState(defaultView === "list");
 
   return (
     <AnimatedPage>

@@ -78,6 +78,8 @@ export default function Dashboard({ user, onLogout }) {
       list: <MenuList />,
       invoice: <Invoice />,
       listcreator: <MenuListCreator />,
+      "listcreator-menu": <MenuListCreator defaultView="menu" />,
+      "listcreator-list": <MenuListCreator defaultView="list" />,
       appsettings: <AppSettings />,
     };
 
