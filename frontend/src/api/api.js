@@ -11,6 +11,9 @@ export async function apiRequest(path, options = {}) {
 
   let res;
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
   try {
     res = await fetch(`${API_URL}${path}`, {
       method,
@@ -20,9 +23,14 @@ export async function apiRequest(path, options = {}) {
       },
       body: body ? JSON.stringify(body) : undefined,
       cache: "no-store",
+      signal: controller.signal,
     });
-  } catch {
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err.name === "AbortError") throw new Error("Request timed out");
     throw new Error("Network error");
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   if (!res.ok) {

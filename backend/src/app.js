@@ -27,4 +27,10 @@ app.use("/api/generated-lists", generatedListRoutes);
 app.use("/api/event-dates", eventDatesRoutes);
 app.use("/api/ai", aiRoutes); // AI routes
 
+// Global error handler — catches unhandled errors so responses never hang
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ message: err.message || "Internal server error" });
+});
+
 export default app;
