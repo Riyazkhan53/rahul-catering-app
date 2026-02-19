@@ -6,9 +6,10 @@ import {
   getPendingGeneratedLists,
   saveGeneratedList,
   updateGeneratedList,
+  savePicklistCache,
 } from "../db/indexedDB";
 
-import { itemService, generatedListService } from "../api/service";
+import { itemService, generatedListService, picklistService } from "../api/service";
 
 /* ---------------- APP SYNC ---------------- */
 /* Safe: does NOT delete local data */
@@ -24,6 +25,9 @@ export async function appSync() {
   // Generated Lists
   await pushPendingGeneratedLists();
   await pullGeneratedListsFromServer();
+
+  // Picklists
+  await pullPicklistsFromServer();
 
   localStorage.setItem("lastAppSync", Date.now());
 }
@@ -53,9 +57,10 @@ export async function masterSync(setProgress) {
     setProgress(20);
 
     // 2️⃣ Pull from server (with timeout)
-    const [items, lists] = await Promise.all([
+    const [items, lists, picklists] = await Promise.all([
       withTimeout(itemService.getItems(), 10000),
       withTimeout(generatedListService.fetchGeneratedLists(), 10000),
+      withTimeout(picklistService.getAll(), 10000).catch(() => []),
     ]);
 
     setProgress(40);
@@ -88,7 +93,19 @@ export async function masterSync(setProgress) {
       setProgress(70 + Math.floor((count / lists.length) * 25));
     }
 
-    // 5️⃣ Done
+    // 5️⃣ Save PICKLISTS locally
+    if (picklists.length > 0) {
+      const grouped = {};
+      picklists.forEach((item) => {
+        if (!grouped[item.picklist]) grouped[item.picklist] = [];
+        grouped[item.picklist].push(item);
+      });
+      for (const key of Object.keys(grouped)) {
+        await savePicklistCache(key, grouped[key]);
+      }
+    }
+
+    // 6️⃣ Done
     setProgress(100);
     return true;
   } catch (err) {
@@ -169,5 +186,20 @@ async function pullGeneratedListsFromServer() {
       },
       { fromServer: true }
     );
+  }
+}
+
+async function pullPicklistsFromServer() {
+  const allItems = await picklistService.getAll();
+  const arr = Array.isArray(allItems) ? allItems : [];
+
+  const grouped = {};
+  arr.forEach((item) => {
+    if (!grouped[item.picklist]) grouped[item.picklist] = [];
+    grouped[item.picklist].push(item);
+  });
+
+  for (const key of Object.keys(grouped)) {
+    await savePicklistCache(key, grouped[key]);
   }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -58,7 +58,6 @@ export default function PicklistManager() {
   const [allData, setAllData] = useState({});
   const [initialLoading, setInitialLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const fetchedRef = useRef(false);
 
   // Add form
   const [showAdd, setShowAdd] = useState(false);
@@ -76,14 +75,9 @@ export default function PicklistManager() {
   // Sync status
   const [syncing, setSyncing] = useState(false);
 
-  // On mount: load from IDB first, then sync from API once
+  // On mount: load from IDB only (no API call)
   useEffect(() => {
-    loadAllFromIDB().then(() => {
-      if (!fetchedRef.current) {
-        fetchedRef.current = true;
-        syncAllFromAPI();
-      }
-    });
+    loadAllFromIDB();
   }, []);
 
   const loadAllFromIDB = async () => {
@@ -122,8 +116,10 @@ export default function PicklistManager() {
       }
 
       setAllData(grouped);
+      showToast("Synced from server", "success");
     } catch (err) {
       console.error("API sync failed:", err);
+      showToast("Sync failed — using local data", "error");
     } finally {
       setSyncing(false);
     }
