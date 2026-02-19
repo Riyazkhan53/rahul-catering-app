@@ -5,6 +5,7 @@ import "./styles/main.css";
 import App from "./App.jsx";
 import { ToastProvider } from "./context/ToastContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { NetworkModeProvider } from "./context/NetworkModeContext";
 
 
 // Theme
@@ -19,9 +20,11 @@ const rootElement = document.getElementById("root");
 createRoot(rootElement).render(
   <StrictMode>
     <ThemeProvider>
-      <ToastProvider>
-        <App />
-      </ToastProvider>
+      <NetworkModeProvider>
+        <ToastProvider>
+          <App />
+        </ToastProvider>
+      </NetworkModeProvider>
     </ThemeProvider>
   </StrictMode>
 );

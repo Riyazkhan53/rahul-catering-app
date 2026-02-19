@@ -1,6 +1,17 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
+export function isOfflineMode() {
+  return localStorage.getItem("networkMode") === "offline";
+}
+
 export async function apiRequest(path, options = {}) {
+  // Allow auth endpoints even in offline mode (login needs them)
+  const isAuthPath = path.startsWith("/api/auth");
+
+  if (isOfflineMode() && !isAuthPath) {
+    throw new Error("Offline mode");
+  }
+
   const token = localStorage.getItem("token");
 
   const {

@@ -5,7 +5,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ListPrintRoute from "./print/listPrintRoute";
 
-import { apiRequest } from "./api/api";
+import { apiRequest, isOfflineMode } from "./api/api";
 import AppLayout from "./Layouts/AppLayout";
 import CateringLoader from "./Components/CateringLoader";
 import UpdatePrompt from "./Components/UpdatePrompt";
@@ -33,10 +33,31 @@ function App() {
         return;
       }
 
+      // In offline mode, restore user from localStorage without API call
+      if (isOfflineMode() || !navigator.onLine) {
+        try {
+          const cached = JSON.parse(localStorage.getItem("user"));
+          if (cached) {
+            setUser(cached);
+          }
+        } catch {}
+        setLoading(false);
+        return;
+      }
+
       try {
         const data = await apiRequest("/api/auth/me");
         setUser(data.user);
       } catch {
+        // If API fails but we have a cached user, use it instead of clearing
+        try {
+          const cached = JSON.parse(localStorage.getItem("user"));
+          if (cached) {
+            setUser(cached);
+            setLoading(false);
+            return;
+          }
+        } catch {}
         localStorage.clear();
         setUser(null);
       } finally {
@@ -52,7 +73,11 @@ function App() {
   };
 
   const handleLogout = () => {
+    const networkMode = localStorage.getItem("networkMode");
+    const theme = localStorage.getItem("theme");
     localStorage.clear();
+    if (networkMode) localStorage.setItem("networkMode", networkMode);
+    if (theme) localStorage.setItem("theme", theme);
     setUser(null);
     setShowLogin(false);
   };
