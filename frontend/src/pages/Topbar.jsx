@@ -1,4 +1,4 @@
-import { Menu, Wifi, WifiOff } from "lucide-react";
+import { Menu, Wifi, WifiOff, LogOut } from "lucide-react";
 import { useNetworkMode } from "../context/NetworkModeContext";
 
 export default function Topbar({
@@ -10,27 +10,27 @@ export default function Topbar({
   const { isOnlineMode, toggleMode } = useNetworkMode();
 
   return (
-    <div className="flex justify-between items-center px-3 sm:px-6 py-3 sm:py-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+    <div className="flex justify-between items-center px-2 sm:px-6 py-2 sm:py-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 overflow-hidden">
 
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+          className="p-1.5 sm:p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition shrink-0"
         >
           <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
 
-        <h1 className="text-sm sm:text-xl font-semibold truncate max-w-[150px] sm:max-w-none">
+        <h1 className="text-xs sm:text-xl font-semibold truncate">
           👋 {greeting}
         </h1>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-4">
+      <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
         {/* Online / Offline Toggle */}
         <button
           onClick={toggleMode}
           title={isOnlineMode ? "Online — tap to go offline" : "Offline — tap to go online"}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+          className={`flex items-center gap-1 px-2 py-1.5 sm:px-2.5 rounded-full text-xs font-semibold transition-all duration-200 ${
             isOnlineMode
               ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
               : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600"
@@ -44,15 +44,23 @@ export default function Topbar({
           <span className="hidden sm:inline">{isOnlineMode ? "Online" : "Offline"}</span>
         </button>
 
-        <button className="relative text-xl sm:text-2xl hover:scale-110 transition">🔔</button>
+        <button className="relative text-lg sm:text-2xl hover:scale-110 transition">🔔</button>
 
-        <div className="w-8 h-8 sm:w-9 sm:h-9 bg-orange-500 dark:bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+        <div className="w-7 h-7 sm:w-9 sm:h-9 bg-orange-500 dark:bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm">
           C
         </div>
 
+        {/* Logout: icon on mobile, button on desktop */}
         <button
           onClick={onLogout}
-          className="bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-sm sm:text-base mr-10 sm:mr-12 transition"
+          title="Logout"
+          className="sm:hidden p-1.5 rounded-full bg-red-500 hover:bg-red-600 text-white transition"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
+        <button
+          onClick={onLogout}
+          className="hidden sm:block bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white px-4 py-2 rounded-full text-sm sm:text-base transition"
         >
           Logout
         </button>
