@@ -34,42 +34,46 @@
   }
 }
 
-/* PAGE */
 .print-page {
   max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 12px;
   font-family: "Noto Sans Tamil", Arial, sans-serif;
-
+  font-size: 12px;
+  position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* HEADER */
+/* HEADER — matches PDF: borderBottom 2 solid #ADC455, marginBottom 2, paddingBottom 2 */
 .print-header {
-  border-bottom: 3px solid #adc455;
-  padding-bottom: 10px;
-  margin-bottom: 16px;
+  width: 100%;
+  border-bottom: 2px solid #ADC455;
+  padding-bottom: 2px;
+  margin-bottom: 2px;
 }
 
 .print-header-img {
   width: 100%;
-  height: 70px;
+  height: 60px;
   object-fit: contain;
 }
 
-/* BODY */
+/* BODY — matches PDF: flexDirection row, gap 12 */
 .print-body {
-  flex: 1; /* 👈 pushes footer to bottom */
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 12px;
 }
 
+/* TABLE BOX — matches PDF: flex 1, border 1 solid #ccc, borderRadius 6 */
 .print-column {
+  flex: 1;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
@@ -79,21 +83,31 @@
   border-collapse: collapse;
 }
 
+/* TABLE HEADER — matches PDF: bg #F3F4F6, borderBottom 1 solid #ccc, fontWeight bold */
 .print-table th {
-  background: #f3f4f6;
-  padding: 8px;
+  background: #F3F4F6;
+  padding: 6px;
   text-align: left;
   font-weight: 700;
+  border-bottom: 1px solid #ccc;
 }
 
+/* TABLE ROWS — matches PDF: padding 6, borderBottom 1 solid #eee */
 .print-table td {
-  padding: 8px;
+  padding: 6px;
   border-top: 1px solid #eee;
+}
+
+/* Items column: flex 3, Qty column: flex 1, text-align right */
+.print-table th:first-child,
+.print-table td:first-child {
+  width: 75%;
 }
 
 .print-table .qty {
   text-align: right;
   white-space: nowrap;
+  width: 25%;
 }
 
 /* TAMIL */
@@ -101,22 +115,26 @@
   font-family: "Noto Sans Tamil";
 }
 
-/* FOOTER */
+/* FOOTER — matches PDF: absolute bottom, borderTop 1 solid #ccc, paddingTop 6 */
 .print-footer {
+  position: absolute;
+  bottom: 20px;
+  left: 30px;
+  right: 30px;
   border-top: 1px solid #ccc;
-  padding-top: 10px;
+  padding-top: 6px;
   text-align: center;
   font-size: 12px;
   color: #444;
 }
 
+/* WATERMARK — matches PDF: position absolute, top 40%, left 25%, width 300, opacity 0.20 */
 .print-watermark {
   position: absolute;
   top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 320px;
-  opacity: 0.12;
+  left: 25%;
+  width: 300px;
+  opacity: 0.20;
   z-index: 0;
   pointer-events: none;
 }
