@@ -13,6 +13,7 @@ import {
   User,
   ArrowLeftRight,
 } from "lucide-react";
+import { useToast } from "../context/ToastContext";
 
 const MENU_CONFIG = {
   chef: [
@@ -45,9 +46,12 @@ export default function Sidebar({
   onViewProfile,
   onSwitchRole,
 }) {
+  const { showToast } = useToast();
   const role = user?.role === "admin" ? "admin" : "chef";
   const menu = MENU_CONFIG[role];
   const initial = (user?.name || user?.username || "U").charAt(0).toUpperCase();
+  const allRoles = [user?.role, ...(user?.additional_roles || [])];
+  const switchableRoles = [...new Set(allRoles)].filter(r => r && r !== user?.role);
 
   return (
     <>
@@ -176,16 +180,24 @@ export default function Sidebar({
               <User className="w-4 h-4 text-gray-400" />
               View Profile
             </button>
-            <button
-              onClick={() => {
-                onSwitchRole?.();
-                if (!isDesktop) setOpen(false);
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
-            >
-              <ArrowLeftRight className="w-4 h-4 text-gray-400" />
-              Switch Role
-            </button>
+            {switchableRoles.map((r) => (
+              <button
+                key={r}
+                onClick={async () => {
+                  try {
+                    await onSwitchRole?.(r);
+                    showToast(`Switched to ${r}`, "success");
+                  } catch {
+                    showToast("Failed to switch role", "error");
+                  }
+                  if (!isDesktop) setOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
+              >
+                <ArrowLeftRight className="w-4 h-4 text-gray-400" />
+                Switch to {r.charAt(0).toUpperCase() + r.slice(1)}
+              </button>
+            ))}
             <button
               onClick={() => onLogout?.()}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200"

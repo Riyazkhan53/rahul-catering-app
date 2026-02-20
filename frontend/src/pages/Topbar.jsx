@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Menu, Wifi, WifiOff, Moon, Sun, LogOut, User, ArrowLeftRight } from "lucide-react";
 import { useNetworkMode } from "../context/NetworkModeContext";
 import { useTheme } from "../context/ThemeContext";
+import { useToast } from "../context/ToastContext";
 
 export default function Topbar({
   greeting,
@@ -14,6 +15,7 @@ export default function Topbar({
 }) {
   const { isOnlineMode, toggleMode } = useNetworkMode();
   const { isDark, toggleTheme } = useTheme();
+  const { showToast } = useToast();
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -106,14 +108,29 @@ export default function Topbar({
                 View Profile
               </button>
 
-              {/* Switch Role */}
-              <button
-                onClick={() => { setProfileOpen(false); onSwitchRole?.(); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left"
-              >
-                <ArrowLeftRight className="w-4 h-4 text-gray-500" />
-                Switch Role
-              </button>
+              {/* Switch Role — show roles user can switch to */}
+              {(() => {
+                const allRoles = [user?.role, ...(user?.additional_roles || [])];
+                const switchable = [...new Set(allRoles)].filter(r => r && r !== user?.role);
+                return switchable.map((role) => (
+                  <button
+                    key={role}
+                    onClick={async () => {
+                      setProfileOpen(false);
+                      try {
+                        await onSwitchRole?.(role);
+                        showToast(`Switched to ${role}`, "success");
+                      } catch {
+                        showToast("Failed to switch role", "error");
+                      }
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left"
+                  >
+                    <ArrowLeftRight className="w-4 h-4 text-gray-500" />
+                    Switch to {role.charAt(0).toUpperCase() + role.slice(1)}
+                  </button>
+                ));
+              })()}
 
               <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
 

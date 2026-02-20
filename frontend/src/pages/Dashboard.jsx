@@ -15,7 +15,7 @@ import MenuListCreator from "./MenuListCreator/MenuListCreator"
 import useIsDesktop from "../hooks/uselsDesktop";
 import AppSettings from "./AppSettings/AppSettings";
 
-export default function Dashboard({ user, onLogout }) {
+export default function Dashboard({ user, onLogout, onSwitchRole }) {
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem("activeTab") || "dashboard";
   });
@@ -107,7 +107,7 @@ export default function Dashboard({ user, onLogout }) {
         isDesktop={isDesktop}
         onLogout={onLogout}
         onViewProfile={() => setActiveTab("settings")}
-        onSwitchRole={() => setActiveTab("appsettings")}
+        onSwitchRole={onSwitchRole}
       />
 
       {/* Main */}
@@ -121,7 +121,7 @@ export default function Dashboard({ user, onLogout }) {
           user={user}
           onLogout={onLogout}
           onViewProfile={() => setActiveTab("settings")}
-          onSwitchRole={() => setActiveTab("appsettings")}
+          onSwitchRole={onSwitchRole}
           toggleSidebar={() => setSidebarOpen(v => !v)}
           isDesktop={isDesktop}
         />

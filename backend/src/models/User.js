@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "chef"],
       required: true,
     },
+    additional_roles: {
+      type: [String],
+      enum: ["admin", "chef"],
+      default: [],
+    },
   },
   { timestamps: true }
 );

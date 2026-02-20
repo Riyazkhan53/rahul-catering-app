@@ -72,6 +72,20 @@ function App() {
     // pullItemsFromServer();
   };
 
+  const handleSwitchRole = async (targetRole) => {
+    try {
+      const data = await apiRequest("/api/users/switch-role", {
+        method: "POST",
+        body: { targetRole },
+      });
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setUser(data.user);
+    } catch (err) {
+      throw err;
+    }
+  };
+
   const handleLogout = () => {
     const networkMode = localStorage.getItem("networkMode");
     const theme = localStorage.getItem("theme");
@@ -119,7 +133,7 @@ function App() {
             {/* Existing dashboard */}
             <Route
               path="/*"
-              element={<Dashboard user={user} onLogout={handleLogout} />}
+              element={<Dashboard user={user} onLogout={handleLogout} onSwitchRole={handleSwitchRole} />}
             />
 
             {/* PRINT PREVIEW ROUTE */}
