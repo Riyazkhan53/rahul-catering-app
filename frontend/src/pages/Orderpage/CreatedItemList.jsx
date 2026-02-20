@@ -1,18 +1,42 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileText, Eye, Printer, ClipboardList, Calendar, Package, Clock, Pencil } from "lucide-react";
+import { FileText, Eye, Printer, ClipboardList, Calendar, Package, Clock, Pencil, Loader2 } from "lucide-react";
 import { getAllLists, getListById } from "../../db/indexedDB";
 import AnimatedPage from "../AnimatedPage";
-import ListPreviewModal from "./ListPreviewModal";
 import ListPrintView from "../../print/listPrintView";
 import { useNavigate } from "react-router-dom";
+import { pdf } from "@react-pdf/renderer";
+import ListPDF from "../../pdf/listPDF";
+import { useToast } from "../../context/ToastContext";
 
 export default function CreatedItemLists() {
   const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [previewList, setPreviewList] = useState(null);
   const [printList, setPrintList] = useState(null);
+  const [downloadingId, setDownloadingId] = useState(null);
   const navigate = useNavigate();
+  const { showToast } = useToast();
+
+  const handleDirectDownload = async (listItem) => {
+    try {
+      setDownloadingId(listItem.id);
+      const data = await getListById(listItem.id);
+      const blob = await pdf(<ListPDF items={data} />).toBlob();
+      const fileURL = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+      const link = document.createElement("a");
+      link.href = fileURL;
+      link.download = `${data.name || "item-list"}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(fileURL), 1000);
+      showToast("PDF downloaded", "success");
+    } catch (err) {
+      showToast("Failed to download PDF", "error");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   useEffect(() => {
     async function loadLists() {
@@ -178,22 +202,24 @@ export default function CreatedItemLists() {
 
                     <div className="flex gap-2">
                       <button
-                        onClick={async () => {
-                          const data = await getListById(list.id);
-                          setPreviewList(data);
-                        }}
+                        onClick={() => navigate(`/print/list/${list.id}`)}
                         className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-sm font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
-                        title="Preview list"
+                        title="View list"
                       >
                         <Eye className="w-4 h-4" />
                         View
                       </button>
                       <button
-                        onClick={() => navigate(`/print/list/${list.id}`)}
-                        className="px-4 py-2.5 bg-green-50 hover:bg-green-500 dark:bg-green-900/20 dark:hover:bg-green-500 text-green-600 hover:text-white dark:text-green-400 dark:hover:text-white rounded-xl transition-all duration-200"
-                        title="Print list"
+                        onClick={() => handleDirectDownload(list)}
+                        disabled={downloadingId === list.id}
+                        className="px-4 py-2.5 bg-green-50 hover:bg-green-500 dark:bg-green-900/20 dark:hover:bg-green-500 text-green-600 hover:text-white dark:text-green-400 dark:hover:text-white rounded-xl transition-all duration-200 disabled:opacity-50"
+                        title="Download PDF"
                       >
-                        <Printer className="w-4 h-4" />
+                        {downloadingId === list.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Printer className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -203,13 +229,6 @@ export default function CreatedItemLists() {
               ))}
             </AnimatePresence>
           </div>
-        )}
-
-        {previewList && (
-          <ListPreviewModal
-            list={previewList}
-            onClose={() => setPreviewList(null)}
-          />
         )}
 
         {printList && <ListPrintView list={printList} />}
