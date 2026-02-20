@@ -1,9 +1,37 @@
 import { createPortal } from "react-dom";
 import { BlobProvider } from "@react-pdf/renderer";
-import { Download, ExternalLink, Loader2, X } from "lucide-react";
+import { Download, ExternalLink, Loader2, X, Share2 } from "lucide-react";
 import ListPDF from "../../pdf/listPDF";
 
 const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+function handleOpenPDF(blob) {
+  const fileURL = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+  window.open(fileURL, "_blank");
+}
+
+function handleDownloadPDF(blob, name) {
+  const fileURL = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+  const link = document.createElement("a");
+  link.href = fileURL;
+  link.download = `${name || "item-list"}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(fileURL), 1000);
+}
+
+async function handleSharePDF(blob, name) {
+  try {
+    const file = new File([blob], `${name || "item-list"}.pdf`, { type: "application/pdf" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: name || "Item List" });
+      return;
+    }
+  } catch {}
+  // Fallback to download
+  handleDownloadPDF(blob, name);
+}
 
 export default function ListPreviewModal({ list, onClose }) {
   return createPortal(
@@ -45,7 +73,6 @@ export default function ListPreviewModal({ list, onClose }) {
                 );
               }
 
-              // On mobile/Android: show action buttons (iframe PDF doesn't work)
               if (isMobile()) {
                 return (
                   <div className="flex flex-col items-center justify-center h-full gap-4 px-6">
@@ -56,29 +83,32 @@ export default function ListPreviewModal({ list, onClose }) {
                       Your PDF is ready!
                     </p>
                     <div className="flex flex-col gap-3 w-full max-w-xs">
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        Open PDF
-                      </a>
-                      <a
-                        href={url}
-                        download={`${list.name || "item-list"}.pdf`}
-                        className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition"
+                      <button
+                        onClick={() => handleDownloadPDF(blob, list.name)}
+                        className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-xl shadow-md active:scale-95 transition"
                       >
                         <Download className="w-4 h-4" />
                         Download PDF
-                      </a>
+                      </button>
+                      <button
+                        onClick={() => handleSharePDF(blob, list.name)}
+                        className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-xl shadow-md active:scale-95 transition"
+                      >
+                        <Share2 className="w-4 h-4" />
+                        Share PDF
+                      </button>
+                      <button
+                        onClick={() => handleOpenPDF(blob)}
+                        className="flex items-center justify-center gap-2 px-5 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-xl active:scale-95 transition"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Open in Browser
+                      </button>
                     </div>
                   </div>
                 );
               }
 
-              // On desktop/tablet: show inline iframe
               return (
                 <iframe
                   src={url}
