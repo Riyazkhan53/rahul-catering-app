@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import ListPrintView from "./listPrintView";
 import { getListById } from "../db/indexedDB";
 import { isDesktop } from "../utils/device";
 
 export default function ListPrintRoute() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [list, setList] = useState(null);
   const [downloading, setDownloading] = useState(false);
 
@@ -41,6 +42,9 @@ export default function ListPrintRoute() {
     <div className="print-route">
       {/* ACTION BAR */}
       <div className="print-actions">
+        <button onClick={() => navigate(-1)} className="print-back-btn">
+          ← Back
+        </button>
         <button onClick={downloadPDF} disabled={downloading}>
           {downloading ? "Preparing…" : "⬇ Download PDF"}
         </button>

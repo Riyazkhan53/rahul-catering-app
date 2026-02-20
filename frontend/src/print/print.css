@@ -10,6 +10,7 @@
 .print-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
   padding: 12px 24px;
 }
 
@@ -21,6 +22,16 @@
   color: white;
   font-weight: 600;
   cursor: pointer;
+}
+
+.print-actions .print-back-btn {
+  background: #374151;
+}
+
+@media print {
+  .print-actions {
+    display: none;
+  }
 }
 
 /* PAGE */
