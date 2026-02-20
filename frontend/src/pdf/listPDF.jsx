@@ -165,7 +165,7 @@ const rightItems =
 
                 {/* FOOTER */}
                 <View style={styles.footer}>
-                    <Text>📍 Coonoor, The Nilgiris – 643105 | India</Text>
+                    <Text>Coonoor, The Nilgiris - 643105 | India</Text>
                     <Text>Instagram: @rahul_catering_events</Text>
                 </View>
 
