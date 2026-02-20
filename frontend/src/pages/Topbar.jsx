@@ -1,5 +1,6 @@
-import { Menu, Wifi, WifiOff, LogOut } from "lucide-react";
+import { Menu, Wifi, WifiOff, LogOut, Moon, Sun } from "lucide-react";
 import { useNetworkMode } from "../context/NetworkModeContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Topbar({
   greeting,
@@ -8,6 +9,7 @@ export default function Topbar({
   isDesktop,
 }) {
   const { isOnlineMode, toggleMode } = useNetworkMode();
+  const { isDark, toggleTheme } = useTheme();
 
   return (
     <div className="flex justify-between items-center px-2 sm:px-6 py-2 sm:py-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -42,6 +44,19 @@ export default function Topbar({
             <WifiOff className="w-3.5 h-3.5" />
           )}
           <span className="hidden sm:inline">{isOnlineMode ? "Online" : "Offline"}</span>
+        </button>
+
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          className="p-1.5 sm:p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+        >
+          {isDark ? (
+            <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />
+          ) : (
+            <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
+          )}
         </button>
 
         <button className="relative text-lg sm:text-2xl hover:scale-110 transition">🔔</button>
