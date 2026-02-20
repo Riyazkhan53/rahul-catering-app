@@ -210,16 +210,11 @@ export default function CreatedItemLists() {
                         View
                       </button>
                       <button
-                        onClick={() => handleDirectDownload(list)}
-                        disabled={downloadingId === list.id}
-                        className="px-4 py-2.5 bg-green-50 hover:bg-green-500 dark:bg-green-900/20 dark:hover:bg-green-500 text-green-600 hover:text-white dark:text-green-400 dark:hover:text-white rounded-xl transition-all duration-200 disabled:opacity-50"
+                        onClick={() => navigate(`/print/list/${list.id}?download=true`)}
+                        className="px-4 py-2.5 bg-green-50 hover:bg-green-500 dark:bg-green-900/20 dark:hover:bg-green-500 text-green-600 hover:text-white dark:text-green-400 dark:hover:text-white rounded-xl transition-all duration-200"
                         title="Download PDF"
                       >
-                        {downloadingId === list.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Printer className="w-4 h-4" />
-                        )}
+                        <Printer className="w-4 h-4" />
                       </button>
                     </div>
                   </div>

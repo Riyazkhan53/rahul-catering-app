@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import ListPrintView from "./listPrintView";
 import { getListById } from "../db/indexedDB";
 import { isDesktop } from "../utils/device";
@@ -7,17 +7,10 @@ import { isDesktop } from "../utils/device";
 export default function ListPrintRoute() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [list, setList] = useState(null);
   const [downloading, setDownloading] = useState(false);
-
-  useEffect(() => {
-    async function load() {
-      const data = await getListById(id);
-
-      setList(data);
-    }
-    load();
-  }, [id]);
+  const autoDownloadTriggered = useRef(false);
 
   const downloadPDF = () => {
     setDownloading(true);
@@ -35,6 +28,22 @@ export default function ListPrintRoute() {
     // Just UI state reset
     setTimeout(() => setDownloading(false), 800);
   };
+
+  useEffect(() => {
+    async function load() {
+      const data = await getListById(id);
+      setList(data);
+    }
+    load();
+  }, [id]);
+
+  // Auto-trigger download when ?download=true
+  useEffect(() => {
+    if (list && searchParams.get("download") === "true" && !autoDownloadTriggered.current) {
+      autoDownloadTriggered.current = true;
+      downloadPDF();
+    }
+  }, [list, searchParams]);
 
   if (!list) return <div className="p-6">Loading preview…</div>;
 
