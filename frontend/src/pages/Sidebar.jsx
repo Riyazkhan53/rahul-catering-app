@@ -8,7 +8,10 @@ import {
   Receipt, 
   Settings, 
   Wrench,
-  Sparkles 
+  Sparkles,
+  LogOut,
+  User,
+  ArrowLeftRight,
 } from "lucide-react";
 
 const MENU_CONFIG = {
@@ -38,9 +41,13 @@ export default function Sidebar({
   open,
   setOpen,
   isDesktop,
+  onLogout,
+  onViewProfile,
+  onSwitchRole,
 }) {
   const role = user?.role === "admin" ? "admin" : "chef";
   const menu = MENU_CONFIG[role];
+  const initial = (user?.name || user?.username || "U").charAt(0).toUpperCase();
 
   return (
     <>
@@ -53,7 +60,7 @@ export default function Sidebar({
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-40 h-full
+        className={`fixed top-0 left-0 z-40 h-full flex flex-col
         w-64 sm:w-72 md:w-64
         bg-gray-900/80 dark:bg-gray-950/85 text-white
         backdrop-blur-xl backdrop-saturate-150
@@ -79,7 +86,7 @@ export default function Sidebar({
         </div>
 
         {/* Menu */}
-        <nav className="p-3 sm:p-4 space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 80px)' }}>
+        <nav className="flex-1 p-3 sm:p-4 space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 160px)' }}>
           {menu.map((item, index) => {
             const Icon = item.icon;
             const isActive = activeTab === item.key;
@@ -143,6 +150,51 @@ export default function Sidebar({
             );
           })}
         </nav>
+
+        {/* Profile Section at bottom */}
+        <div className="border-t border-white/10 p-3 sm:p-4">
+          {/* User info */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
+              {initial}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold truncate">{user?.name || user?.username || "User"}</p>
+              <p className="text-xs text-gray-400 capitalize">{user?.role || "user"}</p>
+            </div>
+          </div>
+
+          {/* Profile actions */}
+          <div className="space-y-1">
+            <button
+              onClick={() => {
+                onViewProfile?.();
+                if (!isDesktop) setOpen(false);
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
+            >
+              <User className="w-4 h-4 text-gray-400" />
+              View Profile
+            </button>
+            <button
+              onClick={() => {
+                onSwitchRole?.();
+                if (!isDesktop) setOpen(false);
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
+            >
+              <ArrowLeftRight className="w-4 h-4 text-gray-400" />
+              Switch Role
+            </button>
+            <button
+              onClick={() => onLogout?.()}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </button>
+          </div>
+        </div>
       </aside>
     </>
   );

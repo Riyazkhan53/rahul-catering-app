@@ -105,6 +105,9 @@ export default function Dashboard({ user, onLogout }) {
         open={sidebarOpen}
         setOpen={setSidebarOpen}
         isDesktop={isDesktop}
+        onLogout={onLogout}
+        onViewProfile={() => setActiveTab("settings")}
+        onSwitchRole={() => setActiveTab("appsettings")}
       />
 
       {/* Main */}

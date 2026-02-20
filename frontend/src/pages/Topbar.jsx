@@ -31,7 +31,7 @@ export default function Topbar({
   const initial = (user?.name || user?.username || "U").charAt(0).toUpperCase();
 
   return (
-    <div className="flex justify-between items-center px-2 sm:px-6 py-2 sm:py-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="relative flex justify-between items-center px-2 sm:px-6 py-2 sm:py-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
 
       <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
         <button
