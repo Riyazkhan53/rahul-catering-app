@@ -1,5 +1,7 @@
+import { createPortal } from "react-dom";
+
 export default function Modal({ title, subtitle, children, onClose }) {
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/70 px-3 sm:px-4">
       <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-gray-800 shadow-2xl dark:shadow-gray-900/80 animate-scaleIn">
         
@@ -26,6 +28,7 @@ export default function Modal({ title, subtitle, children, onClose }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -19,7 +20,7 @@ export default function ConfirmModal({
       setLoading(true);
       setProgress(10);
 
-      await onConfirm(setProgress); // 👈 pass progress setter
+      await onConfirm(setProgress); // 
       setProgress(100);
     } catch (e) {
       console.error(e);
@@ -28,7 +29,7 @@ export default function ConfirmModal({
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
 
       {/* Backdrop */}
@@ -96,6 +97,7 @@ export default function ConfirmModal({
           </button>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -1,8 +1,9 @@
+import { createPortal } from "react-dom";
 import { PDFViewer } from "@react-pdf/renderer";
 import ListPDF from "../../pdf/listPDF";
 
 export default function ListPreviewModal({ list, onClose }) {
-  return (
+  return createPortal(
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
       <div className="w-[90vw] h-[90vh] bg-white rounded-xl overflow-hidden relative">
 
@@ -17,6 +18,7 @@ export default function ListPreviewModal({ list, onClose }) {
           <ListPDF items={list} />
         </PDFViewer>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

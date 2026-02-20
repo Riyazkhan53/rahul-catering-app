@@ -1,5 +1,7 @@
+import { createPortal } from "react-dom";
+
 export default function Modal({ children, onClose }) {
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       {/* Backdrop */}
       <div
@@ -11,6 +13,7 @@ export default function Modal({ children, onClose }) {
       <div className="relative w-full max-w-xl max-h-[90vh] overflow-auto">
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
