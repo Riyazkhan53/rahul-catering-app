@@ -1,15 +1,34 @@
-import { Menu, Wifi, WifiOff, LogOut, Moon, Sun } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Menu, Wifi, WifiOff, Moon, Sun, LogOut, User, ArrowLeftRight } from "lucide-react";
 import { useNetworkMode } from "../context/NetworkModeContext";
 import { useTheme } from "../context/ThemeContext";
 
 export default function Topbar({
   greeting,
+  user,
   onLogout,
+  onSwitchRole,
+  onViewProfile,
   toggleSidebar,
   isDesktop,
 }) {
   const { isOnlineMode, toggleMode } = useNetworkMode();
   const { isDark, toggleTheme } = useTheme();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    if (profileOpen) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [profileOpen]);
+
+  const initial = (user?.name || user?.username || "U").charAt(0).toUpperCase();
 
   return (
     <div className="flex justify-between items-center px-2 sm:px-6 py-2 sm:py-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -61,24 +80,54 @@ export default function Topbar({
 
         <button className="relative text-lg sm:text-2xl hover:scale-110 transition">🔔</button>
 
-        <div className="w-7 h-7 sm:w-9 sm:h-9 bg-orange-500 dark:bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm">
-          C
-        </div>
+        {/* Profile Icon + Dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setProfileOpen((v) => !v)}
+            className="w-8 h-8 sm:w-9 sm:h-9 bg-orange-500 dark:bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm hover:ring-2 hover:ring-orange-300 dark:hover:ring-orange-400 transition"
+          >
+            {initial}
+          </button>
 
-        {/* Logout: icon on mobile, button on desktop */}
-        <button
-          onClick={onLogout}
-          title="Logout"
-          className="sm:hidden p-1.5 rounded-full bg-red-500 hover:bg-red-600 text-white transition"
-        >
-          <LogOut className="w-4 h-4" />
-        </button>
-        <button
-          onClick={onLogout}
-          className="hidden sm:block bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white px-4 py-2 rounded-full text-sm sm:text-base transition"
-        >
-          Logout
-        </button>
+          {profileOpen && (
+            <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+              {/* User info header */}
+              <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                <p className="text-sm font-semibold truncate">{user?.name || user?.username || "User"}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role || "user"}</p>
+              </div>
+
+              {/* View Profile */}
+              <button
+                onClick={() => { setProfileOpen(false); onViewProfile?.(); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left"
+              >
+                <User className="w-4 h-4 text-gray-500" />
+                View Profile
+              </button>
+
+              {/* Switch Role */}
+              <button
+                onClick={() => { setProfileOpen(false); onSwitchRole?.(); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left"
+              >
+                <ArrowLeftRight className="w-4 h-4 text-gray-500" />
+                Switch Role
+              </button>
+
+              <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+
+              {/* Sign Out */}
+              <button
+                onClick={() => { setProfileOpen(false); onLogout(); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition text-left"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

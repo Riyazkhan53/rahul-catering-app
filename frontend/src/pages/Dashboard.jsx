@@ -115,7 +115,10 @@ export default function Dashboard({ user, onLogout }) {
       >
         <Topbar
           greeting={greetingText}
+          user={user}
           onLogout={onLogout}
+          onViewProfile={() => setActiveTab("settings")}
+          onSwitchRole={() => setActiveTab("appsettings")}
           toggleSidebar={() => setSidebarOpen(v => !v)}
           isDesktop={isDesktop}
         />
