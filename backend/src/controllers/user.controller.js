@@ -100,6 +100,9 @@ export const switchRole = async (req, res) => {
     { expiresIn: "7d" }
   );
 
+  // Return all available roles so frontend can always switch back
+  const availableRoles = [...new Set([user.role, ...(user.additional_roles || [])])];
+
   res.json({
     message: `Switched to ${targetRole} role`,
     token,
@@ -108,7 +111,7 @@ export const switchRole = async (req, res) => {
       username: user.username,
       name: user.name,
       role: targetRole,
-      additional_roles: user.additional_roles,
+      additional_roles: availableRoles.filter(r => r !== targetRole),
     },
   });
 };

@@ -13,14 +13,17 @@ router.get("/me", authMiddleware(), async (req, res) => {
       return res.status(401).json({ message: "User not found" });
     }
 
-    // Use the active role from the JWT token (may differ from DB after switch-role)
+    // Compute all available roles (DB role + additional_roles), then exclude the active one
+    const activeRole = req.user.role;
+    const availableRoles = [...new Set([user.role, ...(user.additional_roles || [])])];
+
     res.json({
       user: {
         id: user._id,
         username: user.username,
         name: user.name,
-        role: req.user.role,
-        additional_roles: user.additional_roles || [],
+        role: activeRole,
+        additional_roles: availableRoles.filter(r => r !== activeRole),
       },
     });
   } catch (err) {
