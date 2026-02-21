@@ -1,5 +1,5 @@
 const DB_NAME = "rahul_catering_db";
-const DB_VERSION = 8;
+const DB_VERSION = 9;
 
 const LIST_STORE = "generated_lists";
 const ITEM_STORE = "items_master";
@@ -11,6 +11,7 @@ const MENU_PLAN_STORE = "menu_plans";
 const PICKLIST_CACHE_STORE = "picklist_cache";
 const DISH_STORE = "dishes_master";
 const ORDER_STORE = "orders_master";
+const USER_ROLES_STORE = "user_roles";
 
 export function openDB() {
   return new Promise((resolve, reject) => {
@@ -61,6 +62,10 @@ export function openDB() {
 
       if (!db.objectStoreNames.contains(ORDER_STORE)) {
         db.createObjectStore(ORDER_STORE, { keyPath: "orderId" });
+      }
+
+      if (!db.objectStoreNames.contains(USER_ROLES_STORE)) {
+        db.createObjectStore(USER_ROLES_STORE, { keyPath: "id" });
       }
     };
 
@@ -709,6 +714,41 @@ export async function deleteOrder(orderId) {
     const tx = db.transaction(ORDER_STORE, "readwrite");
     const store = tx.objectStore(ORDER_STORE);
     store.delete(orderId);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/* ---------- USER ROLES ---------- */
+
+export async function saveUserRole(role) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(USER_ROLES_STORE, "readwrite");
+    const store = tx.objectStore(USER_ROLES_STORE);
+    store.put(role);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getAllUserRoles() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(USER_ROLES_STORE, "readonly");
+    const store = tx.objectStore(USER_ROLES_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function deleteUserRole(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(USER_ROLES_STORE, "readwrite");
+    const store = tx.objectStore(USER_ROLES_STORE);
+    store.delete(id);
     tx.oncomplete = () => resolve(true);
     tx.onerror = () => reject(tx.error);
   });
