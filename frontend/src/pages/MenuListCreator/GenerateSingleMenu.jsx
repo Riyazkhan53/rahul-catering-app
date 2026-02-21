@@ -10,17 +10,20 @@ import {
   Search,
   X,
   Check,
+  ListPlus,
+  ChefHat,
 } from "lucide-react";
+import { createPortal } from "react-dom";
 import { saveMenuPlan, getAllDishes } from "../../db/indexedDB";
 import { useToast } from "../../context/ToastContext";
 import { dishCategories } from "../../utils/picklist";
 import AnimatedPage from "../AnimatedPage";
 
 const SESSIONS = [
-  { id: "morning", label: "Breakfast", icon: "🌅", color: "from-amber-400 to-orange-400" },
-  { id: "afternoon", label: "Lunch", icon: "☀️", color: "from-orange-400 to-red-400" },
-  { id: "evening", label: "Snacks", icon: "🌆", color: "from-purple-400 to-pink-400" },
-  { id: "night", label: "Dinner", icon: "🌙", color: "from-indigo-400 to-blue-400" },
+  { id: "morning", label: "Breakfast", icon: "", color: "from-amber-400 to-orange-400" },
+  { id: "afternoon", label: "Lunch", icon: "", color: "from-orange-400 to-red-400" },
+  { id: "evening", label: "Snacks", icon: "", color: "from-purple-400 to-pink-400" },
+  { id: "night", label: "Dinner", icon: "", color: "from-indigo-400 to-blue-400" },
 ];
 
 const CATEGORY_COLORS = {
@@ -400,15 +403,24 @@ function SessionSection({
   onRemoveMenuItem,
   allDishes,
 }) {
+  const [showDishPicker, setShowDishPicker] = useState(false);
+
   const totalItems = Object.values(sessionData.items).reduce(
     (sum, arr) => sum + arr.length,
     0
   );
 
+  const handlePickerAdd = (dish) => {
+    onAddMenuItem(dayIndex, session.id, dish.category, dish.name);
+  };
+
+  // Collect already-added dish names for this session
+  const addedDishNames = Object.values(sessionData.items).flat();
+
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
       {/* Session Header */}
-      <div className="flex flex-wrap justify-between items-center gap-2 p-3 bg-gray-50 dark:bg-gray-750">
+      <div className="flex flex-wrap justify-between items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800">
         <div className="flex items-center gap-2">
           <span className="text-lg">{session.icon}</span>
           <h5 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100">
@@ -420,16 +432,28 @@ function SessionSection({
             </span>
           )}
         </div>
-        <button
-          onClick={onToggleSession}
-          className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition shrink-0 ${
-            sessionData.enabled
-              ? "bg-green-500 text-white shadow-sm"
-              : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
-          }`}
-        >
-          {sessionData.enabled ? "✓ Enabled" : "Enable"}
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {sessionData.enabled && (
+            <button
+              onClick={() => setShowDishPicker(true)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-700 transition"
+            >
+              <ListPlus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Add from Dishes</span>
+              <span className="sm:hidden">+ Dishes</span>
+            </button>
+          )}
+          <button
+            onClick={onToggleSession}
+            className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition ${
+              sessionData.enabled
+                ? "bg-green-500 text-white shadow-sm"
+                : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+            }`}
+          >
+            {sessionData.enabled ? "✓ Enabled" : "Enable"}
+          </button>
+        </div>
       </div>
 
       {/* Session Content */}
@@ -459,6 +483,17 @@ function SessionSection({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Dish Picker Modal */}
+      {showDishPicker && (
+        <DishPickerModal
+          allDishes={allDishes}
+          addedDishNames={addedDishNames}
+          onAdd={handlePickerAdd}
+          onClose={() => setShowDishPicker(false)}
+          sessionLabel={session.label}
+        />
+      )}
     </div>
   );
 }
@@ -572,5 +607,209 @@ function CategorySection({
         )}
       </div>
     </div>
+  );
+}
+
+/* ─── Dish Picker Modal ─── */
+const PICKER_CATEGORY_ICONS = {
+  starter: "🥗",
+  main_course: "🍛",
+  bread: "🫓",
+  rice: "🍚",
+  side_dish: "🥘",
+  dessert: "🍮",
+  beverage: "🥤",
+  snack: "🍿",
+  chutney_raita: "🫙",
+  salad: "🥬",
+};
+
+function DishPickerModal({ allDishes, addedDishNames, onAdd, onClose, sessionLabel }) {
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [search, setSearch] = useState("");
+
+  const getCategoryCount = (catValue) =>
+    allDishes.filter((d) => d.category === catValue).length;
+
+  const getCategoryDishes = () => {
+    if (!selectedCategory) return [];
+    let filtered = allDishes.filter((d) => d.category === selectedCategory);
+    if (search) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter(
+        (d) =>
+          d.name?.toLowerCase().includes(q) ||
+          d.tamilName?.toLowerCase().includes(q)
+      );
+    }
+    return filtered;
+  };
+
+  const categoryLabel =
+    dishCategories.find((c) => c.value === selectedCategory)?.label || "";
+
+  const categoryDishes = getCategoryDishes();
+
+  return createPortal(
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="w-full max-w-4xl max-h-[90vh] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0 bg-gradient-to-r from-orange-500 to-amber-500">
+          <div>
+            <h3 className="text-lg font-bold text-white">
+              {selectedCategory ? categoryLabel : "Select Dishes"}
+            </h3>
+            <p className="text-white/80 text-xs">
+              {sessionLabel} — tap a dish to add it
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {selectedCategory && (
+              <button
+                onClick={() => { setSelectedCategory(null); setSearch(""); }}
+                className="px-3 py-1.5 rounded-lg bg-white/20 text-white text-xs font-medium hover:bg-white/30 transition"
+              >
+                All Categories
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+          {!selectedCategory ? (
+            /* Category Cards Grid */
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {dishCategories.map((cat) => {
+                const count = getCategoryCount(cat.value);
+                return (
+                  <button
+                    key={cat.value}
+                    onClick={() => setSelectedCategory(cat.value)}
+                    className="p-4 sm:p-5 text-left rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition group"
+                  >
+                    <div className="text-3xl sm:text-4xl mb-2">
+                      {PICKER_CATEGORY_ICONS[cat.value] || "🍽️"}
+                    </div>
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100 leading-tight">
+                      {cat.label}
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {count === 0
+                        ? "No dishes yet"
+                        : `${count} dish${count > 1 ? "es" : ""}`}
+                    </p>
+                    <div className="mt-2 h-1 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-orange-400 to-amber-400 rounded-full transition-all"
+                        style={{ width: `${Math.min(count * 10, 100)}%` }}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            /* Dishes in selected category */
+            <div className="space-y-3">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder={`Search ${categoryLabel}...`}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  autoFocus
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                />
+              </div>
+
+              {categoryDishes.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <ChefHat className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    {search
+                      ? `No dishes matching "${search}"`
+                      : `No dishes in ${categoryLabel}`}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {categoryDishes.map((dish) => {
+                    const isAdded = addedDishNames.includes(dish.name);
+                    return (
+                      <button
+                        key={dish.dishId}
+                        onClick={() => {
+                          if (!isAdded) onAdd(dish);
+                        }}
+                        disabled={isAdded}
+                        className={`p-3 sm:p-4 rounded-xl border text-left transition ${
+                          isAdded
+                            ? "border-green-400 dark:border-green-600 bg-green-50 dark:bg-green-900/20 opacity-70 cursor-not-allowed"
+                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-orange-400 dark:hover:border-orange-500 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-1 mb-1">
+                          <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100 leading-tight">
+                            {dish.name}
+                          </h4>
+                          {isAdded && (
+                            <Check className="w-4 h-4 text-green-500 shrink-0" />
+                          )}
+                        </div>
+                        {dish.tamilName && (
+                          <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
+                            {dish.tamilName}
+                          </p>
+                        )}
+                        {dish.description && (
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                            {dish.description}
+                          </p>
+                        )}
+                        {dish.costPerPerson && (
+                          <p className="text-xs font-bold text-orange-600 dark:text-orange-400 mt-1.5">
+                            ₹{dish.costPerPerson}
+                            <span className="font-normal text-gray-400 dark:text-gray-500"> /person</span>
+                          </p>
+                        )}
+                        {isAdded && (
+                          <p className="text-[10px] text-green-600 dark:text-green-400 font-medium mt-1">
+                            Already added
+                          </p>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 py-3 border-t border-gray-200 dark:border-gray-700 shrink-0 bg-gray-50 dark:bg-gray-800">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {addedDishNames.length} dish{addedDishNames.length !== 1 ? "es" : ""} added to {sessionLabel}
+          </p>
+          <button
+            onClick={onClose}
+            className="px-5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-xl shadow-md transition"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
