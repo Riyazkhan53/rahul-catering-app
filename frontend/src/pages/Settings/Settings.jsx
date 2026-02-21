@@ -21,7 +21,7 @@ export default function Settings({ user }) {
         </div>
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Role Settings
+            Users/Roles Settings
           </h2>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
             Manage users and roles
