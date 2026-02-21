@@ -1,40 +1,57 @@
 import { useEffect, useState } from "react";
-import { Pencil, Save, X } from "lucide-react";
+import { Pencil, Save, X, Shield } from "lucide-react";
 import Modal from "../../Components/Modal";
 import { apiRequest } from "../../api/api";
 import { useToast } from "../../context/ToastContext";
 
 export default function ChefListModal({ onClose }) {
   const [chefs, setChefs] = useState([]);
+  const [allRoles, setAllRoles] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ password: "", hasAdminRole: false });
+  const [editForm, setEditForm] = useState({ password: "", selectedRoles: [] });
   const { showToast } = useToast();
 
   const fetchChefs = () => {
     apiRequest("/api/users/chefs").then(setChefs).catch(() => {});
   };
 
+  const fetchRoles = () => {
+    apiRequest("/api/roles")
+      .then((roles) => setAllRoles(roles))
+      .catch(() => {});
+  };
+
   useEffect(() => {
     fetchChefs();
+    fetchRoles();
   }, []);
 
   const startEdit = (chef) => {
     setEditingId(chef._id);
     setEditForm({
       password: "",
-      hasAdminRole: (chef.additional_roles || []).includes("admin"),
+      selectedRoles: [...(chef.additional_roles || [])],
     });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setEditForm({ password: "", hasAdminRole: false });
+    setEditForm({ password: "", selectedRoles: [] });
+  };
+
+  const toggleRole = (roleId) => {
+    setEditForm((prev) => ({
+      ...prev,
+      selectedRoles: prev.selectedRoles.includes(roleId)
+        ? prev.selectedRoles.filter((r) => r !== roleId)
+        : [...prev.selectedRoles, roleId],
+    }));
   };
 
   const saveEdit = async (chefId) => {
     try {
       const body = {
-        additional_roles: editForm.hasAdminRole ? ["admin"] : [],
+        additional_roles: editForm.selectedRoles,
       };
       if (editForm.password.trim()) {
         body.password = editForm.password;
@@ -51,6 +68,11 @@ export default function ChefListModal({ onClose }) {
     } catch (err) {
       showToast(err.message || "Failed to update chef", "error");
     }
+  };
+
+  // Roles available to assign (exclude the chef's primary role)
+  const getAssignableRoles = (chef) => {
+    return allRoles.filter((r) => r.roleId !== chef.role);
   };
 
   return (
@@ -71,15 +93,20 @@ export default function ChefListModal({ onClose }) {
                 <p className="text-sm text-gray-500 dark:text-gray-400">{chef.username}</p>
               </div>
 
-              <div className="flex items-center gap-2">
-                {(chef.additional_roles || []).includes("admin") && (
-                  <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-full font-medium">
-                    ADMIN
-                  </span>
-                )}
-                <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full">
-                  CHEF
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                {/* Primary role badge */}
+                <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full uppercase">
+                  {chef.role}
                 </span>
+                {/* Additional role badges */}
+                {(chef.additional_roles || []).map((r) => (
+                  <span
+                    key={r}
+                    className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-full font-medium uppercase"
+                  >
+                    {r}
+                  </span>
+                ))}
                 {editingId !== chef._id && (
                   <button
                     onClick={() => startEdit(chef)}
@@ -103,15 +130,38 @@ export default function ChefListModal({ onClose }) {
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-orange-500"
                 />
 
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={editForm.hasAdminRole}
-                    onChange={(e) => setEditForm({ ...editForm, hasAdminRole: e.target.checked })}
-                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-orange-500 focus:ring-orange-500 cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Grant Admin role</span>
-                </label>
+                {/* Role checkboxes */}
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                    <Shield className="w-3 h-3" /> Additional Roles
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {getAssignableRoles(chef).map((role) => {
+                      const isChecked = editForm.selectedRoles.includes(role.roleId);
+                      return (
+                        <label
+                          key={role.roleId}
+                          className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm ${
+                            isChecked
+                              ? "bg-orange-50 dark:bg-orange-900/10 border-orange-300 dark:border-orange-700 text-gray-900 dark:text-gray-100"
+                              : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleRole(role.roleId)}
+                            className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-orange-500 focus:ring-orange-500 cursor-pointer"
+                          />
+                          <span className="font-medium">{role.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  {getAssignableRoles(chef).length === 0 && (
+                    <p className="text-xs text-gray-400 dark:text-gray-500 italic">No additional roles available</p>
+                  )}
+                </div>
 
                 <div className="flex gap-2">
                   <button

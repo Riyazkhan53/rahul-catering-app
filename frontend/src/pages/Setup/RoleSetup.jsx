@@ -5,6 +5,7 @@ import {
   FileText, Receipt, Settings, Wrench, Sparkles,
 } from "lucide-react";
 import { getAllUserRoles, saveUserRole } from "../../db/indexedDB";
+import { apiRequest, isOfflineMode } from "../../api/api";
 import { useToast } from "../../context/ToastContext";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -85,24 +86,39 @@ export default function RoleSetup() {
     loadRoles();
   }, []);
 
+  const normalizeRole = (r) => ({
+    id: r.roleId || r.id,
+    label: r.label,
+    description: r.description || "",
+    isDefault: !!r.isDefault,
+    tabs: r.tabs || [],
+    permissions: r.permissions || {},
+  });
+
   const loadRoles = async () => {
     try {
       setLoading(true);
-      const data = await getAllUserRoles();
-      const defaults = [
-        { id: "admin", label: "Admin", description: "Full access to all features", isDefault: true },
-        { id: "chef", label: "Chef", description: "Kitchen & order management", isDefault: true },
-      ];
-      const merged = [
-        ...defaults.map((d) => {
-          const saved = data.find((r) => r.id === d.id);
-          return saved ? { ...d, ...saved, isDefault: true } : d;
-        }),
-        ...data.filter((r) => !defaults.some((d) => d.id === r.id)),
-      ];
-      setRoles(merged);
+      let data;
+      if (!isOfflineMode()) {
+        const apiRoles = await apiRequest("/api/roles");
+        data = apiRoles.map(normalizeRole);
+        // Sync to IndexedDB
+        for (const role of data) {
+          await saveUserRole(role);
+        }
+      } else {
+        data = await getAllUserRoles();
+      }
+      data.sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0));
+      setRoles(data);
     } catch (err) {
-      showToast("Failed to load roles", "error");
+      try {
+        const local = await getAllUserRoles();
+        local.sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0));
+        setRoles(local);
+      } catch {
+        showToast("Failed to load roles", "error");
+      }
     } finally {
       setLoading(false);
     }
@@ -153,18 +169,24 @@ export default function RoleSetup() {
     if (!selectedRole) return;
     try {
       setSaving(true);
-      const updated = {
+      if (!isOfflineMode()) {
+        await apiRequest(`/api/roles/${selectedRole.id}`, {
+          method: "PUT",
+          body: { tabs: tabConfig, permissions },
+        });
+      }
+      // Always sync to IndexedDB
+      await saveUserRole({
         ...selectedRole,
         tabs: tabConfig,
         permissions,
         updatedAt: Date.now(),
-      };
-      await saveUserRole(updated);
+      });
       showToast(`Configuration saved for "${selectedRole.label}"`, "success");
       setRoles((prev) => prev.map((r) => (r.id === selectedRole.id ? { ...r, tabs: tabConfig, permissions } : r)));
       setSelectedRole((prev) => ({ ...prev, tabs: tabConfig, permissions }));
     } catch (err) {
-      showToast("Failed to save config", "error");
+      showToast(err.message || "Failed to save config", "error");
     } finally {
       setSaving(false);
     }

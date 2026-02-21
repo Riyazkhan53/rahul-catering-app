@@ -9,6 +9,7 @@ import printRoutes from "./routes/print.routes.js";
 import generatedListRoutes from "./routes/generatedList.routes.js";
 import eventDatesRoutes from "./routes/eventDates.routes.js";
 import aiRoutes  from "./routes/ai.routes.js";
+import roleRoutes from "./routes/role.routes.js";
 
 
 const app = express();
@@ -26,6 +27,7 @@ app.use("/api/print", printRoutes);
 app.use("/api/generated-lists", generatedListRoutes);
 app.use("/api/event-dates", eventDatesRoutes);
 app.use("/api/ai", aiRoutes); // AI routes
+app.use("/api/roles", roleRoutes);
 
 // Global error handler — catches unhandled errors so responses never hang
 app.use((err, req, res, next) => {
