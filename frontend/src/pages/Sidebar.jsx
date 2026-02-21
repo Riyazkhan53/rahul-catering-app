@@ -29,7 +29,7 @@ const MENU_CONFIG = {
     { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { key: "orders", label: "Orders Management", icon: ClipboardList },
     { key: "menu", label: "Menu & Items Catalogue", icon: UtensilsCrossed },
-    { key: "settings", label: "Settings", icon: Settings },
+    { key: "settings", label: "Role Settings", icon: Settings },
     { key: "setup", label: "Setup", icon: Wrench },
     { key: "appsettings", label: "App Settings", icon: Sparkles },
   ],
