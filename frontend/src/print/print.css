@@ -2,9 +2,23 @@
   size: legal;
   margin: 20mm;
 }
+/* Force light mode on print preview regardless of dark mode */
 .print-route {
-  background: #fff;
+  --bg-app: #fff;
+  --text-app: #111;
+  --card-bg: #fff;
+  --border-color: rgba(229, 231, 235, 0.8);
+  background: #fff !important;
+  color: #111 !important;
   min-height: 100vh;
+  color-scheme: light;
+}
+
+.print-route *,
+.print-route input,
+.print-route select,
+.print-route textarea {
+  color: inherit;
 }
 
 .print-actions {
@@ -44,6 +58,8 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: #fff;
+  color: #111;
 }
 
 /* HEADER — matches PDF: borderBottom 2 solid #ADC455, marginBottom 2, paddingBottom 2 */
@@ -96,6 +112,8 @@
 .print-table td {
   padding: 6px;
   border-top: 1px solid #eee;
+  color: #222;
+  background: #fff;
 }
 
 /* Items column: flex 3, Qty column: flex 1, text-align right */

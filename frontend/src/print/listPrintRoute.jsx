@@ -45,7 +45,7 @@ export default function ListPrintRoute() {
     }
   }, [list, searchParams]);
 
-  if (!list) return <div className="p-6">Loading preview…</div>;
+  if (!list) return <div className="print-route" style={{ padding: 24 }}>Loading preview…</div>;
 
   return (
     <div className="print-route">
