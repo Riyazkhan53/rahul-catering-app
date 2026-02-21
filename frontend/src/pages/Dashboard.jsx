@@ -14,6 +14,8 @@ import Invoice from "./InvoiceBilling/Invoice"
 import MenuListCreator from "./MenuListCreator/MenuListCreator"
 import useIsDesktop from "../hooks/uselsDesktop";
 import AppSettings from "./AppSettings/AppSettings";
+import { apiRequest, isOfflineMode } from "../api/api";
+import { getAllUserRoles } from "../db/indexedDB";
 
 export default function Dashboard({ user, onLogout, onSwitchRole }) {
   const [activeTab, setActiveTab] = useState(() => {
@@ -22,6 +24,8 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
   const [orderPrefill, setOrderPrefill] = useState(null);
   const isDesktop = useIsDesktop();
   const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
+  const [allowedTabs, setAllowedTabs] = useState(null);
+  const [rolePermissions, setRolePermissions] = useState(null);
 
   useEffect(() => {
     localStorage.setItem("activeTab", activeTab);
@@ -30,6 +34,41 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
   useEffect(() => {
     setSidebarOpen(isDesktop);
   }, [isDesktop]);
+
+  // Fetch role config (tabs + permissions) for the current user's role
+  useEffect(() => {
+    async function fetchRoleConfig() {
+      const role = user?.role;
+      if (!role) return;
+      try {
+        let roleData = null;
+        if (!isOfflineMode()) {
+          const roles = await apiRequest("/api/roles");
+          roleData = roles.find((r) => r.roleId === role);
+        }
+        if (!roleData) {
+          // Fallback to IndexedDB
+          const local = await getAllUserRoles();
+          roleData = local.find((r) => r.id === role);
+        }
+        if (roleData) {
+          setAllowedTabs(roleData.tabs || []);
+          setRolePermissions(roleData.permissions || {});
+        }
+      } catch {
+        // Fallback to IndexedDB
+        try {
+          const local = await getAllUserRoles();
+          const roleData = local.find((r) => r.id === role);
+          if (roleData) {
+            setAllowedTabs(roleData.tabs || []);
+            setRolePermissions(roleData.permissions || {});
+          }
+        } catch {}
+      }
+    }
+    fetchRoleConfig();
+  }, [user?.role]);
 
   const hour = new Date().getHours();
   const timeGreeting =
@@ -86,8 +125,9 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
     return pages[activeTab] || <DashboardHome />;
   };
 
-  // Get tab order based on user role
+  // Get tab order based on role config
   const getTabOrder = () => {
+    if (allowedTabs && allowedTabs.length > 0) return allowedTabs;
     if (user?.role === "admin") {
       return ["dashboard", "orders", "menu", "settings", "setup", "appsettings"];
     }
@@ -108,6 +148,7 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
         onLogout={onLogout}
         onViewProfile={() => setActiveTab("settings")}
         onSwitchRole={onSwitchRole}
+        allowedTabs={allowedTabs}
       />
 
       {/* Main */}

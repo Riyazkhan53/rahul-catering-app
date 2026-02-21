@@ -15,24 +15,23 @@ import {
 } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 
-const MENU_CONFIG = {
-  chef: [
-    { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { key: "menu", label: "Menu Catalogue", icon: UtensilsCrossed },
-    { key: "orders", label: "Orders Management", icon: ClipboardList },
-    { key: "add-order", label: "New Order", icon: PlusCircle, badge: "⭐" },
-    { key: "listcreator", label: "Item/Menu List Creator", icon: FileText },
-    { key: "invoice", label: "Invoice & Billing", icon: Receipt },
-    { key: "appsettings", label: "App Settings", icon: Sparkles },
-  ],
-  admin: [
-    { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { key: "orders", label: "Orders Management", icon: ClipboardList },
-    { key: "menu", label: "Menu & Items Catalogue", icon: UtensilsCrossed },
-    { key: "settings", label: "Users/Roles Settings", icon: Settings },
-    { key: "setup", label: "Setup", icon: Wrench },
-    { key: "appsettings", label: "App Settings", icon: Sparkles },
-  ],
+// Master list of all possible sidebar tabs
+const ALL_MENU_ITEMS = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "orders", label: "Orders Management", icon: ClipboardList },
+  { key: "menu", label: "Menu & Items Catalogue", icon: UtensilsCrossed },
+  { key: "add-order", label: "New Order", icon: PlusCircle, badge: "⭐" },
+  { key: "listcreator", label: "Item/Menu List Creator", icon: FileText },
+  { key: "invoice", label: "Invoice & Billing", icon: Receipt },
+  { key: "settings", label: "Users/Roles Settings", icon: Settings },
+  { key: "setup", label: "Setup", icon: Wrench },
+  { key: "appsettings", label: "App Settings", icon: Sparkles },
+];
+
+// Fallback if role config hasn't loaded yet
+const FALLBACK_TABS = {
+  admin: ["dashboard", "orders", "menu", "settings", "setup", "appsettings"],
+  chef: ["dashboard", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
 };
 
 export default function Sidebar({
@@ -45,10 +44,21 @@ export default function Sidebar({
   onLogout,
   onViewProfile,
   onSwitchRole,
+  allowedTabs,
 }) {
   const { showToast } = useToast();
   const role = user?.role === "admin" ? "admin" : "chef";
-  const menu = MENU_CONFIG[role];
+
+  // Use allowedTabs from role config, fall back to hardcoded defaults
+  const tabKeys = allowedTabs && allowedTabs.length > 0
+    ? allowedTabs
+    : FALLBACK_TABS[role] || FALLBACK_TABS.chef;
+
+  // Filter and order menu items based on allowed tabs
+  const menu = tabKeys
+    .map((key) => ALL_MENU_ITEMS.find((item) => item.key === key))
+    .filter(Boolean);
+
   const initial = (user?.name || user?.username || "U").charAt(0).toUpperCase();
   const allRoles = [user?.role, ...(user?.additional_roles || [])];
   const switchableRoles = [...new Set(allRoles)].filter(r => r && r !== user?.role);
