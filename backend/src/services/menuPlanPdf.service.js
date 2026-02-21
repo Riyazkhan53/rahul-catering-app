@@ -119,7 +119,7 @@ export async function generateMenuPlanPDF(data) {
 
     currentPage.drawRectangle({
       x: 45, y: yPos - 5, width: width - 90, height: 25,
-      color: rgb(0.976, 0.451, 0.086, 0.1),
+      color: rgb(0.98, 0.95, 0.92),
       borderColor: orangeColor, borderWidth: 1.5,
     });
 
@@ -167,7 +167,7 @@ export async function generateMenuPlanPDF(data) {
         items.forEach((item) => {
           checkPageSpace(40);
           const displayItem = String(item || "").length > 50 ? String(item).substring(0, 50) + "..." : String(item || "");
-          currentPage.drawText(`\u2022 ${displayItem}`, {
+          currentPage.drawText(`- ${displayItem}`, {
             x: 80, y: yPos, size: 8, font, color: blackColor,
           });
           yPos -= 12;

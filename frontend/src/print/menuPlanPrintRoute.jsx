@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { getMenuPlanById } from "../db/indexedDB";
 import { generateMenuPlanPDF } from "../utils/generateMenuPlanPDF";
+import { savePdfFile } from "../utils/savePdf";
 import { isDesktop } from "../utils/device";
 import * as pdfjsLib from "pdfjs-dist";
 import "./print.css";
@@ -16,6 +17,7 @@ export default function MenuPlanPrintRoute() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [pageImages, setPageImages] = useState([]);
+  const [pdfBytes, setPdfBytes] = useState(null);
   const [menuPlanData, setMenuPlanData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
@@ -32,6 +34,7 @@ export default function MenuPlanPrintRoute() {
 
         // Generate the actual PDF (uses RahulCateringletterpad.pdf as template)
         const bytes = await generateMenuPlanPDF(data);
+        setPdfBytes(bytes);
 
         // Render each PDF page to a canvas → convert to image data URL
         const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
@@ -59,34 +62,28 @@ export default function MenuPlanPrintRoute() {
 
   // Auto-trigger download when ?download=true
   useEffect(() => {
-    if (menuPlanData && searchParams.get("download") === "true" && !autoDownloadTriggered.current) {
+    if (pdfBytes && menuPlanData && searchParams.get("download") === "true" && !autoDownloadTriggered.current) {
       autoDownloadTriggered.current = true;
       handleDownload();
     }
-  }, [menuPlanData, searchParams]);
+  }, [pdfBytes, menuPlanData, searchParams]);
 
-  // Download: POST to backend → get PDF → redirect to Chrome PDF viewer
   const handleDownload = async () => {
-    if (!menuPlanData) return;
+    if (!pdfBytes || !menuPlanData) return;
     setDownloading(true);
     try {
-      const url = `${import.meta.env.VITE_API_URL}/api/print/menuplan`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(menuPlanData),
-      });
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
+      const fileName = `MenuPlan_${menuPlanData.eventName || "draft"}_${menuPlanData.id || id}.pdf`;
 
       if (isDesktop()) {
+        // Desktop → open in new tab
+        const blob = new Blob([pdfBytes], { type: "application/pdf" });
+        const blobUrl = URL.createObjectURL(blob);
         window.open(blobUrl, "_blank");
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
       } else {
-        // Android / iOS → redirect to blob URL opens Chrome PDF viewer
-        window.location.href = blobUrl;
+        // Android / iOS → Capacitor Filesystem + Share (proven working)
+        await savePdfFile(pdfBytes, fileName);
       }
-
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
     } catch (err) {
       console.error("PDF download error:", err);
     }
