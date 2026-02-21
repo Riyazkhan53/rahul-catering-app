@@ -108,6 +108,42 @@ export const generatedListService = {
 
 
 
+/*------------------------------ */
+/* GENERATED QUOTATION SERVICES  */
+/*------------------------------ */
+
+export const generatedQuotationService = {
+  saveGeneratedQuotation(data) {
+    return apiRequest("/api/generated-quotations", {
+      method: "POST",
+      body: data,
+    });
+  },
+  fetchGeneratedQuotations() {
+    return apiRequest("/api/generated-quotations", {
+      method: "GET",
+    });
+  },
+};
+
+/*------------------------------ */
+/* GENERATED MENU PLAN SERVICES  */
+/*------------------------------ */
+
+export const generatedMenuPlanService = {
+  saveGeneratedMenuPlan(data) {
+    return apiRequest("/api/generated-menuplans", {
+      method: "POST",
+      body: data,
+    });
+  },
+  fetchGeneratedMenuPlans() {
+    return apiRequest("/api/generated-menuplans", {
+      method: "GET",
+    });
+  },
+};
+
 /* -------------------- */
 /* PRINT SERVICES       */
 /* -------------------- */
