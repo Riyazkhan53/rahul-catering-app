@@ -64,7 +64,6 @@ export default function QuotationPrintView({ data }) {
     <div className="quotation-print-page">
       {/* LETTERHEAD — full page background from RahulCateringletterpad.pdf */}
       <img src="/PdfHeader.png" className="qt-letterhead" alt="letterhead" />
-      <img src="/roundlogo3.png" className="print-watermark" alt="watermark" />
 
       {/* CONTENT — overlaid on top of letterhead, starts below the logo area */}
       <div className="qt-overlay-content">

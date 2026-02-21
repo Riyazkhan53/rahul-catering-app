@@ -2,7 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import QuotationPrintView from "./quotationPrintView";
 import { getQuotationById } from "../db/indexedDB";
-import { isDesktop } from "../utils/device";
+import { generateQuotationPDF } from "../utils/generateQuotationPDF";
+import { savePdfFile } from "../utils/savePdf";
 
 export default function QuotationPrintRoute() {
   const { id } = useParams();
@@ -17,30 +18,9 @@ export default function QuotationPrintRoute() {
     setDownloading(true);
 
     try {
-      const url = `${import.meta.env.VITE_API_URL}/api/print/quotation`;
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-
-      if (isDesktop()) {
-        // Desktop → open PDF in new tab
-        window.open(blobUrl, "_blank");
-      } else {
-        // Android / iOS → trigger native download via <a> tag
-        const link = document.createElement("a");
-        link.href = blobUrl;
-        link.download = `Quotation_${data.customerName || "draft"}_${data.id || id}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+      const pdfBytes = await generateQuotationPDF(data);
+      const fileName = `Quotation_${data.customerName || "draft"}_${data.id || id}.pdf`;
+      await savePdfFile(pdfBytes, fileName);
     } catch (err) {
       console.error("PDF download error:", err);
     }
