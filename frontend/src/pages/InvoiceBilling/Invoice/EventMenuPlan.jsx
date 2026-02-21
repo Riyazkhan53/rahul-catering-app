@@ -2,13 +2,11 @@ import { useState, useEffect } from "react";
 
 import { motion } from "framer-motion";
 
-import { Plus, Trash2, Download, X, ChevronDown, ChevronUp, ListPlus, Search, Check, ChefHat } from "lucide-react";
+import { Plus, Trash2, Download, X, ChevronDown, ChevronUp, ListPlus, Search, Check, ChefHat, Eye } from "lucide-react";
 
 import { createPortal } from "react-dom";
 
-import { saveAs } from "file-saver";
-
-import { generateMenuPlanPDF } from "../../../utils/generateMenuPlanPDF";
+import { useNavigate } from "react-router-dom";
 
 import { saveMenuPlan, getAllDishes } from "../../../db/indexedDB";
 
@@ -91,6 +89,8 @@ export default function EventMenuPlan({ onBack }) {
   ]);
 
 
+
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
 
@@ -246,94 +246,65 @@ export default function EventMenuPlan({ onBack }) {
 
 
 
-  const handleGeneratePDF = async () => {
-
+  const validateForm = () => {
     if (!formData.eventName || !formData.eventDate) {
-
       alert("Please fill event name and date");
-
-      return;
-
+      return false;
     }
-
-
-
     const hasMenuItems = days.some((day) =>
-
       Object.values(day.sessions).some(
-
         (session) => session.enabled && Object.keys(session.items).length > 0
-
       )
-
     );
-
-
-
     if (!hasMenuItems) {
-
       alert("Please add at least one menu item");
-
-      return;
-
+      return false;
     }
+    return true;
+  };
 
+  const saveAndGetId = async () => {
+    const menuPlanData = {
+      ...formData,
+      days,
+      generatedDate: new Date().toLocaleDateString(),
+      planNumber: `MP-${Date.now()}`,
+    };
+    const saved = {
+      id: menuPlanData.planNumber,
+      ...menuPlanData,
+      createdAt: Date.now(),
+    };
+    await saveMenuPlan(saved);
+    return saved.id;
+  };
 
-
+  const handleGeneratePDF = async () => {
+    if (!validateForm()) return;
     setLoading(true);
-
-
-
     try {
-
-      const menuPlanData = {
-
-        ...formData,
-
-        days,
-
-        generatedDate: new Date().toLocaleDateString(),
-
-        planNumber: `MP-${Date.now()}`,
-
-      };
-
-
-
-      const pdfBytes = await generateMenuPlanPDF(menuPlanData);
-
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
-
-      saveAs(blob, `MenuPlan_${formData.eventName}_${Date.now()}.pdf`);
-
-
-
-      await saveMenuPlan({
-
-        id: menuPlanData.planNumber,
-
-        ...menuPlanData,
-
-        createdAt: Date.now(),
-
-      });
-
-
-
-      alert("Menu Plan saved & PDF generated successfully!");
-
+      const planId = await saveAndGetId();
+      navigate(`/print/menuplan/${planId}?download=true`);
     } catch (error) {
-
       console.error("PDF generation error:", error);
-
       alert("Failed to generate PDF. Please try again.");
-
     } finally {
-
       setLoading(false);
-
     }
+  };
 
+  const handlePreview = async () => {
+    if (!validateForm()) return;
+    setLoading(true);
+    try {
+      const planId = await saveAndGetId();
+      navigate(`/print/menuplan/${planId}`);
+    } catch (error) {
+      console.error("Preview error:", error);
+      alert("Failed to preview. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -547,37 +518,30 @@ export default function EventMenuPlan({ onBack }) {
         </button>
 
         <button
-
-          onClick={handleGeneratePDF}
-
+          onClick={handlePreview}
           disabled={loading}
-
-          className="px-8 py-3 bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white rounded-xl transition disabled:opacity-50 flex items-center gap-2"
-
+          className="px-6 py-3 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-xl transition disabled:opacity-50 flex items-center gap-2"
         >
+          <Eye className="w-5 h-5" />
+          Preview
+        </button>
 
+        <button
+          onClick={handleGeneratePDF}
+          disabled={loading}
+          className="px-8 py-3 bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white rounded-xl transition disabled:opacity-50 flex items-center gap-2"
+        >
           {loading ? (
-
             <>
-
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-
               Generating...
-
             </>
-
           ) : (
-
             <>
-
               <Download className="w-5 h-5" />
-
               Generate Menu Plan PDF
-
             </>
-
           )}
-
         </button>
 
       </div>

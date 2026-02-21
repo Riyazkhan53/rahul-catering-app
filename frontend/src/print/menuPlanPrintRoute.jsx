@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { getQuotationById } from "../db/indexedDB";
-import { generateQuotationPDF } from "../utils/generateQuotationPDF";
+import { getMenuPlanById } from "../db/indexedDB";
+import { generateMenuPlanPDF } from "../utils/generateMenuPlanPDF";
 import { isDesktop } from "../utils/device";
 import * as pdfjsLib from "pdfjs-dist";
 import "./print.css";
@@ -11,12 +11,12 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
-export default function QuotationPrintRoute() {
+export default function MenuPlanPrintRoute() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [pageImages, setPageImages] = useState([]);
-  const [quotationData, setQuotationData] = useState(null);
+  const [menuPlanData, setMenuPlanData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const autoDownloadTriggered = useRef(false);
@@ -26,12 +26,12 @@ export default function QuotationPrintRoute() {
     async function loadAndRender() {
       try {
         setLoading(true);
-        const data = await getQuotationById(id);
+        const data = await getMenuPlanById(id);
         if (!data) { setLoading(false); return; }
-        setQuotationData(data);
+        setMenuPlanData(data);
 
         // Generate the actual PDF (uses RahulCateringletterpad.pdf as template)
-        const bytes = await generateQuotationPDF(data);
+        const bytes = await generateMenuPlanPDF(data);
 
         // Render each PDF page to a canvas → convert to image data URL
         const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
@@ -59,22 +59,22 @@ export default function QuotationPrintRoute() {
 
   // Auto-trigger download when ?download=true
   useEffect(() => {
-    if (quotationData && searchParams.get("download") === "true" && !autoDownloadTriggered.current) {
+    if (menuPlanData && searchParams.get("download") === "true" && !autoDownloadTriggered.current) {
       autoDownloadTriggered.current = true;
       handleDownload();
     }
-  }, [quotationData, searchParams]);
+  }, [menuPlanData, searchParams]);
 
   // Download: POST to backend → get PDF → redirect to Chrome PDF viewer
   const handleDownload = async () => {
-    if (!quotationData) return;
+    if (!menuPlanData) return;
     setDownloading(true);
     try {
-      const url = `${import.meta.env.VITE_API_URL}/api/print/quotation`;
+      const url = `${import.meta.env.VITE_API_URL}/api/print/menuplan`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(quotationData),
+        body: JSON.stringify(menuPlanData),
       });
       const blob = await res.blob();
       const blobUrl = URL.createObjectURL(blob);

@@ -1,6 +1,7 @@
 // backend/src/controllers/print.controller.js
 import { generateListPDF } from "../services/pdf.service.js";
 import { generateQuotationPDF } from "../services/quotationPdf.service.js";
+import { generateMenuPlanPDF } from "../services/menuPlanPdf.service.js";
 import GeneratedItemList from "../models/GeneratedItemsList.js";
 
 export function printList(req, res) {
@@ -65,5 +66,24 @@ export async function printQuotation(req, res) {
   } catch (err) {
     console.error("QUOTATION PDF ERROR:", err);
     res.status(500).json({ message: "Quotation PDF generation failed" });
+  }
+}
+
+export async function printMenuPlan(req, res) {
+  try {
+    const data = req.body;
+
+    const pdfBytes = await generateMenuPlanPDF(data);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="MenuPlan_${data.planNumber || "draft"}.pdf"`
+    );
+
+    res.end(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error("MENUPLAN PDF ERROR:", err);
+    res.status(500).json({ message: "Menu Plan PDF generation failed" });
   }
 }

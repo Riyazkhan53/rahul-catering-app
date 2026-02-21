@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ListPrintRoute from "./print/listPrintRoute";
 import QuotationPrintRoute from "./print/quotationPrintRoute";
+import MenuPlanPrintRoute from "./print/menuPlanPrintRoute";
 
 import { apiRequest, isOfflineMode } from "./api/api";
 import AppLayout from "./Layouts/AppLayout";
@@ -145,6 +146,10 @@ function App() {
             <Route
               path="/print/quotation/:id"
               element={<QuotationPrintRoute />}
+            />
+            <Route
+              path="/print/menuplan/:id"
+              element={<MenuPlanPrintRoute />}
             />
           </Routes>
         )}

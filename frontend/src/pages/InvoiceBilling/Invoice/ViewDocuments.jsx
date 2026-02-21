@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trash2, FileText, Calendar, X, Eye, Printer, Download } from "lucide-react";
+import { Trash2, FileText, Calendar, X, Eye, Printer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { saveAs } from "file-saver";
 import {
   getAllQuotations,
   deleteQuotation,
   getAllMenuPlans,
   deleteMenuPlan,
 } from "../../../db/indexedDB";
-import { generateMenuPlanPDF } from "../../../utils/generateMenuPlanPDF";
 
 export default function ViewDocuments({ onBack }) {
   const navigate = useNavigate();
@@ -45,17 +43,6 @@ export default function ViewDocuments({ onBack }) {
     if (!confirm("Delete this menu plan?")) return;
     await deleteMenuPlan(id);
     setMenuPlans((prev) => prev.filter((m) => m.id !== id));
-  };
-
-  const handleRedownloadMenuPlan = async (plan) => {
-    try {
-      const pdfBytes = await generateMenuPlanPDF(plan);
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
-      saveAs(blob, `MenuPlan_${plan.eventName}_${plan.id}.pdf`);
-    } catch (err) {
-      console.error("PDF re-generation error:", err);
-      alert("Failed to generate PDF.");
-    }
   };
 
   const formatDate = (timestamp) => {
@@ -216,11 +203,18 @@ export default function ViewDocuments({ onBack }) {
               </div>
               <div className="flex items-center gap-1 shrink-0 ml-2">
                 <button
-                  onClick={() => handleRedownloadMenuPlan(m)}
-                  className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition"
-                  title="Re-download PDF"
+                  onClick={() => navigate(`/print/menuplan/${m.id}`)}
+                  className="p-2 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition"
+                  title="View"
                 >
-                  <Download className="w-4 h-4" />
+                  <Eye className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => navigate(`/print/menuplan/${m.id}?download=true`)}
+                  className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition"
+                  title="Download PDF"
+                >
+                  <Printer className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDeleteMenuPlan(m.id)}
