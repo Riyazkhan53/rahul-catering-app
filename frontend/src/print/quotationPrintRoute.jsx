@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import QuotationPrintView from "./quotationPrintView";
 import { getQuotationById } from "../db/indexedDB";
 import { generateQuotationPDF } from "../utils/generateQuotationPDF";
-import { saveAs } from "file-saver";
+import { isDesktop } from "../utils/device";
 
 export default function QuotationPrintRoute() {
   const { id } = useParams();
@@ -19,12 +19,42 @@ export default function QuotationPrintRoute() {
     try {
       const pdfBytes = await generateQuotationPDF(data);
       const blob = new Blob([pdfBytes], { type: "application/pdf" });
-      saveAs(blob, `Quotation_${data.customerName || "draft"}_${data.id || id}.pdf`);
+      const fileName = `Quotation_${data.customerName || "draft"}_${data.id || id}.pdf`;
+
+      if (isDesktop()) {
+        // Desktop → open in new tab
+        const fileURL = URL.createObjectURL(blob);
+        window.open(fileURL, "_blank");
+        setTimeout(() => URL.revokeObjectURL(fileURL), 5000);
+      } else {
+        // Android / iOS → try native share, fallback to <a> download
+        try {
+          const file = new File([blob], fileName, { type: "application/pdf" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: fileName });
+          } else {
+            triggerDownload(blob, fileName);
+          }
+        } catch {
+          triggerDownload(blob, fileName);
+        }
+      }
     } catch (err) {
       console.error("PDF download error:", err);
     } finally {
       setTimeout(() => setDownloading(false), 800);
     }
+  };
+
+  const triggerDownload = (blob, fileName) => {
+    const fileURL = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = fileURL;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(fileURL), 1000);
   };
 
   useEffect(() => {

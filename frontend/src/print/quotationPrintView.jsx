@@ -62,12 +62,12 @@ export default function QuotationPrintView({ data }) {
 
   return (
     <div className="quotation-print-page">
+      {/* LETTERHEAD BACKGROUND */}
+      <img src="/PdfHeader.png" className="qt-letterhead-bg" alt="letterhead" />
       <img src="/roundlogo3.png" className="print-watermark" alt="watermark" />
 
-      {/* HEADER */}
-      <div className="print-header">
-        <img src="/headerLogo.png" className="print-header-img" />
-      </div>
+      {/* CONTENT STARTS BELOW LETTERHEAD */}
+      <div className="qt-content">
 
       {/* QUOTATION INFO */}
       <div className="qt-info-row">
@@ -228,6 +228,8 @@ export default function QuotationPrintView({ data }) {
           <li>Prices are subject to change based on market conditions.</li>
         </ul>
       </div>
+
+      </div>{/* end qt-content */}
 
       {/* FOOTER */}
       <div className="print-footer">
