@@ -4,9 +4,49 @@ import { getAllUserRoles, saveUserRole, deleteUserRole } from "../../db/indexedD
 import { useToast } from "../../context/ToastContext";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Default tab config per built-in role
+const DEFAULT_TAB_CONFIG = {
+  admin: ["dashboard", "orders", "menu", "settings", "setup", "appsettings"],
+  chef: ["dashboard", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
+};
+
+// Default permissions per built-in role
+const DEFAULT_PERMISSIONS = {
+  admin: {
+    menu: { create: true, modify: true, delete: true, approve: true },
+    items: { create: true, modify: true, delete: true, approve: true },
+    billing: { create: true, modify: true, delete: true, approve: true },
+  },
+  chef: {
+    menu: { create: true, modify: true, delete: false, approve: false },
+    items: { create: true, modify: true, delete: false, approve: false },
+    billing: { create: false, modify: false, delete: false, approve: false },
+  },
+};
+
+const EMPTY_PERMISSIONS = {
+  menu: { create: false, modify: false, delete: false, approve: false },
+  items: { create: false, modify: false, delete: false, approve: false },
+  billing: { create: false, modify: false, delete: false, approve: false },
+};
+
 const DEFAULT_ROLES = [
-  { id: "admin", label: "Admin", description: "Full access to all features", isDefault: true },
-  { id: "chef", label: "Chef", description: "Kitchen & order management", isDefault: true },
+  {
+    id: "admin",
+    label: "Admin",
+    description: "Full access to all features",
+    isDefault: true,
+    tabs: DEFAULT_TAB_CONFIG.admin,
+    permissions: DEFAULT_PERMISSIONS.admin,
+  },
+  {
+    id: "chef",
+    label: "Chef",
+    description: "Kitchen & order management",
+    isDefault: true,
+    tabs: DEFAULT_TAB_CONFIG.chef,
+    permissions: DEFAULT_PERMISSIONS.chef,
+  },
 ];
 
 export default function RoleSettings() {
@@ -27,16 +67,25 @@ export default function RoleSettings() {
     try {
       setLoading(true);
       const data = await getAllUserRoles();
-      // Merge defaults with saved roles (defaults always present)
+      // Seed default roles into DB if not present
       const savedIds = new Set(data.map((r) => r.id));
-      const merged = [
-        ...DEFAULT_ROLES.map((d) => {
-          const saved = data.find((r) => r.id === d.id);
-          return saved ? { ...d, ...saved, isDefault: true } : d;
-        }),
-        ...data.filter((r) => !DEFAULT_ROLES.some((d) => d.id === r.id)),
-      ];
-      setRoles(merged);
+      for (const def of DEFAULT_ROLES) {
+        if (!savedIds.has(def.id)) {
+          await saveUserRole({ ...def, createdAt: Date.now() });
+        }
+      }
+      // Re-read after seeding
+      const fresh = savedIds.size < DEFAULT_ROLES.length
+        ? await getAllUserRoles()
+        : data;
+      // Mark default roles
+      const roles = fresh.map((r) => ({
+        ...r,
+        isDefault: DEFAULT_ROLES.some((d) => d.id === r.id),
+      }));
+      // Sort: defaults first, then custom
+      roles.sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0));
+      setRoles(roles);
     } catch (err) {
       showToast("Failed to load roles", "error");
     } finally {
@@ -64,6 +113,8 @@ export default function RoleSettings() {
         label,
         description: newRole.description.trim(),
         isDefault: false,
+        tabs: ["dashboard", "appsettings"],
+        permissions: JSON.parse(JSON.stringify(EMPTY_PERMISSIONS)),
         createdAt: Date.now(),
       };
       await saveUserRole(role);
