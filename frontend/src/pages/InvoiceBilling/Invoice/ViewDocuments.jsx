@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trash2, FileText, Calendar, X, Download, Eye } from "lucide-react";
+import { Trash2, FileText, Calendar, X, Eye, Printer, Download } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import {
   getAllQuotations,
@@ -8,16 +9,14 @@ import {
   getAllMenuPlans,
   deleteMenuPlan,
 } from "../../../db/indexedDB";
-import { generateQuotationPDF } from "../../../utils/generateQuotationPDF";
 import { generateMenuPlanPDF } from "../../../utils/generateMenuPlanPDF";
-import QuotationPreviewModal from "./QuotationPreviewModal";
 
 export default function ViewDocuments({ onBack }) {
+  const navigate = useNavigate();
   const [tab, setTab] = useState("quotations");
   const [quotations, setQuotations] = useState([]);
   const [menuPlans, setMenuPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [previewQuotation, setPreviewQuotation] = useState(null);
 
   useEffect(() => {
     loadDocuments();
@@ -46,17 +45,6 @@ export default function ViewDocuments({ onBack }) {
     if (!confirm("Delete this menu plan?")) return;
     await deleteMenuPlan(id);
     setMenuPlans((prev) => prev.filter((m) => m.id !== id));
-  };
-
-  const handleRedownloadQuotation = async (quotation) => {
-    try {
-      const pdfBytes = await generateQuotationPDF(quotation);
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
-      saveAs(blob, `Quotation_${quotation.customerName}_${quotation.id}.pdf`);
-    } catch (err) {
-      console.error("PDF re-generation error:", err);
-      alert("Failed to generate PDF.");
-    }
   };
 
   const handleRedownloadMenuPlan = async (plan) => {
@@ -169,18 +157,18 @@ export default function ViewDocuments({ onBack }) {
                     ₹{(q.total || 0).toLocaleString()}
                   </span>
                   <button
-                    onClick={() => setPreviewQuotation(q)}
+                    onClick={() => navigate(`/print/quotation/${q.id}`)}
                     className="p-2 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition"
-                    title="Preview"
+                    title="View"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleRedownloadQuotation(q)}
+                    onClick={() => navigate(`/print/quotation/${q.id}?download=true`)}
                     className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition"
-                    title="Re-download PDF"
+                    title="Download PDF"
                   >
-                    <Download className="w-4 h-4" />
+                    <Printer className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDeleteQuotation(q.id)}
@@ -245,10 +233,6 @@ export default function ViewDocuments({ onBack }) {
             </div>
           ))}
         </div>
-      )}
-      {/* Quotation Preview Modal */}
-      {previewQuotation && (
-        <QuotationPreviewModal data={previewQuotation} onClose={() => setPreviewQuotation(null)} />
       )}
     </motion.div>
   );

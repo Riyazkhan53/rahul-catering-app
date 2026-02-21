@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Trash2, Download, X, ChevronDown, ChevronRight, CalendarPlus, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { generateQuotationPDF } from "../../../utils/generateQuotationPDF";
 import { savePdfFile } from "../../../utils/savePdf";
 import { saveQuotation } from "../../../db/indexedDB";
 import { useToast } from "../../../context/ToastContext";
-import QuotationPreviewModal from "./QuotationPreviewModal";
 
 const SHIFTS = ["Breakfast", "Lunch", "Snacks", "Dinner"];
 
@@ -73,6 +73,7 @@ const inputClass =
   "w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2.5 sm:px-4 sm:py-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm sm:text-base focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 outline-none";
 
 export default function CreateQuotation({ onBack }) {
+  const navigate = useNavigate();
   const { showToast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -89,7 +90,6 @@ export default function CreateQuotation({ onBack }) {
   ]);
   const [selectedServices, setSelectedServices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [previewData, setPreviewData] = useState(null);
   // Track which shift picker is open: "dateIdx-shift"
   const [activePicker, setActivePicker] = useState(null);
   // Track expanded categories inside the picker
@@ -297,19 +297,29 @@ export default function CreateQuotation({ onBack }) {
   };
 
   // --- Preview ---
-  const handlePreview = () => {
+  const handlePreview = async () => {
     if (totalDishCount() === 0) {
       showToast("Select at least one dish to preview", "error");
       return;
     }
-    setPreviewData({
+    const id = `QT-${Date.now()}`;
+    const quotationData = {
       ...formData,
+      id,
       eventDates,
       services: selectedServices,
       total: calculateTotal(),
-      quotationNumber: `QT-${Date.now()}`,
+      quotationNumber: id,
       date: new Date().toLocaleDateString(),
-    });
+      createdAt: Date.now(),
+    };
+    try {
+      await saveQuotation(quotationData);
+      navigate(`/print/quotation/${id}`);
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to save quotation for preview", "error");
+    }
   };
 
   // --- Helpers for dish picker ---
@@ -602,10 +612,6 @@ export default function CreateQuotation({ onBack }) {
         </button>
       </div>
 
-      {/* Preview Modal */}
-      {previewData && (
-        <QuotationPreviewModal data={previewData} onClose={() => setPreviewData(null)} />
-      )}
     </motion.div>
   );
 }

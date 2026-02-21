@@ -163,3 +163,187 @@
   position: relative;
   z-index: 1;
 }
+
+/* ============ QUOTATION PRINT STYLES ============ */
+
+.quotation-print-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  position: relative;
+  min-height: 100vh;
+  background: #fff;
+  color: #111;
+}
+
+.qt-info-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 12px 0 16px;
+  font-size: 11px;
+  color: #374151;
+}
+
+.qt-section {
+  margin-bottom: 14px;
+}
+
+.qt-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f97316;
+  border-bottom: 1px solid #fed7aa;
+  padding-bottom: 3px;
+  margin-bottom: 8px;
+}
+
+.qt-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 24px;
+}
+
+.qt-detail-row {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.qt-label {
+  color: #6b7280;
+  min-width: 80px;
+}
+
+.qt-value {
+  color: #111;
+  font-weight: 600;
+}
+
+/* Date heading */
+.qt-date-block {
+  margin-bottom: 12px;
+}
+
+.qt-date-heading {
+  background: #f3f4f6;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 10px 0 6px;
+}
+
+/* Shift heading */
+.qt-shift-block {
+  margin-left: 8px;
+  margin-bottom: 6px;
+}
+
+.qt-shift-heading {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f97316;
+  margin: 6px 0 4px;
+}
+
+/* Category heading */
+.qt-category-block {
+  margin-left: 12px;
+  margin-bottom: 6px;
+}
+
+.qt-category-heading {
+  font-size: 10px;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 3px;
+}
+
+/* Quotation table */
+.qt-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 4px;
+  font-size: 10px;
+}
+
+.qt-table thead tr {
+  background: #fff7ed;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.qt-table th {
+  padding: 4px 8px;
+  font-weight: 700;
+  font-size: 9px;
+  text-align: left;
+  color: #374151;
+}
+
+.qt-table td {
+  padding: 3px 8px;
+  border-bottom: 1px solid #f3f4f6;
+  color: #222;
+}
+
+.qt-table tr:nth-child(even) td {
+  background: #fafafa;
+}
+
+.qt-th-num, .qt-td-num { width: 6%; text-align: center; }
+.qt-th-item, .qt-td-item { width: 44%; }
+.qt-th-qty, .qt-td-qty { width: 12%; text-align: center; }
+.qt-th-rate, .qt-td-rate { width: 18%; text-align: right; }
+.qt-th-amount, .qt-td-amount { width: 20%; text-align: right; font-weight: 600; }
+
+/* Total box */
+.qt-total-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0;
+  padding: 12px 16px;
+  background: #fff7ed;
+  border: 2px solid #f97316;
+  border-radius: 6px;
+}
+
+.qt-total-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.qt-total-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f97316;
+}
+
+/* Terms */
+.qt-terms {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  font-size: 9px;
+  color: #6b7280;
+}
+
+.qt-terms strong {
+  font-size: 10px;
+  color: #374151;
+}
+
+.qt-terms ul {
+  margin: 4px 0 0 16px;
+  padding: 0;
+  list-style: disc;
+}
+
+.qt-terms li {
+  margin-bottom: 2px;
+}

@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ListPrintRoute from "./print/listPrintRoute";
+import QuotationPrintRoute from "./print/quotationPrintRoute";
 
 import { apiRequest, isOfflineMode } from "./api/api";
 import AppLayout from "./Layouts/AppLayout";
@@ -136,10 +137,14 @@ function App() {
               element={<Dashboard user={user} onLogout={handleLogout} onSwitchRole={handleSwitchRole} />}
             />
 
-            {/* PRINT PREVIEW ROUTE */}
+            {/* PRINT PREVIEW ROUTES */}
             <Route
               path="/print/list/:id"
               element={<ListPrintRoute />}
+            />
+            <Route
+              path="/print/quotation/:id"
+              element={<QuotationPrintRoute />}
             />
           </Routes>
         )}
