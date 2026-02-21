@@ -1,5 +1,6 @@
 // backend/src/controllers/print.controller.js
 import { generateListPDF } from "../services/pdf.service.js";
+import { generateQuotationPDF } from "../services/quotationPdf.service.js";
 import GeneratedItemList from "../models/GeneratedItemsList.js";
 
 export function printList(req, res) {
@@ -48,3 +49,21 @@ export async function downloadListPDF(req, res) {
   }
 }
 
+export async function printQuotation(req, res) {
+  try {
+    const data = req.body;
+
+    const pdfBytes = await generateQuotationPDF(data);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="Quotation_${data.quotationNumber || "draft"}.pdf"`
+    );
+
+    res.end(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error("QUOTATION PDF ERROR:", err);
+    res.status(500).json({ message: "Quotation PDF generation failed" });
+  }
+}

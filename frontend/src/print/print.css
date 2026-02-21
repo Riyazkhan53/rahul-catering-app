@@ -167,27 +167,13 @@
 .quotation-print-page {
   max-width: 900px;
   margin: 0 auto;
-  padding: 0;
+  padding: 24px;
   font-family: Arial, sans-serif;
   font-size: 12px;
   position: relative;
   min-height: 100vh;
   background: #fff;
   color: #111;
-}
-
-/* Letterhead background image — sits at the top of the page */
-.qt-letterhead-bg {
-  width: 100%;
-  display: block;
-  pointer-events: none;
-}
-
-/* Content area below the letterhead */
-.qt-content {
-  padding: 12px 32px 80px;
-  position: relative;
-  z-index: 1;
 }
 
 .qt-info-row {
