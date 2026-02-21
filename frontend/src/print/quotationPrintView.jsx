@@ -62,12 +62,12 @@ export default function QuotationPrintView({ data }) {
 
   return (
     <div className="quotation-print-page">
+      {/* LETTERHEAD — full page background from RahulCateringletterpad.pdf */}
+      <img src="/PdfHeader.png" className="qt-letterhead" alt="letterhead" />
       <img src="/roundlogo3.png" className="print-watermark" alt="watermark" />
 
-      {/* HEADER — same as listPrintView */}
-      <div className="print-header">
-        <img src="/headerLogo.png" className="print-header-img" alt="header" />
-      </div>
+      {/* CONTENT — overlaid on top of letterhead, starts below the logo area */}
+      <div className="qt-overlay-content">
 
       {/* QUOTATION INFO */}
       <div className="qt-info-row">
@@ -228,6 +228,8 @@ export default function QuotationPrintView({ data }) {
           <li>Prices are subject to change based on market conditions.</li>
         </ul>
       </div>
+
+      </div>{/* end qt-overlay-content */}
 
       {/* FOOTER */}
       <div className="print-footer">

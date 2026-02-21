@@ -167,13 +167,33 @@
 .quotation-print-page {
   max-width: 900px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 0;
   font-family: Arial, sans-serif;
   font-size: 12px;
   position: relative;
   min-height: 100vh;
   background: #fff;
   color: #111;
+}
+
+/* Full-page letterhead image (rendered from RahulCateringletterpad.pdf) */
+.qt-letterhead {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Content overlay — sits on top of the letterhead, starts below the logo area */
+.qt-overlay-content {
+  position: relative;
+  z-index: 1;
+  padding: 0 32px 80px;
+  /* Push content below the letterhead logo area (~58% down the letterhead image) */
+  margin-top: 56%;
 }
 
 .qt-info-row {
