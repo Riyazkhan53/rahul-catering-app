@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trash2, FileText, Calendar, X, Download } from "lucide-react";
+import { Trash2, FileText, Calendar, X, Download, Eye } from "lucide-react";
 import { saveAs } from "file-saver";
 import {
   getAllQuotations,
@@ -10,12 +10,14 @@ import {
 } from "../../../db/indexedDB";
 import { generateQuotationPDF } from "../../../utils/generateQuotationPDF";
 import { generateMenuPlanPDF } from "../../../utils/generateMenuPlanPDF";
+import QuotationPreviewModal from "./QuotationPreviewModal";
 
 export default function ViewDocuments({ onBack }) {
   const [tab, setTab] = useState("quotations");
   const [quotations, setQuotations] = useState([]);
   const [menuPlans, setMenuPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [previewQuotation, setPreviewQuotation] = useState(null);
 
   useEffect(() => {
     loadDocuments();
@@ -156,7 +158,7 @@ export default function ViewDocuments({ onBack }) {
                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-400 dark:text-gray-500">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
-                        Event: {q.eventDate || "—"}
+                        Event: {q.eventDates ? q.eventDates.filter(ed => ed.date).map(ed => ed.date).join(", ") || "—" : q.eventDate || "—"}
                       </span>
                       <span>Created: {formatDate(q.createdAt)}</span>
                     </div>
@@ -166,6 +168,13 @@ export default function ViewDocuments({ onBack }) {
                   <span className="font-bold text-orange-600 dark:text-orange-400 mr-2 hidden sm:block">
                     ₹{(q.total || 0).toLocaleString()}
                   </span>
+                  <button
+                    onClick={() => setPreviewQuotation(q)}
+                    className="p-2 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition"
+                    title="Preview"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={() => handleRedownloadQuotation(q)}
                     className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition"
@@ -236,6 +245,10 @@ export default function ViewDocuments({ onBack }) {
             </div>
           ))}
         </div>
+      )}
+      {/* Quotation Preview Modal */}
+      {previewQuotation && (
+        <QuotationPreviewModal data={previewQuotation} onClose={() => setPreviewQuotation(null)} />
       )}
     </motion.div>
   );

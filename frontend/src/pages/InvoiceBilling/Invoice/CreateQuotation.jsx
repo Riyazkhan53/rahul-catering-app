@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Download, X, ChevronDown, ChevronRight, CalendarPlus } from "lucide-react";
+import { Plus, Trash2, Download, X, ChevronDown, ChevronRight, CalendarPlus, Eye } from "lucide-react";
 import { generateQuotationPDF } from "../../../utils/generateQuotationPDF";
 import { savePdfFile } from "../../../utils/savePdf";
 import { saveQuotation } from "../../../db/indexedDB";
 import { useToast } from "../../../context/ToastContext";
+import QuotationPreviewModal from "./QuotationPreviewModal";
 
 const SHIFTS = ["Breakfast", "Lunch", "Snacks", "Dinner"];
 
@@ -88,6 +89,7 @@ export default function CreateQuotation({ onBack }) {
   ]);
   const [selectedServices, setSelectedServices] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [previewData, setPreviewData] = useState(null);
   // Track which shift picker is open: "dateIdx-shift"
   const [activePicker, setActivePicker] = useState(null);
   // Track expanded categories inside the picker
@@ -292,6 +294,22 @@ export default function CreateQuotation({ onBack }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // --- Preview ---
+  const handlePreview = () => {
+    if (totalDishCount() === 0) {
+      showToast("Select at least one dish to preview", "error");
+      return;
+    }
+    setPreviewData({
+      ...formData,
+      eventDates,
+      services: selectedServices,
+      total: calculateTotal(),
+      quotationNumber: `QT-${Date.now()}`,
+      date: new Date().toLocaleDateString(),
+    });
   };
 
   // --- Helpers for dish picker ---
@@ -561,6 +579,12 @@ export default function CreateQuotation({ onBack }) {
           className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm sm:text-base">
           Cancel
         </button>
+        <button onClick={handlePreview}
+          disabled={totalDishCount() === 0}
+          className="px-6 py-2.5 border-2 border-orange-500 dark:border-orange-600 text-orange-600 dark:text-orange-400 rounded-xl transition disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base font-semibold hover:bg-orange-50 dark:hover:bg-orange-900/20">
+          <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+          Preview
+        </button>
         <button onClick={handleGeneratePDF}
           disabled={loading || totalDishCount() === 0}
           className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white rounded-xl transition disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base font-semibold">
@@ -577,6 +601,11 @@ export default function CreateQuotation({ onBack }) {
           )}
         </button>
       </div>
+
+      {/* Preview Modal */}
+      {previewData && (
+        <QuotationPreviewModal data={previewData} onClose={() => setPreviewData(null)} />
+      )}
     </motion.div>
   );
 }
