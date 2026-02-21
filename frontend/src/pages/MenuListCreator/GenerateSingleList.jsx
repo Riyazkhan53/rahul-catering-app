@@ -18,6 +18,7 @@ export default function GenerateSingleList() {
     const [commentText, setCommentText] = useState("");
     const [orderCounter, setOrderCounter] = useState(1);
     const [categoryFilter, setCategoryFilter] = useState("all");
+    const [withQty, setWithQty] = useState(true);
     const { showToast } = useToast();
 
     const [items, setItems] = useState([]);
@@ -132,9 +133,9 @@ export default function GenerateSingleList() {
                 itemId: i.itemId,
                 name: i.name,
                 tamilName: i.tamilName,
-                quantity: selected[i.itemId].quantity,
-                unit: selected[i.itemId].unit,
-                comment: selected[i.itemId].comment,
+                quantity: withQty ? selected[i.itemId].quantity : "",
+                unit: withQty ? selected[i.itemId].unit : "",
+                comment: withQty ? selected[i.itemId].comment : "",
                 ordNo: selected[i.itemId].ordNo,
             }))
             .sort((a, b) => a.ordNo - b.ordNo);
@@ -198,7 +199,7 @@ export default function GenerateSingleList() {
                     />
                 </div>
 
-                <div className="flex gap-3 mb-4">
+                <div className="flex gap-3 mb-4 items-center">
                     <Select
                         value={categoryFilter}
                         onChange={(e) => setCategoryFilter(e.target.value)}
@@ -209,15 +210,40 @@ export default function GenerateSingleList() {
                             <option key={_obj?.value} value={_obj?.value}>{_obj?.label}</option>
                         ))}
                     </Select>
+
+                    <div className="flex rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden text-sm">
+                        <button
+                            type="button"
+                            onClick={() => setWithQty(true)}
+                            className={`px-3 py-1.5 font-medium transition ${
+                                withQty
+                                    ? "bg-orange-500 text-white"
+                                    : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            }`}
+                        >
+                            With Qty
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setWithQty(false)}
+                            className={`px-3 py-1.5 font-medium transition ${
+                                !withQty
+                                    ? "bg-orange-500 text-white"
+                                    : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            }`}
+                        >
+                            Without Qty
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* Table Header - hidden on mobile */}
             <div className="hidden sm:grid grid-cols-12 text-sm font-semibold text-gray-500 dark:text-gray-300 border-b pb-2 mb-3">
                 <div className="col-span-1"></div>
-                <div className="col-span-4">Item</div>
-                <div className="col-span-3">Tamil Name</div>
-                <div className="col-span-4">Quantity</div>
+                <div className={withQty ? "col-span-4" : "col-span-5"}>Item</div>
+                <div className={withQty ? "col-span-3" : "col-span-6"}>Tamil Name</div>
+                {withQty && <div className="col-span-4">Quantity</div>}
             </div>
 
             {/* Items - Grouped by Category */}
@@ -265,17 +291,18 @@ export default function GenerateSingleList() {
                                             </div>
 
                                             {/* Name */}
-                                            <div className="col-span-10 sm:col-span-4 font-medium">
+                                            <div className={`col-span-10 font-medium ${withQty ? "sm:col-span-4" : "sm:col-span-5"}`}>
                                                 {item.name}
                                                 <p className="text-xs italic opacity-40">{item.description}</p>
                                             </div>
 
                                             {/* Tamil - hidden on mobile */}
-                                            <div className="hidden sm:block sm:col-span-3 opacity-80">
+                                            <div className={`hidden sm:block opacity-80 ${withQty ? "sm:col-span-3" : "sm:col-span-6"}`}>
                                                 {item.tamilName}
                                             </div>
 
-                                            {/* Quantity - hidden on mobile */}
+                                            {/* Quantity - hidden on mobile, only when withQty */}
+                                            {withQty && (
                                             <div className="hidden sm:block sm:col-span-4" onClick={(e) => e.stopPropagation()}>
                                                 {isChecked ? (
                                                     <div className="flex gap-2 items-center">
@@ -309,6 +336,7 @@ export default function GenerateSingleList() {
                                                     <span className="text-sm opacity-50">—</span>
                                                 )}
                                             </div>
+                                            )}
                                         </div>
 
                                         {/* Mobile-only: Tamil + Quantity row stacked below */}
@@ -316,7 +344,7 @@ export default function GenerateSingleList() {
                                             {item.tamilName && (
                                                 <span className="text-xs opacity-60 block mb-1">{item.tamilName}</span>
                                             )}
-                                            {isChecked && (
+                                            {isChecked && withQty && (
                                                 <div className="flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                                     <Input
                                                         type="text"

@@ -4,6 +4,7 @@ import { FileText, Eye, Printer, ClipboardList, Calendar, Package, Clock, Pencil
 import { getAllLists, getListById } from "../../db/indexedDB";
 import AnimatedPage from "../AnimatedPage";
 import ListPrintView from "../../print/listPrintView";
+import EditListModal from "./EditListModal";
 import { useNavigate } from "react-router-dom";
 import { pdf } from "@react-pdf/renderer";
 import ListPDF from "../../pdf/listPDF";
@@ -14,8 +15,14 @@ export default function CreatedItemLists() {
   const [loading, setLoading] = useState(true);
   const [printList, setPrintList] = useState(null);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [editList, setEditList] = useState(null);
   const navigate = useNavigate();
   const { showToast } = useToast();
+
+  const reloadLists = async () => {
+    const data = await getAllLists();
+    setLists((data || []).sort((a, b) => new Date(b.date) - new Date(a.date)));
+  };
 
   const handleDirectDownload = async (listItem) => {
     try {
@@ -210,6 +217,16 @@ export default function CreatedItemLists() {
                         View
                       </button>
                       <button
+                        onClick={async () => {
+                          const data = await getListById(list.id);
+                          setEditList(data);
+                        }}
+                        className="px-4 py-2.5 bg-amber-50 hover:bg-amber-500 dark:bg-amber-900/20 dark:hover:bg-amber-500 text-amber-600 hover:text-white dark:text-amber-400 dark:hover:text-white rounded-xl transition-all duration-200"
+                        title="Edit list"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => navigate(`/print/list/${list.id}?download=true`)}
                         className="px-4 py-2.5 bg-green-50 hover:bg-green-500 dark:bg-green-900/20 dark:hover:bg-green-500 text-green-600 hover:text-white dark:text-green-400 dark:hover:text-white rounded-xl transition-all duration-200"
                         title="Download PDF"
@@ -227,6 +244,14 @@ export default function CreatedItemLists() {
         )}
 
         {printList && <ListPrintView list={printList} />}
+
+        {editList && (
+          <EditListModal
+            list={editList}
+            onClose={() => setEditList(null)}
+            onSaved={reloadLists}
+          />
+        )}
       </motion.div>
     </AnimatedPage>
   );
