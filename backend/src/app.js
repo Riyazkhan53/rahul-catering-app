@@ -10,6 +10,8 @@ import generatedListRoutes from "./routes/generatedList.routes.js";
 import eventDatesRoutes from "./routes/eventDates.routes.js";
 import aiRoutes  from "./routes/ai.routes.js";
 import roleRoutes from "./routes/role.routes.js";
+import generatedQuotationRoutes from "./routes/generatedQuotation.routes.js";
+import generatedMenuPlanRoutes from "./routes/generatedMenuPlan.routes.js";
 
 
 const app = express();
@@ -28,6 +30,8 @@ app.use("/api/generated-lists", generatedListRoutes);
 app.use("/api/event-dates", eventDatesRoutes);
 app.use("/api/ai", aiRoutes); // AI routes
 app.use("/api/roles", roleRoutes);
+app.use("/api/generated-quotations", generatedQuotationRoutes);
+app.use("/api/generated-menuplans", generatedMenuPlanRoutes);
 
 // Global error handler — catches unhandled errors so responses never hang
 app.use((err, req, res, next) => {

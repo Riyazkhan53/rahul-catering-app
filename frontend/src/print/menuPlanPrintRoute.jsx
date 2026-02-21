@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { getMenuPlanById } from "../db/indexedDB";
 import { generateMenuPlanPDF } from "../utils/generateMenuPlanPDF";
-import { savePdfFile } from "../utils/savePdf";
 import { isDesktop } from "../utils/device";
 import * as pdfjsLib from "pdfjs-dist";
 import "./print.css";
@@ -17,7 +16,6 @@ export default function MenuPlanPrintRoute() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [pageImages, setPageImages] = useState([]);
-  const [pdfBytes, setPdfBytes] = useState(null);
   const [menuPlanData, setMenuPlanData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
@@ -34,7 +32,6 @@ export default function MenuPlanPrintRoute() {
 
         // Generate the actual PDF (uses RahulCateringletterpad.pdf as template)
         const bytes = await generateMenuPlanPDF(data);
-        setPdfBytes(bytes);
 
         // Render each PDF page to a canvas → convert to image data URL
         const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
@@ -62,31 +59,25 @@ export default function MenuPlanPrintRoute() {
 
   // Auto-trigger download when ?download=true
   useEffect(() => {
-    if (pdfBytes && menuPlanData && searchParams.get("download") === "true" && !autoDownloadTriggered.current) {
+    if (menuPlanData && searchParams.get("download") === "true" && !autoDownloadTriggered.current) {
       autoDownloadTriggered.current = true;
-      handleDownload();
+      downloadPDF();
     }
-  }, [pdfBytes, menuPlanData, searchParams]);
+  }, [menuPlanData, searchParams]);
 
-  const handleDownload = async () => {
-    if (!pdfBytes || !menuPlanData) return;
+  // Download: direct GET to backend → Chrome PDF viewer (same as item list)
+  const downloadPDF = () => {
     setDownloading(true);
-    try {
-      const fileName = `MenuPlan_${menuPlanData.eventName || "draft"}_${menuPlanData.id || id}.pdf`;
 
-      if (isDesktop()) {
-        // Desktop → open in new tab
-        const blob = new Blob([pdfBytes], { type: "application/pdf" });
-        const blobUrl = URL.createObjectURL(blob);
-        window.open(blobUrl, "_blank");
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-      } else {
-        // Android / iOS → Capacitor Filesystem + Share (proven working)
-        await savePdfFile(pdfBytes, fileName);
-      }
-    } catch (err) {
-      console.error("PDF download error:", err);
+    const url = `${import.meta.env.VITE_API_URL}/api/print/menuplan/${id}`;
+
+    if (isDesktop()) {
+      window.open(url, "_blank");
+    } else {
+      // Android / iOS → direct URL navigation opens Chrome PDF viewer
+      window.location.href = url;
     }
+
     setTimeout(() => setDownloading(false), 800);
   };
 
@@ -105,7 +96,7 @@ export default function MenuPlanPrintRoute() {
         <button onClick={() => navigate(-1)} className="print-back-btn">
           ← Back
         </button>
-        <button onClick={handleDownload} disabled={downloading}>
+        <button onClick={downloadPDF} disabled={downloading}>
           {downloading ? "Preparing…" : "⬇ Download PDF"}
         </button>
       </div>

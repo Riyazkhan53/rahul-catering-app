@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { generateQuotationPDF } from "../../../utils/generateQuotationPDF";
 import { savePdfFile } from "../../../utils/savePdf";
 import { saveQuotation } from "../../../db/indexedDB";
+import { generatedQuotationService } from "../../../api/service";
 import { useToast } from "../../../context/ToastContext";
 
 const SHIFTS = ["Breakfast", "Lunch", "Snacks", "Dinner"];
@@ -281,11 +282,17 @@ export default function CreateQuotation({ onBack }) {
       const pdfBytes = await generateQuotationPDF(quotationData);
       await savePdfFile(pdfBytes, `Quotation_${formData.customerName}_${Date.now()}.pdf`);
 
-      await saveQuotation({
+      const savedData = {
         id: quotationData.quotationNumber,
         ...quotationData,
         createdAt: Date.now(),
-      });
+      };
+      await saveQuotation(savedData);
+
+      // Save to MongoDB (online)
+      if (navigator.onLine) {
+        await generatedQuotationService.saveGeneratedQuotation(savedData);
+      }
 
       showToast("Quotation saved & PDF generated!", "success");
     } catch (error) {
@@ -315,6 +322,12 @@ export default function CreateQuotation({ onBack }) {
     };
     try {
       await saveQuotation(quotationData);
+
+      // Save to MongoDB (online)
+      if (navigator.onLine) {
+        await generatedQuotationService.saveGeneratedQuotation(quotationData);
+      }
+
       navigate(`/print/quotation/${id}`);
     } catch (err) {
       console.error(err);

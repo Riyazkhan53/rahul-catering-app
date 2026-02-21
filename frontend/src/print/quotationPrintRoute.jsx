@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { getQuotationById } from "../db/indexedDB";
 import { generateQuotationPDF } from "../utils/generateQuotationPDF";
-import { savePdfFile } from "../utils/savePdf";
 import { isDesktop } from "../utils/device";
 import * as pdfjsLib from "pdfjs-dist";
 import "./print.css";
@@ -17,7 +16,6 @@ export default function QuotationPrintRoute() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [pageImages, setPageImages] = useState([]);
-  const [pdfBytes, setPdfBytes] = useState(null);
   const [quotationData, setQuotationData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
@@ -34,7 +32,6 @@ export default function QuotationPrintRoute() {
 
         // Generate the actual PDF (uses RahulCateringletterpad.pdf as template)
         const bytes = await generateQuotationPDF(data);
-        setPdfBytes(bytes);
 
         // Render each PDF page to a canvas → convert to image data URL
         const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
@@ -62,31 +59,25 @@ export default function QuotationPrintRoute() {
 
   // Auto-trigger download when ?download=true
   useEffect(() => {
-    if (pdfBytes && quotationData && searchParams.get("download") === "true" && !autoDownloadTriggered.current) {
+    if (quotationData && searchParams.get("download") === "true" && !autoDownloadTriggered.current) {
       autoDownloadTriggered.current = true;
-      handleDownload();
+      downloadPDF();
     }
-  }, [pdfBytes, quotationData, searchParams]);
+  }, [quotationData, searchParams]);
 
-  const handleDownload = async () => {
-    if (!pdfBytes || !quotationData) return;
+  // Download: direct GET to backend → Chrome PDF viewer (same as item list)
+  const downloadPDF = () => {
     setDownloading(true);
-    try {
-      const fileName = `Quotation_${quotationData.customerName || "draft"}_${quotationData.id || id}.pdf`;
 
-      if (isDesktop()) {
-        // Desktop → open in new tab
-        const blob = new Blob([pdfBytes], { type: "application/pdf" });
-        const blobUrl = URL.createObjectURL(blob);
-        window.open(blobUrl, "_blank");
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-      } else {
-        // Android / iOS → Capacitor Filesystem + Share (proven working)
-        await savePdfFile(pdfBytes, fileName);
-      }
-    } catch (err) {
-      console.error("PDF download error:", err);
+    const url = `${import.meta.env.VITE_API_URL}/api/print/quotation/${id}`;
+
+    if (isDesktop()) {
+      window.open(url, "_blank");
+    } else {
+      // Android / iOS → direct URL navigation opens Chrome PDF viewer
+      window.location.href = url;
     }
+
     setTimeout(() => setDownloading(false), 800);
   };
 
@@ -105,7 +96,7 @@ export default function QuotationPrintRoute() {
         <button onClick={() => navigate(-1)} className="print-back-btn">
           ← Back
         </button>
-        <button onClick={handleDownload} disabled={downloading}>
+        <button onClick={downloadPDF} disabled={downloading}>
           {downloading ? "Preparing…" : "⬇ Download PDF"}
         </button>
       </div>

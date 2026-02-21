@@ -10,6 +10,8 @@ import { useNavigate } from "react-router-dom";
 
 import { saveMenuPlan, getAllDishes } from "../../../db/indexedDB";
 
+import { generatedMenuPlanService } from "../../../api/service";
+
 import { dishCategories } from "../../../utils/picklist";
 
 
@@ -276,6 +278,12 @@ export default function EventMenuPlan({ onBack }) {
       createdAt: Date.now(),
     };
     await saveMenuPlan(saved);
+
+    // Save to MongoDB (online)
+    if (navigator.onLine) {
+      await generatedMenuPlanService.saveGeneratedMenuPlan(saved);
+    }
+
     return saved.id;
   };
 
