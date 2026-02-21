@@ -14,6 +14,7 @@ import Invoice from "./InvoiceBilling/Invoice"
 import MenuListCreator from "./MenuListCreator/MenuListCreator"
 import useIsDesktop from "../hooks/uselsDesktop";
 import AppSettings from "./AppSettings/AppSettings";
+import ProfileModal from "./Settings/Profile";
 import { apiRequest, isOfflineMode } from "../api/api";
 import { getAllUserRoles } from "../db/indexedDB";
 
@@ -26,6 +27,7 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
   const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
   const [allowedTabs, setAllowedTabs] = useState(null);
   const [rolePermissions, setRolePermissions] = useState(null);
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("activeTab", activeTab);
@@ -146,7 +148,7 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
         setOpen={setSidebarOpen}
         isDesktop={isDesktop}
         onLogout={onLogout}
-        onViewProfile={() => setActiveTab("settings")}
+        onViewProfile={() => setShowProfile(true)}
         onSwitchRole={onSwitchRole}
         allowedTabs={allowedTabs}
       />
@@ -161,7 +163,7 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
           greeting={greetingText}
           user={user}
           onLogout={onLogout}
-          onViewProfile={() => setActiveTab("settings")}
+          onViewProfile={() => setShowProfile(true)}
           onSwitchRole={onSwitchRole}
           toggleSidebar={() => setSidebarOpen(v => !v)}
           isDesktop={isDesktop}
@@ -182,6 +184,10 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
           </AnimatePresence>
         </div>
       </main>
+
+      {showProfile && (
+        <ProfileModal user={user} onClose={() => setShowProfile(false)} />
+      )}
     </div>
   );
 }
