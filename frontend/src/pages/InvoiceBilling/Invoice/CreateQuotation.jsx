@@ -321,13 +321,8 @@ export default function CreateQuotation({ onBack }) {
       createdAt: Date.now(),
     };
     try {
+      // Only save to IndexedDB for preview (client-side PDF.js rendering)
       await saveQuotation(quotationData);
-
-      // Save to MongoDB (online)
-      if (navigator.onLine) {
-        await generatedQuotationService.saveGeneratedQuotation(quotationData);
-      }
-
       navigate(`/print/quotation/${id}`);
     } catch (err) {
       console.error(err);

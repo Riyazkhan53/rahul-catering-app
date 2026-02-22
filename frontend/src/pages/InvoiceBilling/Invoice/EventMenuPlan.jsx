@@ -265,34 +265,33 @@ export default function EventMenuPlan({ onBack }) {
     return true;
   };
 
-  const saveAndGetId = async () => {
+  const buildMenuPlanData = () => {
     const menuPlanData = {
       ...formData,
       days,
       generatedDate: new Date().toLocaleDateString(),
       planNumber: `MP-${Date.now()}`,
     };
-    const saved = {
+    return {
       id: menuPlanData.planNumber,
       ...menuPlanData,
       createdAt: Date.now(),
     };
-    await saveMenuPlan(saved);
-
-    // Save to MongoDB (online)
-    if (navigator.onLine) {
-      await generatedMenuPlanService.saveGeneratedMenuPlan(saved);
-    }
-
-    return saved.id;
   };
 
   const handleGeneratePDF = async () => {
     if (!validateForm()) return;
     setLoading(true);
     try {
-      const planId = await saveAndGetId();
-      navigate(`/print/menuplan/${planId}?download=true`);
+      const saved = buildMenuPlanData();
+      await saveMenuPlan(saved);
+
+      // Save to MongoDB (online) — only on generate/download
+      if (navigator.onLine) {
+        await generatedMenuPlanService.saveGeneratedMenuPlan(saved);
+      }
+
+      navigate(`/print/menuplan/${saved.id}?download=true`);
     } catch (error) {
       console.error("PDF generation error:", error);
       alert("Failed to generate PDF. Please try again.");
@@ -305,8 +304,10 @@ export default function EventMenuPlan({ onBack }) {
     if (!validateForm()) return;
     setLoading(true);
     try {
-      const planId = await saveAndGetId();
-      navigate(`/print/menuplan/${planId}`);
+      const saved = buildMenuPlanData();
+      // Only save to IndexedDB for preview (client-side PDF.js rendering)
+      await saveMenuPlan(saved);
+      navigate(`/print/menuplan/${saved.id}`);
     } catch (error) {
       console.error("Preview error:", error);
       alert("Failed to preview. Please try again.");

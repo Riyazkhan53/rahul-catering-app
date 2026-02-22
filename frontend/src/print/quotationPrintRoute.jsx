@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { getQuotationById } from "../db/indexedDB";
 import { generateQuotationPDF } from "../utils/generateQuotationPDF";
+import { generatedQuotationService } from "../api/service";
 import { isDesktop } from "../utils/device";
 import * as pdfjsLib from "pdfjs-dist";
 import "./print.css";
@@ -65,19 +66,25 @@ export default function QuotationPrintRoute() {
     }
   }, [quotationData, searchParams]);
 
-  // Download: direct GET to backend → Chrome PDF viewer (same as item list)
-  const downloadPDF = () => {
+  // Download: save to MongoDB first (if not already), then GET → Chrome PDF viewer
+  const downloadPDF = async () => {
     setDownloading(true);
+    try {
+      // Ensure data is in MongoDB before hitting the backend GET endpoint
+      if (quotationData && navigator.onLine) {
+        await generatedQuotationService.saveGeneratedQuotation(quotationData);
+      }
 
-    const url = `${import.meta.env.VITE_API_URL}/api/print/quotation/${id}`;
+      const url = `${import.meta.env.VITE_API_URL}/api/print/quotation/${id}`;
 
-    if (isDesktop()) {
-      window.open(url, "_blank");
-    } else {
-      // Android / iOS → direct URL navigation opens Chrome PDF viewer
-      window.location.href = url;
+      if (isDesktop()) {
+        window.open(url, "_blank");
+      } else {
+        window.location.href = url;
+      }
+    } catch (err) {
+      console.error("Download error:", err);
     }
-
     setTimeout(() => setDownloading(false), 800);
   };
 
