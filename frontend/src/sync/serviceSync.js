@@ -13,6 +13,8 @@ import {
   getSyncQ,
   removeFromSyncQ,
   getListById,
+  getQuotationById,
+  getMenuPlanById,
 } from "../db/indexedDB";
 
 import {
@@ -46,6 +48,16 @@ export async function appSync(setStatus) {
         const data = await getListById(entry.id);
         if (data) {
           await generatedListService.saveGeneratedList(data);
+        }
+      } else if (entry.collection === "generated_quotations") {
+        const data = await getQuotationById(entry.id);
+        if (data) {
+          await generatedQuotationService.saveGeneratedQuotation(data);
+        }
+      } else if (entry.collection === "generated_menu_plans") {
+        const data = await getMenuPlanById(entry.id);
+        if (data) {
+          await generatedMenuPlanService.saveGeneratedMenuPlan(data);
         }
       }
       // Remove from queue on success

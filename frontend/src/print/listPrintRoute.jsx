@@ -19,7 +19,12 @@ export default function ListPrintRoute() {
     try {
       // Ensure data is in MongoDB before hitting backend GET endpoint
       if (list && navigator.onLine && !isOfflineMode()) {
-        await generatedListService.saveGeneratedList(list);
+        try {
+          await generatedListService.saveGeneratedList(list);
+        } catch (apiErr) {
+          console.error("Server save failed, queuing for sync:", apiErr);
+          await addToSyncQ("generated_lists", list.id);
+        }
       } else if (list) {
         // Queue for later sync if offline
         await addToSyncQ("generated_lists", list.id);

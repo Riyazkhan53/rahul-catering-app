@@ -160,7 +160,12 @@ export default function GenerateSingleList() {
 
             // 2️⃣ Save to MongoDB only if truly online
             if (navigator.onLine && !isOfflineMode()) {
-                await generatedListService.saveGeneratedList(payload);
+                try {
+                    await generatedListService.saveGeneratedList(payload);
+                } catch (apiErr) {
+                    console.error("Server save failed, queuing for sync:", apiErr);
+                    await addToSyncQ("generated_lists", payload.id);
+                }
             } else {
                 // Queue for later sync
                 await addToSyncQ("generated_lists", payload.id);

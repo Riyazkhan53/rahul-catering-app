@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { getQuotationById } from "../db/indexedDB";
+import { getQuotationById, addToSyncQ } from "../db/indexedDB";
 import { generateQuotationPDF } from "../utils/generateQuotationPDF";
 import { generatedQuotationService } from "../api/service";
 import { isDesktop } from "../utils/device";
@@ -72,7 +72,12 @@ export default function QuotationPrintRoute() {
     try {
       // Ensure data is in MongoDB before hitting the backend GET endpoint
       if (quotationData && navigator.onLine) {
-        await generatedQuotationService.saveGeneratedQuotation(quotationData);
+        try {
+          await generatedQuotationService.saveGeneratedQuotation(quotationData);
+        } catch (apiErr) {
+          console.error("Server save failed, queuing for sync:", apiErr);
+          await addToSyncQ("generated_quotations", quotationData.id || quotationData.quotationNumber);
+        }
       }
 
       const url = `${import.meta.env.VITE_API_URL}/api/print/quotation/${id}`;

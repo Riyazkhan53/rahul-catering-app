@@ -8,7 +8,7 @@ import { createPortal } from "react-dom";
 
 import { useNavigate } from "react-router-dom";
 
-import { saveMenuPlan, getAllDishes } from "../../../db/indexedDB";
+import { saveMenuPlan, getAllDishes, addToSyncQ } from "../../../db/indexedDB";
 
 import { generatedMenuPlanService } from "../../../api/service";
 
@@ -288,7 +288,14 @@ export default function EventMenuPlan({ onBack }) {
 
       // Save to MongoDB (online) — only on generate/download
       if (navigator.onLine) {
-        await generatedMenuPlanService.saveGeneratedMenuPlan(saved);
+        try {
+          await generatedMenuPlanService.saveGeneratedMenuPlan(saved);
+        } catch (apiErr) {
+          console.error("Server save failed, queuing for sync:", apiErr);
+          await addToSyncQ("generated_menu_plans", saved.id);
+        }
+      } else {
+        await addToSyncQ("generated_menu_plans", saved.id);
       }
 
       navigate(`/print/menuplan/${saved.id}?download=true`);

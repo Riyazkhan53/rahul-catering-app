@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { getMenuPlanById } from "../db/indexedDB";
+import { getMenuPlanById, addToSyncQ } from "../db/indexedDB";
 import { generateMenuPlanPDF } from "../utils/generateMenuPlanPDF";
 import { generatedMenuPlanService } from "../api/service";
 import { isDesktop } from "../utils/device";
@@ -72,7 +72,12 @@ export default function MenuPlanPrintRoute() {
     try {
       // Ensure data is in MongoDB before hitting the backend GET endpoint
       if (menuPlanData && navigator.onLine) {
-        await generatedMenuPlanService.saveGeneratedMenuPlan(menuPlanData);
+        try {
+          await generatedMenuPlanService.saveGeneratedMenuPlan(menuPlanData);
+        } catch (apiErr) {
+          console.error("Server save failed, queuing for sync:", apiErr);
+          await addToSyncQ("generated_menu_plans", menuPlanData.id || menuPlanData.planNumber);
+        }
       }
 
       const url = `${import.meta.env.VITE_API_URL}/api/print/menuplan/${id}`;

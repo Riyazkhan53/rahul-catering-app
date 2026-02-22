@@ -4,7 +4,7 @@ import { Plus, Trash2, Download, X, ChevronDown, ChevronRight, CalendarPlus, Eye
 import { useNavigate } from "react-router-dom";
 import { generateQuotationPDF } from "../../../utils/generateQuotationPDF";
 import { savePdfFile } from "../../../utils/savePdf";
-import { saveQuotation } from "../../../db/indexedDB";
+import { saveQuotation, addToSyncQ } from "../../../db/indexedDB";
 import { generatedQuotationService } from "../../../api/service";
 import { useToast } from "../../../context/ToastContext";
 
@@ -291,7 +291,14 @@ export default function CreateQuotation({ onBack }) {
 
       // Save to MongoDB (online)
       if (navigator.onLine) {
-        await generatedQuotationService.saveGeneratedQuotation(savedData);
+        try {
+          await generatedQuotationService.saveGeneratedQuotation(savedData);
+        } catch (apiErr) {
+          console.error("Server save failed, queuing for sync:", apiErr);
+          await addToSyncQ("generated_quotations", savedData.id);
+        }
+      } else {
+        await addToSyncQ("generated_quotations", savedData.id);
       }
 
       showToast("Quotation saved & PDF generated!", "success");
