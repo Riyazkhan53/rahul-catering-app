@@ -3,6 +3,7 @@ import {
   updateItem,
   saveItem,
   clearIndexedDB,
+  openDB,
   getPendingGeneratedLists,
   saveGeneratedList,
   updateGeneratedList,
@@ -59,14 +60,18 @@ export async function masterSync(setProgress, setStatus) {
 
   const failed = [];
 
-  // Helper: run a sync step safely
+  // Helper: run a sync step safely, returns true on success
   const runStep = async (label, fn) => {
     setStatus?.(`Syncing ${label}…`);
     try {
       await withTimeout(fn(), 15000);
+      setStatus?.(`${label} synced ✓`);
+      return true;
     } catch (err) {
       console.error(`${label} sync failed:`, err);
       failed.push(label);
+      setStatus?.(`${label} failed ✗`);
+      return false;
     }
   };
 
@@ -75,6 +80,8 @@ export async function masterSync(setProgress, setStatus) {
   setProgress(5);
   try {
     await clearIndexedDB("rahul_catering_db");
+    // Recreate DB + all object stores immediately after delete
+    await openDB();
   } catch (err) {
     console.error("Clear DB failed:", err);
     throw new Error("Failed to clear local data");
@@ -84,7 +91,8 @@ export async function masterSync(setProgress, setStatus) {
   // ── 2. Items ──
   await runStep("Items", async () => {
     const items = await itemService.getItems();
-    for (const item of items) {
+    const arr = Array.isArray(items) ? items : [];
+    for (const item of arr) {
       await saveItem({
         ...item,
         syncStatus: "synced",
@@ -92,20 +100,19 @@ export async function masterSync(setProgress, setStatus) {
       });
     }
   });
-  setStatus?.("Items synced ✓");
   setProgress(25);
 
   // ── 3. Generated Lists ──
   await runStep("Generated Lists", async () => {
     const lists = await generatedListService.fetchGeneratedLists();
-    for (const list of lists) {
+    const arr = Array.isArray(lists) ? lists : [];
+    for (const list of arr) {
       await saveGeneratedList(
         { ...list, syncStatus: "synced" },
         { fromServer: true }
       );
     }
   });
-  setStatus?.("Generated Lists synced ✓");
   setProgress(40);
 
   // ── 4. Picklists ──
@@ -121,7 +128,6 @@ export async function masterSync(setProgress, setStatus) {
       await savePicklistCache(key, grouped[key]);
     }
   });
-  setStatus?.("Picklists synced ✓");
   setProgress(55);
 
   // ── 5. Quotations ──
@@ -132,7 +138,6 @@ export async function masterSync(setProgress, setStatus) {
       await saveQuotation({ ...q, id: q.id || q.quotationNumber });
     }
   });
-  setStatus?.("Quotations synced ✓");
   setProgress(70);
 
   // ── 6. Menu Plans ──
@@ -143,12 +148,10 @@ export async function masterSync(setProgress, setStatus) {
       await saveMenuPlan({ ...p, id: p.id || p.planNumber });
     }
   });
-  setStatus?.("Menu Plans synced ✓");
   setProgress(90);
 
   // ── 7. Result ──
   if (failed.length > 0) {
-    setProgress(90);
     setStatus?.(`Failed: ${failed.join(", ")}`);
     throw new Error(`Sync failed for: ${failed.join(", ")}`);
   }
