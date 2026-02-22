@@ -14,14 +14,16 @@ export default function ConfirmModal({
 }) {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [statusText, setStatusText] = useState("");
 
   const handleConfirm = async () => {
     try {
       setLoading(true);
-      setProgress(10);
+      setProgress(5);
 
-      await onConfirm(setProgress); // 
+      await onConfirm(setProgress, setStatusText);
       setProgress(100);
+      setStatusText("All synced!");
     } catch (e) {
       console.error(e);
     } finally {
@@ -61,9 +63,14 @@ export default function ConfirmModal({
                 transition={{ ease: "easeInOut", duration: 0.4 }}
               />
             </div>
-            <p className="text-xs mt-1 text-right opacity-60">
-              {progress}%
-            </p>
+            <div className="flex justify-between mt-1">
+              <p className="text-xs opacity-70 truncate mr-2">
+                {statusText}
+              </p>
+              <p className="text-xs opacity-60 shrink-0">
+                {progress}%
+              </p>
+            </div>
           </div>
         )}
 

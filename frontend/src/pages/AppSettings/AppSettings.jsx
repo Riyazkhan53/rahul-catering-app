@@ -118,9 +118,9 @@ export default function AppSettings() {
                     confirmText="Yes, Reset & Sync"
                     danger
                     onCancel={() => setConfirmOpen(false)}
-                    onConfirm={async (setProgress) => {
+                    onConfirm={async (setProgress, setStatusText) => {
                         try {
-                            await masterSync(setProgress);
+                            await masterSync(setProgress, setStatusText);
                             showToast("Master sync completed successfully", "success");
                         } catch (err) {
                             showToast(err.message, "error");
