@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import ListPrintView from "./listPrintView";
-import { getListById } from "../db/indexedDB";
+import { getListById, addToSyncQ } from "../db/indexedDB";
+import { generatedListService } from "../api/service";
+import { isOfflineMode } from "../api/api";
 import { isDesktop } from "../utils/device";
 
 export default function ListPrintRoute() {
@@ -12,20 +14,32 @@ export default function ListPrintRoute() {
   const [downloading, setDownloading] = useState(false);
   const autoDownloadTriggered = useRef(false);
 
-  const downloadPDF = () => {
+  const downloadPDF = async () => {
     setDownloading(true);
+    try {
+      // Ensure data is in MongoDB before hitting backend GET endpoint
+      if (list && navigator.onLine && !isOfflineMode()) {
+        await generatedListService.saveGeneratedList(list);
+      } else if (list) {
+        // Queue for later sync if offline
+        await addToSyncQ("generated_lists", list.id);
+      }
 
-    const url = `${import.meta.env.VITE_API_URL}/api/print/list/${id}`;
+      const url = `${import.meta.env.VITE_API_URL}/api/print/list/${id}`;
 
-    if (isDesktop()) {
-      // Desktop → open preview tab
-      window.open(url, "_blank");
-    } else {
-      // Android / iOS → native download
-      window.location.href = url;
+      if (navigator.onLine && !isOfflineMode()) {
+        if (isDesktop()) {
+          window.open(url, "_blank");
+        } else {
+          window.location.href = url;
+        }
+      } else {
+        // Offline: cannot reach backend, show message
+        alert("You are offline. Please sync and try downloading when online.");
+      }
+    } catch (err) {
+      console.error("Download error:", err);
     }
-
-    // Just UI state reset
     setTimeout(() => setDownloading(false), 800);
   };
 

@@ -10,6 +10,9 @@ import {
   savePicklistCache,
   saveQuotation,
   saveMenuPlan,
+  getSyncQ,
+  removeFromSyncQ,
+  getListById,
 } from "../db/indexedDB";
 
 import {
@@ -21,24 +24,57 @@ import {
 } from "../api/service";
 
 /* ---------------- APP SYNC ---------------- */
-/* Safe: does NOT delete local data */
-export async function appSync() {
+/* Processes syncQ: pushes offline items to server, then pulls those collections */
+export async function appSync(setStatus) {
   if (!navigator.onLine) {
     throw new Error("You are offline");
   }
 
-  // Items
-  await pushPendingItems();
-  await pullItemsFromServer();
+  const queue = await getSyncQ();
+  if (queue.length === 0) {
+    throw new Error("Nothing to sync");
+  }
 
-  // Generated Lists
-  await pushPendingGeneratedLists();
-  await pullGeneratedListsFromServer();
+  const failed = [];
+  const syncedCollections = new Set();
 
-  // Picklists
-  await pullPicklistsFromServer();
+  // ── 1. Push each queued item to server ──
+  for (const entry of queue) {
+    setStatus?.(`Pushing ${entry.collection} → ${entry.id}…`);
+    try {
+      if (entry.collection === "generated_lists") {
+        const data = await getListById(entry.id);
+        if (data) {
+          await generatedListService.saveGeneratedList(data);
+        }
+      }
+      // Remove from queue on success
+      await removeFromSyncQ(entry.collection, entry.id);
+      syncedCollections.add(entry.collection);
+    } catch (err) {
+      console.error(`Failed to push ${entry.collection}:${entry.id}`, err);
+      failed.push(`${entry.collection}:${entry.id}`);
+    }
+  }
 
+  // ── 2. Pull server data only for collections that were in the queue ──
+  if (syncedCollections.has("generated_lists")) {
+    setStatus?.("Pulling Generated Lists from server…");
+    try {
+      await pullGeneratedListsFromServer();
+    } catch (err) {
+      console.error("Pull generated lists failed:", err);
+    }
+  }
+
+  setStatus?.("Done");
   localStorage.setItem("lastAppSync", Date.now());
+
+  if (failed.length > 0) {
+    throw new Error(`Failed to sync: ${failed.join(", ")}`);
+  }
+
+  return true;
 }
 
 /* ---------------- MASTER SYNC ---------------- */

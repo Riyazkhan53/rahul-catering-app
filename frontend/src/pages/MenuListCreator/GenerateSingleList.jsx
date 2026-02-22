@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 // import items from "../../utils/items.json";
 import { CheckCircle, ListChecks } from "lucide-react";
-import { saveListToDB, getAllItems } from "../../db/indexedDB";
+import { saveListToDB, getAllItems, addToSyncQ } from "../../db/indexedDB";
 import { useToast } from "../../context/ToastContext";
 import { Checkbox, Input, Button, Select, Textarea } from "../../Components/BasicComponents";
 import { generatedListService } from "../../api/service";
+import { isOfflineMode } from "../../api/api";
 import { itemsCategory } from "../../utils/picklist";
 import { MessageSquare } from "lucide-react";
 import Modal from "../../Components/BasicComponents/Modal";
@@ -154,12 +155,15 @@ export default function GenerateSingleList() {
         };
 
         try {
-            // 1️⃣ Save offline
+            // 1️⃣ Always save to IndexedDB
             await saveListToDB(payload);
 
-            // 2️⃣ Save to MongoDB (online)
-            if (navigator.onLine) {
+            // 2️⃣ Save to MongoDB only if truly online
+            if (navigator.onLine && !isOfflineMode()) {
                 await generatedListService.saveGeneratedList(payload);
+            } else {
+                // Queue for later sync
+                await addToSyncQ("generated_lists", payload.id);
             }
 
             showToast(`List ${payload.id} saved successfully`, "success");

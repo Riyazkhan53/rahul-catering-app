@@ -426,9 +426,9 @@ export default function CreatedItemLists() {
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => navigate(`/print/list/${list.id}?download=true`)}
+                          onClick={() => navigate(`/print/list/${list.id}`)}
                           className="px-4 py-2.5 bg-green-50 hover:bg-green-500 dark:bg-green-900/20 dark:hover:bg-green-500 text-green-600 hover:text-white dark:text-green-400 dark:hover:text-white rounded-xl transition-all duration-200"
-                          title="Download PDF"
+                          title="Preview PDF"
                         >
                           <Printer className="w-4 h-4" />
                         </button>

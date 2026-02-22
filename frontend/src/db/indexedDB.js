@@ -1,5 +1,5 @@
 const DB_NAME = "rahul_catering_db";
-const DB_VERSION = 9;
+const DB_VERSION = 10;
 
 const LIST_STORE = "generated_lists";
 const ITEM_STORE = "items_master";
@@ -12,6 +12,7 @@ const PICKLIST_CACHE_STORE = "picklist_cache";
 const DISH_STORE = "dishes_master";
 const ORDER_STORE = "orders_master";
 const USER_ROLES_STORE = "user_roles";
+const SYNC_Q_STORE = "sync_queue";
 
 export function openDB() {
   return new Promise((resolve, reject) => {
@@ -66,6 +67,10 @@ export function openDB() {
 
       if (!db.objectStoreNames.contains(USER_ROLES_STORE)) {
         db.createObjectStore(USER_ROLES_STORE, { keyPath: "id" });
+      }
+
+      if (!db.objectStoreNames.contains(SYNC_Q_STORE)) {
+        db.createObjectStore(SYNC_Q_STORE, { keyPath: "key" });
       }
     };
 
@@ -749,6 +754,64 @@ export async function deleteUserRole(id) {
     const tx = db.transaction(USER_ROLES_STORE, "readwrite");
     const store = tx.objectStore(USER_ROLES_STORE);
     store.delete(id);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/* ---------- SYNC QUEUE ---------- */
+// Each entry: { key: "<collection>:<id>", collection: "generated_lists", id: "RC-LST-1234", createdAt: ... }
+
+export async function addToSyncQ(collection, id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SYNC_Q_STORE, "readwrite");
+    const store = tx.objectStore(SYNC_Q_STORE);
+    store.put({ key: `${collection}:${id}`, collection, id, createdAt: Date.now() });
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getSyncQ() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SYNC_Q_STORE, "readonly");
+    const store = tx.objectStore(SYNC_Q_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function removeFromSyncQ(collection, id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SYNC_Q_STORE, "readwrite");
+    const store = tx.objectStore(SYNC_Q_STORE);
+    store.delete(`${collection}:${id}`);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getSyncQCount() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SYNC_Q_STORE, "readonly");
+    const store = tx.objectStore(SYNC_Q_STORE);
+    const req = store.count();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function clearSyncQ() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SYNC_Q_STORE, "readwrite");
+    const store = tx.objectStore(SYNC_Q_STORE);
+    store.clear();
     tx.oncomplete = () => resolve(true);
     tx.onerror = () => reject(tx.error);
   });
