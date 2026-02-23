@@ -4,6 +4,8 @@ import {
     Sun,
     RefreshCcw,
     AlertTriangle,
+    PanelLeft,
+    PanelTop,
 } from "lucide-react";
 
 import ConfirmModal from "../../Components/ConfirmModal";
@@ -20,6 +22,13 @@ export default function AppSettings() {
     const [pendingCount, setPendingCount] = useState(0);
     const [appSyncing, setAppSyncing] = useState(false);
     const [appSyncStatus, setAppSyncStatus] = useState("");
+    const [layoutMode, setLayoutMode] = useState(() => localStorage.getItem("layoutMode") || "sidebar");
+
+    const handleLayoutChange = (mode) => {
+        setLayoutMode(mode);
+        localStorage.setItem("layoutMode", mode);
+        window.dispatchEvent(new Event("layoutModeChange"));
+    };
 
     useEffect(() => {
         getSyncQCount().then(setPendingCount).catch(() => {});
@@ -82,7 +91,51 @@ export default function AppSettings() {
                 </div>
             </div>
 
-            {/* 🔁 App Sync */}
+            {/* � Layout */}
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6">
+                <div className="flex items-center gap-3 mb-4">
+                    {layoutMode === "sidebar" ? <PanelLeft /> : <PanelTop />}
+                    <h2 className="text-lg font-semibold">Layout</h2>
+                </div>
+
+                <p className="text-sm opacity-70 mb-4">
+                    Choose how navigation tabs are displayed
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                    <button
+                        onClick={() => handleLayoutChange("sidebar")}
+                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
+                            layoutMode === "sidebar"
+                                ? "border-orange-500 bg-orange-50 dark:bg-orange-900/20 shadow-md"
+                                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                        }`}
+                    >
+                        <PanelLeft className={`w-8 h-8 ${layoutMode === "sidebar" ? "text-orange-500" : "text-gray-400"}`} />
+                        <span className={`text-sm font-semibold ${layoutMode === "sidebar" ? "text-orange-600 dark:text-orange-400" : "text-gray-600 dark:text-gray-400"}`}>
+                            Sidebar
+                        </span>
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500">Default</span>
+                    </button>
+
+                    <button
+                        onClick={() => handleLayoutChange("topnav")}
+                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
+                            layoutMode === "topnav"
+                                ? "border-orange-500 bg-orange-50 dark:bg-orange-900/20 shadow-md"
+                                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                        }`}
+                    >
+                        <PanelTop className={`w-8 h-8 ${layoutMode === "topnav" ? "text-orange-500" : "text-gray-400"}`} />
+                        <span className={`text-sm font-semibold ${layoutMode === "topnav" ? "text-orange-600 dark:text-orange-400" : "text-gray-600 dark:text-gray-400"}`}>
+                            Top Navbar
+                        </span>
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500">Horizontal</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* �🔁 App Sync */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6">
                 <div className="flex items-center gap-3 mb-4">
                     <RefreshCcw />

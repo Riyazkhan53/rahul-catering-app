@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import TopNavBar from "./TopNavBar";
 import DashboardHome from "./DashboardHome";
 import Orders from "./Orders";
 import Menu from "./Menu";
@@ -28,6 +29,7 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
   const [allowedTabs, setAllowedTabs] = useState(null);
   const [rolePermissions, setRolePermissions] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
+  const [layoutMode, setLayoutMode] = useState(() => localStorage.getItem("layoutMode") || "sidebar");
 
   useEffect(() => {
     localStorage.setItem("activeTab", activeTab);
@@ -36,6 +38,13 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
   useEffect(() => {
     setSidebarOpen(isDesktop);
   }, [isDesktop]);
+
+  // Listen for layout mode changes from AppSettings
+  useEffect(() => {
+    const handler = () => setLayoutMode(localStorage.getItem("layoutMode") || "sidebar");
+    window.addEventListener("layoutModeChange", handler);
+    return () => window.removeEventListener("layoutModeChange", handler);
+  }, []);
 
   // Fetch role config (tabs + permissions) for the current user's role
   useEffect(() => {
@@ -136,54 +145,88 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
     return ["dashboard", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"];
   };
 
+  const isSidebar = layoutMode === "sidebar";
+
   return (
-    <div className="flex min-h-screen bg-app text-app overflow-x-hidden">
+    <div className={`${isSidebar ? "flex" : "flex flex-col"} min-h-screen bg-app text-app overflow-x-hidden`}>
+      {isSidebar ? (
+        <>
+          {/* Sidebar layout */}
+          <Sidebar
+            user={user}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            open={sidebarOpen}
+            setOpen={setSidebarOpen}
+            isDesktop={isDesktop}
+            onLogout={onLogout}
+            onViewProfile={() => setShowProfile(true)}
+            onSwitchRole={onSwitchRole}
+            allowedTabs={allowedTabs}
+          />
 
-      {/* Sidebar */}
-      <Sidebar
-        user={user}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        open={sidebarOpen}
-        setOpen={setSidebarOpen}
-        isDesktop={isDesktop}
-        onLogout={onLogout}
-        onViewProfile={() => setShowProfile(true)}
-        onSwitchRole={onSwitchRole}
-        allowedTabs={allowedTabs}
-      />
+          <main
+            className={`flex-1 transition-all duration-300 w-full max-w-full overflow-x-hidden
+              ${isDesktop && sidebarOpen ? "ml-64" : "ml-0"}
+            `}
+          >
+            <Topbar
+              greeting={greetingText}
+              user={user}
+              onLogout={onLogout}
+              onViewProfile={() => setShowProfile(true)}
+              onSwitchRole={onSwitchRole}
+              toggleSidebar={() => setSidebarOpen(v => !v)}
+              isDesktop={isDesktop}
+            />
 
-      {/* Main */}
-      <main
-        className={`flex-1 transition-all duration-300 w-full max-w-full overflow-x-hidden
-    ${isDesktop && sidebarOpen ? "ml-64" : "ml-0"}
-  `}
-      >
-        <Topbar
-          greeting={greetingText}
-          user={user}
-          onLogout={onLogout}
-          onViewProfile={() => setShowProfile(true)}
-          onSwitchRole={onSwitchRole}
-          toggleSidebar={() => setSidebarOpen(v => !v)}
-          isDesktop={isDesktop}
-        />
+            <div className="p-3 sm:p-4 md:p-6 w-full max-w-full overflow-x-hidden">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  variants={pageVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  className="w-full max-w-full overflow-x-hidden"
+                >
+                  {renderPage()}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </main>
+        </>
+      ) : (
+        <>
+          {/* Top navbar layout */}
+          <TopNavBar
+            user={user}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            onLogout={onLogout}
+            onViewProfile={() => setShowProfile(true)}
+            onSwitchRole={onSwitchRole}
+            allowedTabs={allowedTabs}
+          />
 
-        <div className="p-3 sm:p-4 md:p-6 w-full max-w-full overflow-x-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="w-full max-w-full overflow-x-hidden"
-            >
-              {renderPage()}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </main>
+          <main className="flex-1 w-full max-w-full overflow-x-hidden">
+            <div className="p-3 sm:p-4 md:p-6 w-full max-w-full overflow-x-hidden">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  variants={pageVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  className="w-full max-w-full overflow-x-hidden"
+                >
+                  {renderPage()}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </main>
+        </>
+      )}
 
       {showProfile && (
         <ProfileModal user={user} onClose={() => setShowProfile(false)} />
