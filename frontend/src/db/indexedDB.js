@@ -1,5 +1,5 @@
 const DB_NAME = "rahul_catering_db";
-const DB_VERSION = 10;
+const DB_VERSION = 11;
 
 const LIST_STORE = "generated_lists";
 const ITEM_STORE = "items_master";
@@ -13,6 +13,8 @@ const DISH_STORE = "dishes_master";
 const ORDER_STORE = "orders_master";
 const USER_ROLES_STORE = "user_roles";
 const SYNC_Q_STORE = "sync_queue";
+const CALENDAR_TODOS_STORE = "calendar_todos";
+const CALENDAR_NOTES_STORE = "calendar_notes";
 
 export function openDB() {
   return new Promise((resolve, reject) => {
@@ -71,6 +73,14 @@ export function openDB() {
 
       if (!db.objectStoreNames.contains(SYNC_Q_STORE)) {
         db.createObjectStore(SYNC_Q_STORE, { keyPath: "key" });
+      }
+
+      if (!db.objectStoreNames.contains(CALENDAR_TODOS_STORE)) {
+        db.createObjectStore(CALENDAR_TODOS_STORE, { keyPath: "date" });
+      }
+
+      if (!db.objectStoreNames.contains(CALENDAR_NOTES_STORE)) {
+        db.createObjectStore(CALENDAR_NOTES_STORE, { keyPath: "date" });
       }
     };
 
@@ -814,5 +824,87 @@ export async function clearSyncQ() {
     store.clear();
     tx.oncomplete = () => resolve(true);
     tx.onerror = () => reject(tx.error);
+  });
+}
+
+// ─── Calendar Todos ───
+
+export async function saveTodosForDate(date, todos) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(CALENDAR_TODOS_STORE, "readwrite");
+    const store = tx.objectStore(CALENDAR_TODOS_STORE);
+    store.put({ date, todos });
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getTodosForDate(date) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(CALENDAR_TODOS_STORE, "readonly");
+    const store = tx.objectStore(CALENDAR_TODOS_STORE);
+    const req = store.get(date);
+    req.onsuccess = () => resolve(req.result?.todos || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getAllCalendarTodos() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(CALENDAR_TODOS_STORE, "readonly");
+    const store = tx.objectStore(CALENDAR_TODOS_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => {
+      const result = {};
+      req.result.forEach((r) => { if (r.todos?.length) result[r.date] = r.todos; });
+      resolve(result);
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// ─── Calendar Notes ───
+
+export async function saveNoteForDate(date, note) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(CALENDAR_NOTES_STORE, "readwrite");
+    const store = tx.objectStore(CALENDAR_NOTES_STORE);
+    if (note && note.trim()) {
+      store.put({ date, note });
+    } else {
+      store.delete(date);
+    }
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getNoteForDate(date) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(CALENDAR_NOTES_STORE, "readonly");
+    const store = tx.objectStore(CALENDAR_NOTES_STORE);
+    const req = store.get(date);
+    req.onsuccess = () => resolve(req.result?.note || "");
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getAllCalendarNotes() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(CALENDAR_NOTES_STORE, "readonly");
+    const store = tx.objectStore(CALENDAR_NOTES_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => {
+      const result = {};
+      req.result.forEach((r) => { if (r.note?.trim()) result[r.date] = r.note; });
+      resolve(result);
+    };
+    req.onerror = () => reject(req.error);
   });
 }

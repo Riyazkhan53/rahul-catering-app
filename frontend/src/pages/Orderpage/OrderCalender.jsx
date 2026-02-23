@@ -15,11 +15,19 @@ import {
   FileText,
   Tag,
   ClipboardPlus,
+  CheckSquare,
+  Square,
+  StickyNote,
+  ListTodo,
 } from "lucide-react";
 import {
   getAllEvents,
   saveEventsByDate,
-  deleteEventById
+  deleteEventById,
+  saveTodosForDate,
+  getAllCalendarTodos,
+  saveNoteForDate,
+  getAllCalendarNotes,
 } from "../../db/indexedDB";
 import { eventDatesService } from "../../api/service";
 import { useToast } from "../../context/ToastContext";
@@ -57,7 +65,13 @@ export default function OrdersCalender({ onCreateOrder }) {
     notes: "",
   });
 
-  /* 🔄 Month navigation */
+  const [allTodos, setAllTodos] = useState({});
+  const [allNotes, setAllNotes] = useState({});
+  const [modalTodos, setModalTodos] = useState([]);
+  const [modalNote, setModalNote] = useState("");
+  const [newTodoText, setNewTodoText] = useState("");
+
+  /* Month navigation */
   const prevMonth = useCallback(() => {
     setDirection(-1);
     if (currentMonth === 0) {
@@ -99,6 +113,8 @@ export default function OrdersCalender({ onCreateOrder }) {
 
   useEffect(() => {
     getAllEvents().then(setEvents);
+    getAllCalendarTodos().then(setAllTodos);
+    getAllCalendarNotes().then(setAllNotes);
   }, []);
 
   const isPast = (date) => {
@@ -282,7 +298,9 @@ export default function OrdersCalender({ onCreateOrder }) {
                   const isSunday = date.getDay() === 0;
                   const holidays = getEventsForDate(key);
                   const hasHoliday = holidays.length > 0;
-                  const hasAnything = hasEvent || hasHoliday;
+                  const hasTodo = (allTodos[key] || []).length > 0;
+                  const hasNote = !!(allNotes[key]);
+                  const hasAnything = hasEvent || hasHoliday || hasTodo || hasNote;
 
                   return (
                     <div
@@ -291,6 +309,9 @@ export default function OrdersCalender({ onCreateOrder }) {
                         setSelectedDate(key);
                         setForm({ title: "", client: "", contact: "", notes: "" });
                         setEditingEventId(null);
+                        setModalTodos(allTodos[key] || []);
+                        setModalNote(allNotes[key] || "");
+                        setNewTodoText("");
                         setMode(hasEvent ? "view" : "add");
                         setShowModal(true);
                       }}
@@ -342,6 +363,8 @@ export default function OrdersCalender({ onCreateOrder }) {
                                 }`}
                               />
                             ))}
+                            {hasTodo && <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />}
+                            {hasNote && <span className="w-1.5 h-1.5 rounded-full bg-pink-500" />}
                           </span>
                         )}
                       </div>
@@ -410,6 +433,12 @@ export default function OrdersCalender({ onCreateOrder }) {
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Islamic
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" /> Todo
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-pink-500" /> Note
             </span>
           </div>
         </div>
@@ -714,6 +743,132 @@ export default function OrdersCalender({ onCreateOrder }) {
                       {editingEventId ? "Update" : "Save Event"}
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* ─── TODO LIST ─── */}
+              {selectedDate && (
+                <div className="mt-5 border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ListTodo className="w-4 h-4 text-cyan-500" />
+                    <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200">To-Do List</h4>
+                    {modalTodos.length > 0 && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 font-semibold">
+                        {modalTodos.filter(t => t.done).length}/{modalTodos.length}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Add todo input */}
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      placeholder="Add a task..."
+                      value={newTodoText}
+                      onChange={(e) => setNewTodoText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && newTodoText.trim()) {
+                          const updated = [...modalTodos, { id: crypto.randomUUID(), text: newTodoText.trim(), done: false }];
+                          setModalTodos(updated);
+                          setAllTodos(prev => ({ ...prev, [selectedDate]: updated }));
+                          saveTodosForDate(selectedDate, updated);
+                          setNewTodoText("");
+                        }
+                      }}
+                      className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-cyan-500 outline-none text-sm"
+                    />
+                    <button
+                      onClick={() => {
+                        if (!newTodoText.trim()) return;
+                        const updated = [...modalTodos, { id: crypto.randomUUID(), text: newTodoText.trim(), done: false }];
+                        setModalTodos(updated);
+                        setAllTodos(prev => ({ ...prev, [selectedDate]: updated }));
+                        saveTodosForDate(selectedDate, updated);
+                        setNewTodoText("");
+                      }}
+                      className="px-3 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white transition text-sm font-medium"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Todo items */}
+                  {modalTodos.length > 0 && (
+                    <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                      {modalTodos.map((todo) => (
+                        <div
+                          key={todo.id}
+                          className="flex items-center gap-2 group px-2 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+                        >
+                          <button
+                            onClick={() => {
+                              const updated = modalTodos.map(t => t.id === todo.id ? { ...t, done: !t.done } : t);
+                              setModalTodos(updated);
+                              setAllTodos(prev => ({ ...prev, [selectedDate]: updated }));
+                              saveTodosForDate(selectedDate, updated);
+                            }}
+                            className="shrink-0"
+                          >
+                            {todo.done
+                              ? <CheckSquare className="w-4 h-4 text-cyan-500" />
+                              : <Square className="w-4 h-4 text-gray-400" />
+                            }
+                          </button>
+                          <span className={`flex-1 text-sm ${todo.done ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-300"}`}>
+                            {todo.text}
+                          </span>
+                          <button
+                            onClick={() => {
+                              const updated = modalTodos.filter(t => t.id !== todo.id);
+                              setModalTodos(updated);
+                              setAllTodos(prev => ({ ...prev, [selectedDate]: updated }));
+                              saveTodosForDate(selectedDate, updated);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-red-400 transition"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {modalTodos.length === 0 && (
+                    <p className="text-xs text-gray-400 dark:text-gray-500 italic">No tasks yet. Add one above.</p>
+                  )}
+                </div>
+              )}
+
+              {/* ─── NOTES SCRIBBLE ─── */}
+              {selectedDate && (
+                <div className="mt-5 border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <StickyNote className="w-4 h-4 text-pink-500" />
+                    <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200">Notes / Scribble</h4>
+                  </div>
+
+                  <textarea
+                    placeholder="Jot down anything for this date..."
+                    rows={4}
+                    value={modalNote}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setModalNote(val);
+                      if (val.trim()) {
+                        setAllNotes(prev => ({ ...prev, [selectedDate]: val }));
+                      } else {
+                        setAllNotes(prev => {
+                          const copy = { ...prev };
+                          delete copy[selectedDate];
+                          return copy;
+                        });
+                      }
+                      saveNoteForDate(selectedDate, val);
+                    }}
+                    className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-pink-500 outline-none text-sm resize-none"
+                  />
+                  {modalNote.trim() && (
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">Auto-saved</p>
+                  )}
                 </div>
               )}
             </div>
