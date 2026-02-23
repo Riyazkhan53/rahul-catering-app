@@ -12,6 +12,7 @@ import {
   LogOut,
   User,
   ArrowLeftRight,
+  CalendarDays,
 } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 
@@ -25,13 +26,14 @@ const ALL_MENU_ITEMS = [
   { key: "invoice", label: "Invoice & Billing", icon: Receipt },
   { key: "settings", label: "Users/Roles Settings", icon: Settings },
   { key: "setup", label: "Setup", icon: Wrench },
+  { key: "calendar", label: "Calendar", icon: CalendarDays },
   { key: "appsettings", label: "App Settings", icon: Sparkles },
 ];
 
 // Fallback if role config hasn't loaded yet
 const FALLBACK_TABS = {
-  admin: ["dashboard", "orders", "menu", "settings", "setup", "appsettings"],
-  chef: ["dashboard", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
+  admin: ["dashboard", "orders", "menu", "settings", "setup", "calendar", "appsettings"],
+  chef: ["dashboard", "menu", "orders", "add-order", "listcreator", "invoice", "calendar", "appsettings"],
 };
 
 export default function Sidebar({
