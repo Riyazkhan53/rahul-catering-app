@@ -23,6 +23,7 @@ import {
 } from "../../db/indexedDB";
 import { eventDatesService } from "../../api/service";
 import { useToast } from "../../context/ToastContext";
+import { getEventsForDate, formatDateKey, getTamilMonth } from "../../utils/calendarData";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -214,11 +215,18 @@ export default function OrdersCalender({ onCreateOrder }) {
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="flex gap-4 mt-3 text-white/80 text-xs sm:text-sm">
+          {/* Stats + Tamil month */}
+          <div className="flex flex-wrap gap-3 sm:gap-4 mt-3 text-white/80 text-xs sm:text-sm">
             <span className="flex items-center gap-1">
               <CalendarCheck className="w-3.5 h-3.5" />
               {eventCount} event{eventCount !== 1 ? "s" : ""} total
+            </span>
+            <span className="flex items-center gap-1 text-white/90 font-medium">
+              {(() => {
+                const t1 = getTamilMonth(new Date(currentYear, currentMonth, 1));
+                const t2 = getTamilMonth(new Date(currentYear, currentMonth + 1, 0));
+                return t1 === t2 ? t1 : `${t1} – ${t2}`;
+              })()}
             </span>
           </div>
         </div>
@@ -268,9 +276,13 @@ export default function OrdersCalender({ onCreateOrder }) {
                   }
 
                   const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-                  const hasEvent = !!events[key]?.length;
-                  const evtCount = events[key]?.length || 0;
+                  const orderEvts = events[key] || [];
+                  const hasEvent = orderEvts.length > 0;
+                  const evtCount = orderEvts.length;
                   const isSunday = date.getDay() === 0;
+                  const holidays = getEventsForDate(key);
+                  const hasHoliday = holidays.length > 0;
+                  const hasAnything = hasEvent || hasHoliday;
 
                   return (
                     <div
@@ -287,7 +299,9 @@ export default function OrdersCalender({ onCreateOrder }) {
                           ? "bg-orange-50 dark:bg-orange-900/20"
                           : hasEvent
                             ? "bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-700/30"
+                            : hasHoliday
+                              ? "hover:bg-gray-50 dark:hover:bg-gray-700/30"
+                              : "hover:bg-gray-50 dark:hover:bg-gray-700/30"
                         }
                       `}
                     >
@@ -307,18 +321,24 @@ export default function OrdersCalender({ onCreateOrder }) {
                           {date.getDate()}
                         </span>
 
-                        {/* Event dot indicator (mobile) */}
-                        {hasEvent && (
-                          <span className="sm:hidden flex gap-0.5">
-                            {Array.from({ length: Math.min(evtCount, 3) }).map((_, i) => (
+                        {/* Dot indicators (mobile) */}
+                        {hasAnything && (
+                          <span className="sm:hidden flex gap-0.5 flex-wrap justify-end">
+                            {orderEvts.slice(0, 2).map((_, i) => (
                               <span
-                                key={i}
+                                key={`o${i}`}
                                 className={`w-1.5 h-1.5 rounded-full ${
-                                  isToday(date)
-                                    ? "bg-orange-500"
-                                    : isPast(key)
-                                      ? "bg-green-500"
-                                      : "bg-red-500"
+                                  isToday(date) ? "bg-orange-500" : isPast(key) ? "bg-green-500" : "bg-red-500"
+                                }`}
+                              />
+                            ))}
+                            {holidays.slice(0, 2).map((h, i) => (
+                              <span
+                                key={`h${i}`}
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  h.category === "govt" ? "bg-purple-500"
+                                  : h.category === "tamil" ? "bg-yellow-500"
+                                  : "bg-emerald-500"
                                 }`}
                               />
                             ))}
@@ -326,10 +346,24 @@ export default function OrdersCalender({ onCreateOrder }) {
                         )}
                       </div>
 
-                      {/* Event preview (desktop) */}
-                      {hasEvent && (
+                      {/* Event + Holiday preview (desktop) */}
+                      {hasAnything && (
                         <div className="hidden sm:block mt-1 space-y-0.5 overflow-hidden">
-                          {events[key].slice(0, 2).map((evt, i) => (
+                          {holidays.slice(0, hasEvent ? 1 : 2).map((h, i) => (
+                            <div
+                              key={`hol-${i}`}
+                              className={`text-[10px] md:text-xs px-1.5 py-0.5 rounded truncate font-medium
+                                ${h.category === "govt"
+                                  ? "bg-purple-100 dark:bg-purple-800/30 text-purple-700 dark:text-purple-300"
+                                  : h.category === "tamil"
+                                    ? "bg-yellow-100 dark:bg-yellow-800/30 text-yellow-700 dark:text-yellow-300"
+                                    : "bg-emerald-100 dark:bg-emerald-800/30 text-emerald-700 dark:text-emerald-300"
+                                }`}
+                            >
+                              {h.name}
+                            </div>
+                          ))}
+                          {orderEvts.slice(0, hasHoliday ? 1 : 2).map((evt, i) => (
                             <div
                               key={evt.id || i}
                               className={`text-[10px] md:text-xs px-1.5 py-0.5 rounded truncate font-medium
@@ -343,9 +377,9 @@ export default function OrdersCalender({ onCreateOrder }) {
                               {evt.title}
                             </div>
                           ))}
-                          {evtCount > 2 && (
+                          {(evtCount + holidays.length) > 2 && (
                             <div className="text-[10px] text-gray-400 dark:text-gray-500 px-1 font-medium">
-                              +{evtCount - 2} more
+                              +{(evtCount + holidays.length) - 2} more
                             </div>
                           )}
                         </div>
@@ -367,6 +401,15 @@ export default function OrdersCalender({ onCreateOrder }) {
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Upcoming
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> Govt Holiday
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500" /> Tamil Festival
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Islamic
             </span>
           </div>
         </div>
@@ -402,6 +445,54 @@ export default function OrdersCalender({ onCreateOrder }) {
             </div>
 
             <div className="p-4 sm:p-5">
+              {/* Tamil month + Holiday/Festival cards for selected date */}
+              {selectedDate && (() => {
+                const selDateObj = new Date(selectedDate + "T00:00:00");
+                const tamilM = getTamilMonth(selDateObj);
+                const hols = getEventsForDate(selectedDate);
+                if (!tamilM && hols.length === 0) return null;
+                return (
+                  <div className="mb-4 space-y-2">
+                    {tamilM && (
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700/50">
+                        <span className="text-xs">☀️</span>
+                        <span className="text-xs font-semibold text-orange-700 dark:text-orange-300">{tamilM}</span>
+                      </div>
+                    )}
+                    {hols.map((h, i) => (
+                      <div
+                        key={`modal-hol-${i}`}
+                        className={`flex items-start gap-2.5 px-3 py-2 rounded-xl border text-sm
+                          ${h.category === "govt"
+                            ? "bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700/50"
+                            : h.category === "tamil"
+                              ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700/50"
+                              : "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-700/50"
+                          }`}
+                      >
+                        <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                          h.category === "govt" ? "bg-purple-500"
+                          : h.category === "tamil" ? "bg-yellow-500"
+                          : "bg-emerald-500"
+                        }`} />
+                        <div>
+                          <p className={`font-semibold text-xs ${
+                            h.category === "govt" ? "text-purple-700 dark:text-purple-300"
+                            : h.category === "tamil" ? "text-yellow-700 dark:text-yellow-300"
+                            : "text-emerald-700 dark:text-emerald-300"
+                          }`}>{h.name}</p>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                            {h.category === "govt" ? (h.type === "national" ? "National Holiday" : "TN State Holiday")
+                              : h.category === "tamil" ? "Tamil Festival"
+                              : `Islamic${h.hijriMonth ? ` • ${h.hijriMonth}` : ""}`}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
               {/* VIEW MODE */}
               {mode === "view" && (
                 <div className="space-y-3">

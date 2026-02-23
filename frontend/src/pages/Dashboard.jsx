@@ -14,7 +14,6 @@ import Invoice from "./InvoiceBilling/Invoice"
 import MenuListCreator from "./MenuListCreator/MenuListCreator"
 import useIsDesktop from "../hooks/uselsDesktop";
 import AppSettings from "./AppSettings/AppSettings";
-import CalendarPage from "./Calendar/CalendarPage";
 import ProfileModal from "./Settings/Profile";
 import { apiRequest, isOfflineMode } from "../api/api";
 import { getAllUserRoles } from "../db/indexedDB";
@@ -123,7 +122,6 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
       "listcreator-menu": <MenuListCreator defaultView="menu" />,
       "listcreator-list": <MenuListCreator defaultView="list" />,
       appsettings: <AppSettings />,
-      calendar: <CalendarPage />,
     };
 
     return pages[activeTab] || <DashboardHome />;
