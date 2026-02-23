@@ -161,13 +161,13 @@ export function getTamilDate(date) {
 // ─── Helper: Get approximate Hijri date for a Gregorian date ───
 export function getHijriDate(date) {
   try {
-    // Use Intl API for Hijri calendar if available
-    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-    return formatter.format(date);
+    const dayFmt = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', { day: 'numeric' });
+    const monthFmt = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', { month: 'long' });
+    const yearFmt = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', { year: 'numeric' });
+    const day = dayFmt.format(date);
+    const month = monthFmt.format(date);
+    const year = yearFmt.format(date).replace(/\s*AH$/, '');
+    return `${day} ${month} ${year} AH`;
   } catch {
     return null;
   }
