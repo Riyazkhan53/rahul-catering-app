@@ -133,6 +133,46 @@ export function getTamilMonth(date) {
   return tamilMonths[8].name; // Margazhi
 }
 
+// ─── Helper: Get Tamil month + day for a given Gregorian date ───
+export function getTamilDate(date) {
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  let matched = null;
+
+  for (let i = tamilMonths.length - 1; i >= 0; i--) {
+    const tm = tamilMonths[i];
+    if (m > tm.startMonth || (m === tm.startMonth && d >= tm.startDay)) {
+      matched = tm;
+      break;
+    }
+  }
+  if (!matched) matched = tamilMonths[8]; // Margazhi
+
+  // Calculate day within Tamil month
+  const tamilStart = new Date(date.getFullYear(), matched.startMonth - 1, matched.startDay);
+  // If the Tamil month start is after the current date (year wrap for Margazhi/Thai etc)
+  if (tamilStart > date) {
+    tamilStart.setFullYear(tamilStart.getFullYear() - 1);
+  }
+  const dayNum = Math.floor((date - tamilStart) / 86400000) + 1;
+  return { month: matched.name, day: dayNum };
+}
+
+// ─── Helper: Get approximate Hijri date for a Gregorian date ───
+export function getHijriDate(date) {
+  try {
+    // Use Intl API for Hijri calendar if available
+    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    return formatter.format(date);
+  } catch {
+    return null;
+  }
+}
+
 // ─── Helper: Get all events for a given date string (YYYY-MM-DD) ───
 export function getEventsForDate(dateStr) {
   const events = [];

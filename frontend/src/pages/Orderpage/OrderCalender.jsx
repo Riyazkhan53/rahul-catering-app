@@ -31,7 +31,7 @@ import {
 } from "../../db/indexedDB";
 import { eventDatesService } from "../../api/service";
 import { useToast } from "../../context/ToastContext";
-import { getEventsForDate, formatDateKey, getTamilMonth } from "../../utils/calendarData";
+import { getEventsForDate, formatDateKey, getTamilMonth, getTamilDate, getHijriDate } from "../../utils/calendarData";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -349,7 +349,7 @@ export default function OrdersCalender({ onCreateOrder }) {
                               <span
                                 key={`o${i}`}
                                 className={`w-1.5 h-1.5 rounded-full ${
-                                  isToday(date) ? "bg-orange-500" : isPast(key) ? "bg-green-500" : "bg-red-500"
+                                  isToday(date) ? "bg-orange-500" : isPast(key) ? "bg-blue-500" : "bg-red-500"
                                 }`}
                               />
                             ))}
@@ -393,7 +393,7 @@ export default function OrdersCalender({ onCreateOrder }) {
                                 ${isToday(date)
                                   ? "bg-orange-100 dark:bg-orange-800/40 text-orange-700 dark:text-orange-300"
                                   : isPast(key)
-                                    ? "bg-green-100 dark:bg-green-800/30 text-green-700 dark:text-green-300"
+                                    ? "bg-blue-100 dark:bg-blue-800/30 text-blue-700 dark:text-blue-300"
                                     : "bg-red-100 dark:bg-red-800/30 text-red-700 dark:text-red-300"
                                 }`}
                             >
@@ -420,7 +420,7 @@ export default function OrdersCalender({ onCreateOrder }) {
               <span className="w-2.5 h-2.5 rounded-full bg-orange-500" /> Today
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500" /> Past Event
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Past Event
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Upcoming
@@ -474,18 +474,25 @@ export default function OrdersCalender({ onCreateOrder }) {
             </div>
 
             <div className="p-4 sm:p-5">
-              {/* Tamil month + Holiday/Festival cards for selected date */}
+              {/* Tamil/Hijri date + Holiday/Festival cards for selected date */}
               {selectedDate && (() => {
                 const selDateObj = new Date(selectedDate + "T00:00:00");
-                const tamilM = getTamilMonth(selDateObj);
+                const tamilD = getTamilDate(selDateObj);
+                const hijriD = getHijriDate(selDateObj);
                 const hols = getEventsForDate(selectedDate);
-                if (!tamilM && hols.length === 0) return null;
+                if (!tamilD && !hijriD && hols.length === 0) return null;
                 return (
                   <div className="mb-4 space-y-2">
-                    {tamilM && (
+                    {tamilD && (
                       <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700/50">
                         <span className="text-xs">☀️</span>
-                        <span className="text-xs font-semibold text-orange-700 dark:text-orange-300">{tamilM}</span>
+                        <span className="text-xs font-semibold text-orange-700 dark:text-orange-300">{tamilD.month} • Day {tamilD.day}</span>
+                      </div>
+                    )}
+                    {hijriD && (
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700/50">
+                        <span className="text-xs">☪️</span>
+                        <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">{hijriD}</span>
                       </div>
                     )}
                     {hols.map((h, i) => (
