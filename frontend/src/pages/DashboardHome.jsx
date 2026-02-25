@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { TrendingUp, Clock, Wallet } from "lucide-react";
+import { TrendingUp, Clock, Wallet, MessageSquare, ClipboardList, Inbox } from "lucide-react";
 import AnimatedPage from "./AnimatedPage";
 
 export default function DashboardHome() {
@@ -11,6 +11,7 @@ export default function DashboardHome() {
 
   return (
     <AnimatedPage>
+      {/* Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 w-full max-w-5xl">
         {stats.map((stat, index) => (
           <Stat 
@@ -19,6 +20,57 @@ export default function DashboardHome() {
             delay={index * 0.1}
           />
         ))}
+      </div>
+
+      {/* Messages & Order Requests */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full max-w-5xl mt-6">
+
+        {/* Messages Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.4 }}
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/50 overflow-hidden border border-gray-100 dark:border-gray-700"
+        >
+          <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-transparent dark:from-blue-900/10 dark:to-transparent">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <MessageSquare className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Messages</h3>
+            <span className="ml-auto text-xs font-medium text-gray-400 dark:text-gray-500">0 new</span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-full mb-3">
+              <Inbox className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+            </div>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No messages yet</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Messages will appear here</p>
+          </div>
+        </motion.div>
+
+        {/* New Order Requests Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45, duration: 0.4 }}
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/50 overflow-hidden border border-gray-100 dark:border-gray-700"
+        >
+          <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-orange-50 to-transparent dark:from-orange-900/10 dark:to-transparent">
+            <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+              <ClipboardList className="w-4.5 h-4.5 text-orange-600 dark:text-orange-400" />
+            </div>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">New Order Requests</h3>
+            <span className="ml-auto text-xs font-medium text-gray-400 dark:text-gray-500">0 pending</span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-full mb-3">
+              <ClipboardList className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+            </div>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No new order requests</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Incoming orders will show up here</p>
+          </div>
+        </motion.div>
+
       </div>
     </AnimatedPage>
   );

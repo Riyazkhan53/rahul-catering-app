@@ -24,6 +24,7 @@ import { useNetworkMode } from "../context/NetworkModeContext";
 import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../context/ToastContext";
 import MiniLoader from "../Components/MiniLoader";
+import NotificationDropdown from "../Components/NotificationDropdown";
 
 const ALL_MENU_ITEMS = [
   { key: "dashboard", label: "Dashboard", shortLabel: "Home", icon: LayoutDashboard },
@@ -143,7 +144,7 @@ export default function TopNavBar({
             }
           </button>
 
-          <button className="text-lg hover:scale-110 transition">🔔</button>
+          <NotificationDropdown />
 
           {/* Profile */}
           <div className="relative" ref={dropdownRef}>

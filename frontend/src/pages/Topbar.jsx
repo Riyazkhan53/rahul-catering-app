@@ -4,6 +4,7 @@ import { useNetworkMode } from "../context/NetworkModeContext";
 import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../context/ToastContext";
 import MiniLoader from "../Components/MiniLoader";
+import NotificationDropdown from "../Components/NotificationDropdown";
 
 export default function Topbar({
   greeting,
@@ -86,7 +87,7 @@ export default function Topbar({
           )}
         </button>
 
-        <button className="relative text-lg sm:text-2xl hover:scale-110 transition">🔔</button>
+        <NotificationDropdown />
 
         {/* Profile Icon + Dropdown */}
         <div className="relative" ref={dropdownRef}>
