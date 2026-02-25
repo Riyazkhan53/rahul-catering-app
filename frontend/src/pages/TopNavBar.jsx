@@ -23,6 +23,7 @@ import {
 import { useNetworkMode } from "../context/NetworkModeContext";
 import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../context/ToastContext";
+import MiniLoader from "../Components/MiniLoader";
 
 const ALL_MENU_ITEMS = [
   { key: "dashboard", label: "Dashboard", shortLabel: "Home", icon: LayoutDashboard },
@@ -54,6 +55,7 @@ export default function TopNavBar({
   const { isDark, toggleTheme } = useTheme();
   const { showToast } = useToast();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [switchingRole, setSwitchingRole] = useState(null);
   const dropdownRef = useRef(null);
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -106,6 +108,9 @@ export default function TopNavBar({
 
   return (
     <div className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 shadow-sm">
+      {switchingRole && (
+        <MiniLoader variant="overlay" message={`Switching to ${switchingRole.charAt(0).toUpperCase() + switchingRole.slice(1)}...`} />
+      )}
       {/* Top row: branding + controls */}
       <div className="flex items-center justify-between px-2 sm:px-4 py-1.5 sm:py-2">
         <span className="text-sm sm:text-base font-bold bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent truncate">
@@ -166,8 +171,10 @@ export default function TopNavBar({
                     key={r}
                     onClick={async () => {
                       setProfileOpen(false);
+                      setSwitchingRole(r);
                       try { await onSwitchRole?.(r); showToast(`Switched to ${r}`, "success"); }
                       catch { showToast("Failed to switch role", "error"); }
+                      finally { setSwitchingRole(null); }
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left"
                   >

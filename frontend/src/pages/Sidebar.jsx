@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { 
   X, 
   LayoutDashboard, 
@@ -14,6 +15,7 @@ import {
   ArrowLeftRight,
 } from "lucide-react";
 import { useToast } from "../context/ToastContext";
+import MiniLoader from "../Components/MiniLoader";
 
 // Master list of all possible sidebar tabs
 const ALL_MENU_ITEMS = [
@@ -47,6 +49,7 @@ export default function Sidebar({
   allowedTabs,
 }) {
   const { showToast } = useToast();
+  const [switchingRole, setSwitchingRole] = useState(null);
   const role = user?.role === "admin" ? "admin" : "chef";
 
   // Use allowedTabs from role config, fall back to hardcoded defaults
@@ -65,6 +68,10 @@ export default function Sidebar({
 
   return (
     <>
+      {switchingRole && (
+        <MiniLoader variant="overlay" message={`Switching to ${switchingRole.charAt(0).toUpperCase() + switchingRole.slice(1)}...`} />
+      )}
+
       {/* Overlay for mobile only */}
       {!isDesktop && open && (
         <div
@@ -194,11 +201,14 @@ export default function Sidebar({
               <button
                 key={r}
                 onClick={async () => {
+                  setSwitchingRole(r);
                   try {
                     await onSwitchRole?.(r);
                     showToast(`Switched to ${r}`, "success");
                   } catch {
                     showToast("Failed to switch role", "error");
+                  } finally {
+                    setSwitchingRole(null);
                   }
                   if (!isDesktop) setOpen(false);
                 }}

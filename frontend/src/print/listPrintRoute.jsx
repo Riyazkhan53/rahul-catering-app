@@ -5,6 +5,7 @@ import { getListById, addToSyncQ } from "../db/indexedDB";
 import { generatedListService } from "../api/service";
 import { isOfflineMode } from "../api/api";
 import { isDesktop } from "../utils/device";
+import MiniLoader from "../Components/MiniLoader";
 
 export default function ListPrintRoute() {
   const { id } = useParams();
@@ -64,7 +65,7 @@ export default function ListPrintRoute() {
     }
   }, [list, searchParams]);
 
-  if (!list) return <div className="print-route" style={{ padding: 24 }}>Loading preview…</div>;
+  if (!list) return <MiniLoader variant="overlay" message="Loading preview..." />;
 
   return (
     <div className="print-route">

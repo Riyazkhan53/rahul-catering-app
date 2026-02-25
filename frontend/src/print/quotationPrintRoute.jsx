@@ -6,6 +6,7 @@ import { generatedQuotationService } from "../api/service";
 import { isDesktop } from "../utils/device";
 import * as pdfjsLib from "pdfjs-dist";
 import "./print.css";
+import MiniLoader from "../Components/MiniLoader";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.mjs",
@@ -94,11 +95,7 @@ export default function QuotationPrintRoute() {
   };
 
   if (loading) {
-    return (
-      <div className="print-route" style={{ padding: 24, textAlign: "center" }}>
-        Generating preview…
-      </div>
-    );
+    return <MiniLoader variant="overlay" message="Generating preview..." />;
   }
 
   return (

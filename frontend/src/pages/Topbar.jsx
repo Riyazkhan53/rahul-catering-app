@@ -3,6 +3,7 @@ import { Menu, Wifi, WifiOff, Moon, Sun, LogOut, User, ArrowLeftRight } from "lu
 import { useNetworkMode } from "../context/NetworkModeContext";
 import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../context/ToastContext";
+import MiniLoader from "../Components/MiniLoader";
 
 export default function Topbar({
   greeting,
@@ -17,6 +18,7 @@ export default function Topbar({
   const { isDark, toggleTheme } = useTheme();
   const { showToast } = useToast();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [switchingRole, setSwitchingRole] = useState(null);
   const dropdownRef = useRef(null);
 
   // Close dropdown on outside click
@@ -34,6 +36,10 @@ export default function Topbar({
 
   return (
     <div className="relative flex justify-between items-center px-2 sm:px-6 py-2 sm:py-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+
+      {switchingRole && (
+        <MiniLoader variant="overlay" message={`Switching to ${switchingRole.charAt(0).toUpperCase() + switchingRole.slice(1)}...`} />
+      )}
 
       <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
         <button
@@ -117,11 +123,14 @@ export default function Topbar({
                     key={role}
                     onClick={async () => {
                       setProfileOpen(false);
+                      setSwitchingRole(role);
                       try {
                         await onSwitchRole?.(role);
                         showToast(`Switched to ${role}`, "success");
                       } catch {
                         showToast("Failed to switch role", "error");
+                      } finally {
+                        setSwitchingRole(null);
                       }
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left"
