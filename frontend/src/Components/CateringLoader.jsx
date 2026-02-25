@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 function useFillLoop() {
@@ -75,98 +75,98 @@ export default function CateringLoader() {
 
       <div className="relative flex items-center justify-center" style={{ width: 220, height: 220 }}>
 
-        {logoUrl ? (
-          <>
-            {/* Gold liquid fill — clipped to logo shape via CSS mask */}
-            <div
-              className="absolute inset-0"
-              style={{
-                WebkitMaskImage: `url('${logoUrl}')`,
-                maskImage: `url('${logoUrl}')`,
-                WebkitMaskSize: "contain",
-                maskSize: "contain",
-                WebkitMaskRepeat: "no-repeat",
-                maskRepeat: "no-repeat",
-                WebkitMaskPosition: "center",
-                maskPosition: "center",
-              }}
-            >
-              {/* Ghost fill (shows full logo faintly) */}
+          {logoUrl ? (
+            <>
+              {/* Gold liquid fill — clipped to logo shape via CSS mask */}
               <div
                 className="absolute inset-0"
                 style={{
-                  background: "linear-gradient(135deg, #8B6914, #D4A017, #FFD700, #D4A017, #8B6914)",
-                  opacity: 0.15,
+                  WebkitMaskImage: `url('${logoUrl}')`,
+                  maskImage: `url('${logoUrl}')`,
+                  WebkitMaskSize: "contain",
+                  maskSize: "contain",
+                  WebkitMaskRepeat: "no-repeat",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskPosition: "center",
+                  maskPosition: "center",
                 }}
-              />
-
-              {/* Rising liquid */}
-              <div
-                className="absolute left-0 right-0"
-                style={{
-                  top: `${fillY}%`,
-                  bottom: 0,
-                  background: "linear-gradient(135deg, #8B6914 0%, #C8950F 30%, #FFD700 55%, #C8950F 75%, #8B6914 100%)",
-                }}
-              />
-
-              {/* Wave on top of liquid */}
-              <motion.div
-                className="absolute left-0 right-0"
-                style={{ top: `${fillY}%`, height: 18, marginTop: -9 }}
-                animate={{ x: [0, -110, 0] }}
-                transition={{ duration: 2.2, repeat: Infinity, ease: "linear" }}
               >
-                <svg
-                  viewBox="0 0 440 18"
-                  width="200%"
-                  height="18"
-                  preserveAspectRatio="none"
-                  style={{ display: "block" }}
+                {/* Ghost fill (shows full logo faintly) */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: "linear-gradient(135deg, #8B6914, #D4A017, #FFD700, #D4A017, #8B6914)",
+                    opacity: 0.15,
+                  }}
+                />
+
+                {/* Rising liquid */}
+                <div
+                  className="absolute left-0 right-0"
+                  style={{
+                    top: `${fillY}%`,
+                    bottom: 0,
+                    background: "linear-gradient(135deg, #8B6914 0%, #C8950F 30%, #FFD700 55%, #C8950F 75%, #8B6914 100%)",
+                  }}
+                />
+
+                {/* Wave on top of liquid */}
+                <motion.div
+                  className="absolute left-0 right-0"
+                  style={{ top: `${fillY}%`, height: 18, marginTop: -9 }}
+                  animate={{ x: [0, -110, 0] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: "linear" }}
                 >
-                  <path
-                    d="M0,9 Q55,0 110,9 Q165,18 220,9 Q275,0 330,9 Q385,18 440,9 L440,18 L0,18 Z"
-                    fill="#D4A017"
-                  />
-                </svg>
-              </motion.div>
+                  <svg
+                    viewBox="0 0 440 18"
+                    width="200%"
+                    height="18"
+                    preserveAspectRatio="none"
+                    style={{ display: "block" }}
+                  >
+                    <path
+                      d="M0,9 Q55,0 110,9 Q165,18 220,9 Q275,0 330,9 Q385,18 440,9 L440,18 L0,18 Z"
+                      fill="#D4A017"
+                    />
+                  </svg>
+                </motion.div>
 
-              {/* Second wave, offset */}
-              <motion.div
-                className="absolute left-0 right-0"
-                style={{ top: `${fillY}%`, height: 14, marginTop: -7 }}
-                animate={{ x: [0, 110, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              >
-                <svg
-                  viewBox="0 0 440 14"
-                  width="200%"
-                  height="14"
-                  preserveAspectRatio="none"
-                  style={{ display: "block" }}
+                {/* Second wave, offset */}
+                <motion.div
+                  className="absolute left-0 right-0"
+                  style={{ top: `${fillY}%`, height: 14, marginTop: -7 }}
+                  animate={{ x: [0, 110, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                 >
-                  <path
-                    d="M0,7 Q55,14 110,7 Q165,0 220,7 Q275,14 330,7 Q385,0 440,7 L440,14 L0,14 Z"
-                    fill="#FFD700"
-                    opacity="0.5"
-                  />
-                </svg>
-              </motion.div>
-            </div>
+                  <svg
+                    viewBox="0 0 440 14"
+                    width="200%"
+                    height="14"
+                    preserveAspectRatio="none"
+                    style={{ display: "block" }}
+                  >
+                    <path
+                      d="M0,7 Q55,14 110,7 Q165,0 220,7 Q275,14 330,7 Q385,0 440,7 L440,14 L0,14 Z"
+                      fill="#FFD700"
+                      opacity="0.5"
+                    />
+                  </svg>
+                </motion.div>
+              </div>
 
-            {/* Logo on top — crisp outline at low opacity as ghost */}
-            <img
-              src={logoUrl}
-              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-              style={{ opacity: 0.18 }}
-            />
-          </>
-        ) : (
-          // Tiny spinner while canvas processes the image
-          <div className="w-6 h-6 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
-        )}
+              {/* Logo on top — crisp outline at low opacity as ghost */}
+              <img
+                src={logoUrl}
+                className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                style={{ opacity: 0.18 }}
+              />
+            </>
+          ) : (
+            // Tiny spinner while canvas processes the image
+            <div className="w-6 h-6 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+          )}
 
-        {/* Glow */}
+        {/* Glow behind logo */}
         <div
           className="absolute inset-0 -z-10 blur-3xl rounded-full pointer-events-none"
           style={{
@@ -175,12 +175,33 @@ export default function CateringLoader() {
         />
       </div>
 
+      {/* Brand Name */}
+      <motion.h1
+        className="mt-6 text-center uppercase"
+        style={{
+          background: "linear-gradient(135deg, #8B6914 0%, #D4A017 25%, #FFD700 50%, #D4A017 75%, #8B6914 100%)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+          fontSize: "clamp(0.85rem, 3.5vw, 1.35rem)",
+          fontWeight: 800,
+          letterSpacing: "0.25em",
+          fontFamily: "'Segoe UI', system-ui, sans-serif",
+          textShadow: "0 0 40px rgba(212,160,23,0.15)",
+        }}
+        initial={{ opacity: 0, y: 10, letterSpacing: "0.5em" }}
+        animate={{ opacity: 1, y: 0, letterSpacing: "0.25em" }}
+        transition={{ delay: 0.6, duration: 1, ease: "easeOut" }}
+      >
+        Rahul Catering & Events
+      </motion.h1>
+
       {/* Divider */}
       <motion.div
-        className="mt-6 h-px"
+        className="mt-3 h-px"
         style={{ background: "linear-gradient(90deg, transparent, #D4A017, transparent)" }}
         initial={{ width: 0, opacity: 0 }}
-        animate={{ width: 100, opacity: 1 }}
+        animate={{ width: 120, opacity: 1 }}
         transition={{ delay: 0.8, duration: 0.7, ease: "easeOut" }}
       />
 

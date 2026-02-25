@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import MiniLoader from "../../Components/MiniLoader";
 import {
   ClipboardList,
   Calendar,
@@ -433,10 +434,7 @@ export default function OrderMasterList() {
 
         {/* Content */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-4" />
-            <p className="text-gray-500 dark:text-gray-400 text-lg">Loading orders...</p>
-          </div>
+          <MiniLoader variant="section" message="Loading orders..." />
         ) : filtered.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

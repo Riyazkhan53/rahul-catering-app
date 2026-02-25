@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import MiniLoader from "../../Components/MiniLoader";
 import { X, Trash2, Plus, MessageSquare, Save, Search } from "lucide-react";
 import { Input, Button, Textarea } from "../../Components/BasicComponents";
 import { getAllItems, saveListToDB } from "../../db/indexedDB";
@@ -191,7 +192,7 @@ export default function EditListModal({ list, onClose, onSaved }) {
               disabled={saving}
               className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-xl shadow-md transition disabled:opacity-50"
             >
-              <Save size={16} />
+              {saving ? <MiniLoader variant="inline" /> : <Save size={16} />}
               {saving ? "Saving..." : "Save"}
             </button>
           </div>

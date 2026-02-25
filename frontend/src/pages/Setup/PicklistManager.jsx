@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import MiniLoader from "../../Components/MiniLoader";
 import {
   Plus,
   Pencil,
@@ -367,10 +368,7 @@ export default function PicklistManager() {
 
       {/* Items List */}
       {initialLoading ? (
-        <div className="flex items-center justify-center py-16 text-gray-500 dark:text-gray-400">
-          <Loader2 className="w-6 h-6 animate-spin mr-2" />
-          Loading...
-        </div>
+        <MiniLoader variant="section" message="Loading..." />
       ) : filtered.length === 0 ? (
         <div className="text-center text-gray-500 dark:text-gray-400 py-16 border-dashed border-4 border-gray-200 dark:border-gray-700 rounded-xl">
           {search

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import MiniLoader from "../../../Components/MiniLoader";
 import { Trash2, FileText, Calendar, X, Eye, Printer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -104,9 +105,7 @@ export default function ViewDocuments({ onBack }) {
 
       {/* Content */}
       {loading ? (
-        <div className="text-center py-16 text-gray-500 dark:text-gray-400">
-          Loading documents...
-        </div>
+        <MiniLoader variant="section" message="Loading documents..." />
       ) : tab === "quotations" ? (
         quotations.length === 0 ? (
           <div className="text-center text-gray-500 dark:text-gray-400 py-16 border-dashed border-4 border-gray-200 dark:border-gray-700 rounded-xl">

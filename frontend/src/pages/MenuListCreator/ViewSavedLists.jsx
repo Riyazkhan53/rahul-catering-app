@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import MiniLoader from "../../Components/MiniLoader";
 import { Trash2, ClipboardList, Calendar, X, FileText, Package, Clock } from "lucide-react";
 import { getAllItemLists, deleteItemList } from "../../db/indexedDB";
 import { useToast } from "../../context/ToastContext";
@@ -222,11 +223,7 @@ export default function ViewSavedLists({ onBack }) {
 
       {/* Content */}
       {loading ? (
-        // Loading State
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500 dark:text-gray-400 text-lg">Loading your lists...</p>
-        </div>
+        <MiniLoader variant="section" message="Loading your lists..." />
       ) : lists.length === 0 ? (
         // Empty State with Beautiful Design
         <motion.div

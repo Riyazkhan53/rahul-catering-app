@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import MiniLoader from "../../Components/MiniLoader";
 import {
   Shield, ChevronRight, ChevronLeft, Check, Loader2,
   LayoutDashboard, UtensilsCrossed, ClipboardList, PlusCircle,
@@ -200,12 +201,7 @@ export default function RoleSetup() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-3" />
-        <p className="text-gray-500 dark:text-gray-400">Loading roles...</p>
-      </div>
-    );
+    return <MiniLoader variant="section" message="Loading roles..." />;
   }
 
   /* ==================== DETAIL VIEW ==================== */

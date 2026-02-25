@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import MiniLoader from "../../Components/MiniLoader";
 import { Shield, Plus, Trash2, X, Pencil, Check, Loader2 } from "lucide-react";
 import { getAllUserRoles, saveUserRole, deleteUserRole } from "../../db/indexedDB";
 import { apiRequest, isOfflineMode } from "../../api/api";
@@ -171,12 +172,7 @@ export default function RoleSettings() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-3" />
-        <p className="text-gray-500 dark:text-gray-400">Loading roles...</p>
-      </div>
-    );
+    return <MiniLoader variant="section" message="Loading roles..." />;
   }
 
   return (
