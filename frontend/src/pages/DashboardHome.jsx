@@ -1,13 +1,52 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, Clock, Wallet, MessageSquare, ClipboardList, Inbox } from "lucide-react";
+import { TrendingUp, Clock, Wallet, MessageSquare, ClipboardList, Inbox, Check, X, Eye, Users, UtensilsCrossed, Phone } from "lucide-react";
 import AnimatedPage from "./AnimatedPage";
+import { apiRequest, isOfflineMode } from "../api/api";
+import MiniLoader from "../Components/MiniLoader";
 
 export default function DashboardHome() {
+  const [orderRequests, setOrderRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(true);
+
   const stats = [
     { title: "Today's Orders", value: "24", icon: TrendingUp, color: "text-blue-500 dark:text-blue-400" },
     { title: "Pending Orders", value: "6", icon: Clock, color: "text-yellow-500 dark:text-yellow-400" },
     { title: "Revenue", value: "₹18,500", icon: Wallet, color: "text-green-500 dark:text-green-400" },
   ];
+
+  useEffect(() => {
+    async function fetchRequests() {
+      try {
+        if (!isOfflineMode()) {
+          const data = await apiRequest("/api/order-requests");
+          setOrderRequests(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch order requests:", err);
+      } finally {
+        setLoadingRequests(false);
+      }
+    }
+    fetchRequests();
+  }, []);
+
+  const updateStatus = async (id, status) => {
+    try {
+      await apiRequest(`/api/order-requests/${id}/status`, {
+        method: "PATCH",
+        body: { status },
+      });
+      setOrderRequests((prev) =>
+        prev.map((r) => (r._id === id ? { ...r, status } : r))
+      );
+    } catch (err) {
+      console.error("Failed to update status:", err);
+    }
+  };
+
+  const newRequests = orderRequests.filter((r) => r.status === "new" || r.status === "viewed");
+  const newCount = orderRequests.filter((r) => r.status === "new").length;
 
   return (
     <AnimatedPage>
@@ -60,14 +99,83 @@ export default function DashboardHome() {
               <ClipboardList className="w-4.5 h-4.5 text-orange-600 dark:text-orange-400" />
             </div>
             <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">New Order Requests</h3>
-            <span className="ml-auto text-xs font-medium text-gray-400 dark:text-gray-500">0 pending</span>
+            {newCount > 0 && (
+              <span className="ml-auto px-2 py-0.5 text-xs font-bold bg-orange-500 text-white rounded-full">{newCount} new</span>
+            )}
+            {newCount === 0 && (
+              <span className="ml-auto text-xs font-medium text-gray-400 dark:text-gray-500">{newRequests.length} pending</span>
+            )}
           </div>
-          <div className="flex flex-col items-center justify-center py-12 px-4">
-            <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-full mb-3">
-              <ClipboardList className="w-6 h-6 text-gray-400 dark:text-gray-500" />
-            </div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No new order requests</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Incoming orders will show up here</p>
+
+          <div className="max-h-80 overflow-y-auto">
+            {loadingRequests ? (
+              <div className="flex justify-center py-10">
+                <MiniLoader variant="inline" />
+              </div>
+            ) : newRequests.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 px-4">
+                <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-full mb-3">
+                  <ClipboardList className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+                </div>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No new order requests</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Incoming orders will show up here</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                {newRequests.map((req) => (
+                  <div key={req._id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{req.name}</p>
+                          {req.status === "new" && (
+                            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded">NEW</span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                          <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{req.contact}</span>
+                          <span className="flex items-center gap-1"><UtensilsCrossed className="w-3 h-3" />{req.functionType}</span>
+                          <span className="flex items-center gap-1"><Users className="w-3 h-3" />{req.paxCount} pax</span>
+                        </div>
+                        {req.dishes?.length > 0 && (
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 truncate">
+                            {req.dishes.join(", ")}
+                          </p>
+                        )}
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+                          {new Date(req.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-1.5 shrink-0">
+                        {req.status === "new" && (
+                          <button
+                            onClick={() => updateStatus(req._id, "viewed")}
+                            title="Mark as viewed"
+                            className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => updateStatus(req._id, "accepted")}
+                          title="Accept"
+                          className="p-1.5 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40 transition"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => updateStatus(req._id, "rejected")}
+                          title="Reject"
+                          className="p-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </motion.div>
 
