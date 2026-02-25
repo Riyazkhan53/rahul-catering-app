@@ -6,9 +6,11 @@ import Dashboard from "./pages/Dashboard";
 import ListPrintRoute from "./print/listPrintRoute";
 import QuotationPrintRoute from "./print/quotationPrintRoute";
 import MenuPlanPrintRoute from "./print/menuPlanPrintRoute";
+import LoaderDemo from "./pages/Demo/LoaderDemo";
 
 import { apiRequest, isOfflineMode } from "./api/api";
 import AppLayout from "./Layouts/AppLayout";
+import ChefLoader from "./Components/ChefLoader";
 import CateringLoader from "./Components/CateringLoader";
 import UpdatePrompt from "./Components/UpdatePrompt";
 import { syncPendingItems, pullItemsFromServer } from "./sync/itemSync";
@@ -99,11 +101,7 @@ function App() {
   };
 
   if (loading) {
-    return (
-      <div className="fade-in">
-        <CateringLoader />
-      </div>
-    );
+    return <CateringLoader />;
   }
 
   return (
@@ -132,6 +130,9 @@ function App() {
           )
         ) : (
           <Routes>
+            {/* LOADER DEMO */}
+            <Route path="/demo/loader" element={<LoaderDemo />} />
+
             {/* Existing dashboard */}
             <Route
               path="/*"

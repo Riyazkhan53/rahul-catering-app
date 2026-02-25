@@ -1,263 +1,206 @@
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { ChefHat, UtensilsCrossed, Sparkles } from "lucide-react";
+
+function useFillLoop() {
+  const [fillY, setFillY] = useState(100);
+
+  useEffect(() => {
+    let raf;
+    let start = null;
+    const duration = 3500;
+    const pause = 900;
+    let phase = "fill";
+
+    const tick = (now) => {
+      if (!start) start = now;
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      if (phase === "fill") setFillY(100 - eased * 100);
+      else setFillY(eased * 100);
+
+      if (progress < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        setTimeout(() => {
+          phase = phase === "fill" ? "drain" : "fill";
+          start = null;
+          raf = requestAnimationFrame(tick);
+        }, pause);
+      }
+    };
+
+    const init = setTimeout(() => { raf = requestAnimationFrame(tick); }, 400);
+    return () => { clearTimeout(init); cancelAnimationFrame(raf); };
+  }, []);
+
+  return fillY;
+}
+
+function useTransparentLogo(src) {
+  const [dataUrl, setDataUrl] = useState(null);
+
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const d = imageData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        // Remove near-white background
+        if (r > 225 && g > 225 && b > 225) {
+          d[i + 3] = 0;
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+      setDataUrl(canvas.toDataURL("image/png"));
+    };
+    img.src = src;
+  }, [src]);
+
+  return dataUrl;
+}
 
 export default function CateringLoader() {
+  const fillY = useFillLoop();
+  const logoUrl = useTransparentLogo("/Watermark_new.PNG");
+
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 dark:from-gray-900 dark:via-orange-900/20 dark:to-gray-900 flex items-center justify-center z-50">
-      <div className="relative">
-        {/* Main cooking animation */}
-        <div className="relative w-64 h-64 flex items-center justify-center">
-          
-          {/* Rotating plates background */}
-          <motion.div
-            className="absolute inset-0"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          >
-            {[...Array(8)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute top-1/2 left-1/2 w-8 h-8 bg-orange-200/30 dark:bg-orange-500/20 rounded-full"
-                style={{
-                  transform: `rotate(${i * 45}deg) translateY(-80px)`,
-                }}
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.25,
-                }}
-              />
-            ))}
-          </motion.div>
+    <div className="fixed inset-0 bg-white dark:bg-gray-950 flex flex-col items-center justify-center z-50">
 
-          {/* Center chef hat with bounce */}
-          <motion.div
-            className="relative z-10 bg-white dark:bg-gray-800 rounded-full p-8 shadow-2xl"
-            animate={{
-              y: [0, -20, 0],
-              rotate: [-5, 5, -5],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          >
-            <motion.div
-              animate={{
-                scale: [1, 1.1, 1],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-              }}
-            >
-              <ChefHat className="w-24 h-24 text-orange-500 dark:text-orange-400" />
-            </motion.div>
-            
-            {/* Steam effects */}
-            {[...Array(3)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute -top-2 left-1/2 w-2 h-2 bg-orange-300/40 dark:bg-orange-400/30 rounded-full"
-                style={{ x: -4 + i * 4 }}
-                animate={{
-                  y: [-10, -40],
-                  opacity: [0, 1, 0],
-                  scale: [0.5, 1.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.3,
-                  ease: "easeOut",
-                }}
-              />
-            ))}
-          </motion.div>
+      <div className="relative flex items-center justify-center" style={{ width: 220, height: 220 }}>
 
-          {/* Orbiting utensils */}
-          <motion.div
-            className="absolute inset-0"
-            animate={{ rotate: -360 }}
-            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-          >
-            <motion.div
-              className="absolute top-0 left-1/2 -ml-6"
-              whileHover={{ scale: 1.2 }}
-            >
-              <UtensilsCrossed className="w-12 h-12 text-orange-600 dark:text-orange-400" />
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            className="absolute inset-0"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-          >
-            <motion.div
-              className="absolute bottom-0 left-1/2 -ml-6"
-              animate={{
-                y: [0, -10, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-              }}
-            >
-              <div className="text-5xl">🍽️</div>
-            </motion.div>
-          </motion.div>
-
-          {/* Sparkles */}
-          {[...Array(6)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute"
+        {logoUrl ? (
+          <>
+            {/* Gold liquid fill — clipped to logo shape via CSS mask */}
+            <div
+              className="absolute inset-0"
               style={{
-                top: `${20 + Math.random() * 60}%`,
-                left: `${20 + Math.random() * 60}%`,
-              }}
-              animate={{
-                scale: [0, 1, 0],
-                opacity: [0, 1, 0],
-                rotate: [0, 180, 360],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                delay: i * 0.4,
-                ease: "easeInOut",
+                WebkitMaskImage: `url('${logoUrl}')`,
+                maskImage: `url('${logoUrl}')`,
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
               }}
             >
-              <Sparkles className="w-4 h-4 text-amber-400 dark:text-yellow-300" />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Text animation */}
-        <motion.div
-          className="text-center mt-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <motion.h2
-            className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent"
-            animate={{
-              scale: [1, 1.05, 1],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-            }}
-          >
-            Rahul Catering
-          </motion.h2>
-          
-          <motion.p
-            className="mt-2 text-gray-600 dark:text-gray-400"
-            animate={{
-              opacity: [0.5, 1, 0.5],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-            }}
-          >
-            Preparing delicious moments...
-          </motion.p>
-
-          {/* Loading dots */}
-          <div className="flex justify-center gap-2 mt-4">
-            {[...Array(3)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="w-3 h-3 bg-orange-500 dark:bg-orange-400 rounded-full"
-                animate={{
-                  y: [0, -12, 0],
-                }}
-                transition={{
-                  duration: 0.8,
-                  repeat: Infinity,
-                  delay: i * 0.15,
+              {/* Ghost fill (shows full logo faintly) */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: "linear-gradient(135deg, #8B6914, #D4A017, #FFD700, #D4A017, #8B6914)",
+                  opacity: 0.15,
                 }}
               />
-            ))}
-          </div>
-        </motion.div>
 
-        {/* Floating food emojis */}
-        <motion.div
-          className="absolute top-10 left-0 text-4xl"
-          animate={{
-            y: [0, -20, 0],
-            x: [0, 10, 0],
-            rotate: [0, 10, 0],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          🍛
-        </motion.div>
+              {/* Rising liquid */}
+              <div
+                className="absolute left-0 right-0"
+                style={{
+                  top: `${fillY}%`,
+                  bottom: 0,
+                  background: "linear-gradient(135deg, #8B6914 0%, #C8950F 30%, #FFD700 55%, #C8950F 75%, #8B6914 100%)",
+                }}
+              />
 
-        <motion.div
-          className="absolute top-20 right-0 text-4xl"
-          animate={{
-            y: [0, -15, 0],
-            x: [0, -10, 0],
-            rotate: [0, -10, 0],
-          }}
-          transition={{
-            duration: 3.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5,
-          }}
-        >
-          🥘
-        </motion.div>
+              {/* Wave on top of liquid */}
+              <motion.div
+                className="absolute left-0 right-0"
+                style={{ top: `${fillY}%`, height: 18, marginTop: -9 }}
+                animate={{ x: [0, -110, 0] }}
+                transition={{ duration: 2.2, repeat: Infinity, ease: "linear" }}
+              >
+                <svg
+                  viewBox="0 0 440 18"
+                  width="200%"
+                  height="18"
+                  preserveAspectRatio="none"
+                  style={{ display: "block" }}
+                >
+                  <path
+                    d="M0,9 Q55,0 110,9 Q165,18 220,9 Q275,0 330,9 Q385,18 440,9 L440,18 L0,18 Z"
+                    fill="#D4A017"
+                  />
+                </svg>
+              </motion.div>
 
-        <motion.div
-          className="absolute bottom-20 left-10 text-4xl"
-          animate={{
-            y: [0, -20, 0],
-            rotate: [0, 15, 0],
-          }}
-          transition={{
-            duration: 2.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.8,
-          }}
-        >
-          🍲
-        </motion.div>
+              {/* Second wave, offset */}
+              <motion.div
+                className="absolute left-0 right-0"
+                style={{ top: `${fillY}%`, height: 14, marginTop: -7 }}
+                animate={{ x: [0, 110, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              >
+                <svg
+                  viewBox="0 0 440 14"
+                  width="200%"
+                  height="14"
+                  preserveAspectRatio="none"
+                  style={{ display: "block" }}
+                >
+                  <path
+                    d="M0,7 Q55,14 110,7 Q165,0 220,7 Q275,14 330,7 Q385,0 440,7 L440,14 L0,14 Z"
+                    fill="#FFD700"
+                    opacity="0.5"
+                  />
+                </svg>
+              </motion.div>
+            </div>
 
-        <motion.div
-          className="absolute bottom-10 right-10 text-4xl"
-          animate={{
-            y: [0, -18, 0],
-            x: [0, 8, 0],
-            rotate: [0, -12, 0],
+            {/* Logo on top — crisp outline at low opacity as ghost */}
+            <img
+              src={logoUrl}
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+              style={{ opacity: 0.18 }}
+            />
+          </>
+        ) : (
+          // Tiny spinner while canvas processes the image
+          <div className="w-6 h-6 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+        )}
+
+        {/* Glow */}
+        <div
+          className="absolute inset-0 -z-10 blur-3xl rounded-full pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse, rgba(212,160,23,${(100 - fillY) / 200}) 0%, transparent 70%)`,
           }}
-          transition={{
-            duration: 2.8,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.3,
-          }}
-        >
-          🎂
-        </motion.div>
+        />
       </div>
+
+      {/* Divider */}
+      <motion.div
+        className="mt-6 h-px"
+        style={{ background: "linear-gradient(90deg, transparent, #D4A017, transparent)" }}
+        initial={{ width: 0, opacity: 0 }}
+        animate={{ width: 100, opacity: 1 }}
+        transition={{ delay: 0.8, duration: 0.7, ease: "easeOut" }}
+      />
+
+      {/* Dots */}
+      <motion.div
+        className="flex gap-2 mt-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+      >
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            className="w-1 h-1 rounded-full"
+            style={{ background: "linear-gradient(135deg, #B8860B, #FFD700)" }}
+            animate={{ y: [0, -5, 0], opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2, ease: "easeInOut" }}
+          />
+        ))}
+      </motion.div>
     </div>
   );
 }
