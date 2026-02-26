@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, Clock, Wallet, MessageSquare, ClipboardList, Inbox, Check, X, Eye, Users, UtensilsCrossed, Phone } from "lucide-react";
+import { TrendingUp, Clock, Wallet, MessageSquare, ClipboardList, Inbox, Check, X, Eye, Users, UtensilsCrossed, Phone, Trash2 } from "lucide-react";
 import AnimatedPage from "./AnimatedPage";
 import { apiRequest, isOfflineMode } from "../api/api";
 import MiniLoader from "../Components/MiniLoader";
@@ -53,6 +53,16 @@ export default function DashboardHome() {
 
   const unreadChatsCount = chats.filter((c) => c.unreadAdmin > 0).length;
 
+  const clearAllChats = async () => {
+    if (!window.confirm("Are you sure you want to delete all messages?")) return;
+    try {
+      await apiRequest("/api/chats/all", { method: "DELETE" });
+      setChats([]);
+    } catch (err) {
+      console.error("Failed to clear chats:", err);
+    }
+  };
+
   const updateStatus = async (id, status) => {
     try {
       await apiRequest(`/api/order-requests/${id}/status`, {
@@ -98,11 +108,22 @@ export default function DashboardHome() {
               <MessageSquare className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" />
             </div>
             <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Messages</h3>
-            {unreadChatsCount > 0 ? (
-              <span className="ml-auto px-2 py-0.5 text-xs font-bold bg-blue-500 text-white rounded-full">{unreadChatsCount} new</span>
-            ) : (
-              <span className="ml-auto text-xs font-medium text-gray-400 dark:text-gray-500">{chats.length} chats</span>
-            )}
+            <div className="ml-auto flex items-center gap-2">
+              {chats.length > 0 && (
+                <button
+                  onClick={clearAllChats}
+                  title="Clear all messages"
+                  className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-red-400 hover:text-red-500 transition"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {unreadChatsCount > 0 ? (
+                <span className="px-2 py-0.5 text-xs font-bold bg-blue-500 text-white rounded-full">{unreadChatsCount} new</span>
+              ) : (
+                <span className="text-xs font-medium text-gray-400 dark:text-gray-500">{chats.length} chats</span>
+              )}
+            </div>
           </div>
           <div className="max-h-80 overflow-y-auto">
             {loadingChats ? (

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { MessageSquare, Send, ArrowLeft, User, Clock, XCircle, Inbox } from "lucide-react";
+import { MessageSquare, Send, ArrowLeft, User, Clock, XCircle, Inbox, Trash2, X } from "lucide-react";
 import AnimatedPage from "./AnimatedPage";
 import { apiRequest, isOfflineMode } from "../api/api";
 import MiniLoader from "../Components/MiniLoader";
@@ -108,6 +108,16 @@ export default function Messages() {
     }
   };
 
+  const handleDeleteChat = async (chatId) => {
+    try {
+      await apiRequest(`/api/chats/${chatId}`, { method: "DELETE" });
+      setChats((prev) => prev.filter((c) => c._id !== chatId));
+      if (activeChat?._id === chatId) setActiveChat(null);
+    } catch (err) {
+      console.error("Failed to delete chat:", err);
+    }
+  };
+
   const formatTime = (dateStr) => {
     const d = new Date(dateStr);
     const now = new Date();
@@ -166,6 +176,8 @@ export default function Messages() {
                         chat={chat}
                         isActive={activeChat?._id === chat._id}
                         onClick={() => setActiveChat(chat)}
+                        onClose={() => handleCloseChat(chat._id)}
+                        onDelete={() => handleDeleteChat(chat._id)}
                         formatTime={formatTime}
                       />
                     ))}
@@ -180,6 +192,8 @@ export default function Messages() {
                         chat={chat}
                         isActive={activeChat?._id === chat._id}
                         onClick={() => setActiveChat(chat)}
+                        onClose={() => handleCloseChat(chat._id)}
+                        onDelete={() => handleDeleteChat(chat._id)}
                         formatTime={formatTime}
                       />
                     ))}
@@ -283,38 +297,134 @@ export default function Messages() {
   );
 }
 
-function ChatListItem({ chat, isActive, onClick, formatTime }) {
+function ChatListItem({ chat, isActive, onClick, onClose, onDelete, formatTime }) {
+  const [offsetX, setOffsetX] = useState(0);
+  const [swiping, setSwiping] = useState(false);
+  const startX = useRef(0);
+  const currentX = useRef(0);
+  const threshold = 70;
+
+  const handleTouchStart = (e) => {
+    startX.current = e.touches[0].clientX;
+    currentX.current = startX.current;
+    setSwiping(true);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!swiping) return;
+    currentX.current = e.touches[0].clientX;
+    const diff = currentX.current - startX.current;
+    // Clamp between -100 and 100
+    setOffsetX(Math.max(-100, Math.min(100, diff)));
+  };
+
+  const handleTouchEnd = () => {
+    setSwiping(false);
+    if (offsetX < -threshold) {
+      // Swiped left → delete
+      onDelete();
+    } else if (offsetX > threshold && chat.status === "active") {
+      // Swiped right → close
+      onClose();
+    }
+    setOffsetX(0);
+  };
+
+  // Mouse support for desktop
+  const handleMouseDown = (e) => {
+    startX.current = e.clientX;
+    currentX.current = startX.current;
+    setSwiping(true);
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e) => {
+    if (!swiping) return;
+    currentX.current = e.clientX;
+    const diff = currentX.current - startX.current;
+    setOffsetX(Math.max(-100, Math.min(100, diff)));
+  };
+
+  const handleMouseUp = () => {
+    if (!swiping) return;
+    handleTouchEnd();
+  };
+
+  useEffect(() => {
+    if (swiping) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [swiping]);
+
+  const isSwipedLeft = offsetX < -20;
+  const isSwipedRight = offsetX > 20;
+
   return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
-        isActive ? "bg-blue-50 dark:bg-blue-900/20 border-l-2 border-blue-500" : ""
-      }`}
-    >
-      <div className="relative">
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-amber-400 flex items-center justify-center text-white text-xs font-bold shrink-0">
-          {chat.visitorName.charAt(0).toUpperCase()}
+    <div className="relative overflow-hidden">
+      {/* Background actions revealed on swipe */}
+      {/* Left swipe → Delete (red bg on right side) */}
+      <div className="absolute inset-y-0 right-0 w-24 flex items-center justify-center bg-red-500 text-white">
+        <div className="flex flex-col items-center gap-0.5">
+          <Trash2 className="w-4 h-4" />
+          <span className="text-[10px] font-semibold">Delete</span>
         </div>
-        {chat.status === "active" && (
-          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full" />
-        )}
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{chat.visitorName}</p>
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 shrink-0">
-            {formatTime(chat.updatedAt)}
-          </span>
+      {/* Right swipe → Close (amber bg on left side) */}
+      {chat.status === "active" && (
+        <div className="absolute inset-y-0 left-0 w-24 flex items-center justify-center bg-amber-500 text-white">
+          <div className="flex flex-col items-center gap-0.5">
+            <XCircle className="w-4 h-4" />
+            <span className="text-[10px] font-semibold">Close</span>
+          </div>
         </div>
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{chat.lastMessage || "No messages yet"}</p>
-          {chat.unreadAdmin > 0 && (
-            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-500 text-white rounded-full shrink-0">
-              {chat.unreadAdmin}
-            </span>
+      )}
+
+      {/* Swipeable foreground */}
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onClick={() => { if (Math.abs(offsetX) < 5) onClick(); }}
+        style={{
+          transform: `translateX(${offsetX}px)`,
+          transition: swiping ? "none" : "transform 0.3s ease",
+        }}
+        className={`relative z-10 flex items-center gap-3 px-4 py-3 text-left cursor-pointer select-none
+          bg-white dark:bg-gray-800
+          ${isActive ? "bg-blue-50 dark:bg-blue-900/20 border-l-2 border-blue-500" : "hover:bg-gray-50 dark:hover:bg-gray-700/50"}
+        `}
+      >
+        <div className="relative">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-amber-400 flex items-center justify-center text-white text-xs font-bold shrink-0">
+            {chat.visitorName.charAt(0).toUpperCase()}
+          </div>
+          {chat.status === "active" && (
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full" />
           )}
         </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{chat.visitorName}</p>
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 shrink-0">
+              {formatTime(chat.updatedAt)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{chat.lastMessage || "No messages yet"}</p>
+            {chat.unreadAdmin > 0 && (
+              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-500 text-white rounded-full shrink-0">
+                {chat.unreadAdmin}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
-    </button>
+    </div>
   );
 }

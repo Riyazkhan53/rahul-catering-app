@@ -8,7 +8,8 @@ export async function startOrResumeChat(req, res) {
       return res.status(400).json({ message: "visitorName and sessionId are required" });
     }
 
-    let chat = await Chat.findOne({ sessionId });
+    // Only resume active chats — closed ones should not be reused
+    let chat = await Chat.findOne({ sessionId, status: "active" });
     if (!chat) {
       chat = await Chat.create({ visitorName, sessionId });
     }
@@ -132,6 +133,30 @@ export async function closeChat(req, res) {
     res.json(chat);
   } catch (err) {
     console.error("Error closing chat:", err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
+// AUTHENTICATED — delete a single chat
+export async function deleteChat(req, res) {
+  try {
+    const { chatId } = req.params;
+    const chat = await Chat.findByIdAndDelete(chatId);
+    if (!chat) return res.status(404).json({ message: "Chat not found" });
+    res.json({ message: "Chat deleted" });
+  } catch (err) {
+    console.error("Error deleting chat:", err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
+// AUTHENTICATED — delete all chats
+export async function deleteAllChats(req, res) {
+  try {
+    await Chat.deleteMany({});
+    res.json({ message: "All chats deleted" });
+  } catch (err) {
+    console.error("Error deleting all chats:", err);
     res.status(500).json({ message: err.message });
   }
 }
