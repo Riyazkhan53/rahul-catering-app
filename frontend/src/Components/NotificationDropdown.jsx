@@ -32,6 +32,17 @@ export default function NotificationDropdown() {
 
   const totalUnread = chats.reduce((sum, c) => sum + c.unreadAdmin, 0);
 
+  const handleNotificationClick = async (chat) => {
+    // Mark as read and remove from notification list
+    try {
+      await apiRequest(`/api/chats/${chat._id}/read`, { method: "PATCH" });
+    } catch {}
+    setChats((prev) => prev.filter((c) => c._id !== chat._id));
+    setOpen(false);
+    // Navigate to Messages tab with this chat selected
+    window.dispatchEvent(new CustomEvent("openChat", { detail: { chatId: chat._id } }));
+  };
+
   return (
     <div className="relative" ref={ref}>
       <button
@@ -73,7 +84,7 @@ export default function NotificationDropdown() {
             ) : (
               <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
                 {chats.map((chat) => (
-                  <div key={chat._id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition cursor-pointer">
+                  <div key={chat._id} onClick={() => handleNotificationClick(chat)} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition cursor-pointer">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg shrink-0">
                         <MessageSquare className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />

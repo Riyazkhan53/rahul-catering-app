@@ -39,6 +39,32 @@ export default function Messages() {
     return () => clearInterval(pollRef.current);
   }, []);
 
+  // Listen for openChat event from notifications
+  useEffect(() => {
+    const handler = (e) => {
+      const chatId = e.detail?.chatId;
+      if (chatId) {
+        // Find chat in current list or fetch fresh
+        const found = chats.find((c) => c._id === chatId);
+        if (found) {
+          setActiveChat(found);
+        } else {
+          // Fetch fresh and select
+          (async () => {
+            try {
+              const data = await apiRequest("/api/chats");
+              setChats(data);
+              const target = data.find((c) => c._id === chatId);
+              if (target) setActiveChat(target);
+            } catch {}
+          })();
+        }
+      }
+    };
+    window.addEventListener("openChat", handler);
+    return () => window.removeEventListener("openChat", handler);
+  }, [chats]);
+
   // Re-fetch when activeChat changes to keep polling in sync
   useEffect(() => {
     if (activeChat) {

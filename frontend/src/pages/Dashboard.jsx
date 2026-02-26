@@ -47,6 +47,13 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
     return () => window.removeEventListener("layoutModeChange", handler);
   }, []);
 
+  // Listen for openChat event from notifications to navigate to Messages tab
+  useEffect(() => {
+    const handler = () => setActiveTab("messages");
+    window.addEventListener("openChat", handler);
+    return () => window.removeEventListener("openChat", handler);
+  }, []);
+
   // Fetch role config (tabs + permissions) for the current user's role
   useEffect(() => {
     async function fetchRoleConfig() {
