@@ -13,6 +13,7 @@ import roleRoutes from "./routes/role.routes.js";
 import generatedQuotationRoutes from "./routes/generatedQuotation.routes.js";
 import generatedMenuPlanRoutes from "./routes/generatedMenuPlan.routes.js";
 import orderRequestRoutes from "./routes/orderRequest.routes.js";
+import chatRoutes from "./routes/chat.routes.js";
 
 const app = express();
 app.use(cors());
@@ -33,6 +34,7 @@ app.use("/api/roles", roleRoutes);
 app.use("/api/generated-quotations", generatedQuotationRoutes);
 app.use("/api/generated-menuplans", generatedMenuPlanRoutes);
 app.use("/api/order-requests", orderRequestRoutes);
+app.use("/api/chats", chatRoutes);
 
 // Global error handler — catches unhandled errors so responses never hang
 app.use((err, req, res, next) => {

@@ -15,6 +15,7 @@ import Invoice from "./InvoiceBilling/Invoice"
 import MenuListCreator from "./MenuListCreator/MenuListCreator"
 import useIsDesktop from "../hooks/uselsDesktop";
 import AppSettings from "./AppSettings/AppSettings";
+import Messages from "./Messages";
 import ProfileModal from "./Settings/Profile";
 import { apiRequest, isOfflineMode } from "../api/api";
 import { getAllUserRoles } from "../db/indexedDB";
@@ -119,6 +120,7 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
   const renderPage = () => {
     const pages = {
       dashboard: <DashboardHome />,
+      messages: <Messages />,
       orders: <Orders setActiveTab={setActiveTab} setOrderPrefill={setOrderPrefill} />,
       "add-order": <AddOrder setActiveTab={setActiveTab} prefill={orderPrefill} clearPrefill={() => setOrderPrefill(null)} />,
       "create-order": <CreateOrder setActiveTab={setActiveTab} />,

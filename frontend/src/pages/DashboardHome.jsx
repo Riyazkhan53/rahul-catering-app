@@ -8,6 +8,8 @@ import MiniLoader from "../Components/MiniLoader";
 export default function DashboardHome() {
   const [orderRequests, setOrderRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(true);
+  const [chats, setChats] = useState([]);
+  const [loadingChats, setLoadingChats] = useState(true);
 
   const stats = [
     { title: "Today's Orders", value: "24", icon: TrendingUp, color: "text-blue-500 dark:text-blue-400" },
@@ -30,6 +32,26 @@ export default function DashboardHome() {
     }
     fetchRequests();
   }, []);
+
+  useEffect(() => {
+    async function fetchChats() {
+      try {
+        if (!isOfflineMode()) {
+          const data = await apiRequest("/api/chats");
+          setChats(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch chats:", err);
+      } finally {
+        setLoadingChats(false);
+      }
+    }
+    fetchChats();
+    const interval = setInterval(fetchChats, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const unreadChatsCount = chats.filter((c) => c.unreadAdmin > 0).length;
 
   const updateStatus = async (id, status) => {
     try {
@@ -76,14 +98,57 @@ export default function DashboardHome() {
               <MessageSquare className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" />
             </div>
             <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Messages</h3>
-            <span className="ml-auto text-xs font-medium text-gray-400 dark:text-gray-500">0 new</span>
+            {unreadChatsCount > 0 ? (
+              <span className="ml-auto px-2 py-0.5 text-xs font-bold bg-blue-500 text-white rounded-full">{unreadChatsCount} new</span>
+            ) : (
+              <span className="ml-auto text-xs font-medium text-gray-400 dark:text-gray-500">{chats.length} chats</span>
+            )}
           </div>
-          <div className="flex flex-col items-center justify-center py-12 px-4">
-            <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-full mb-3">
-              <Inbox className="w-6 h-6 text-gray-400 dark:text-gray-500" />
-            </div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No messages yet</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Messages will appear here</p>
+          <div className="max-h-80 overflow-y-auto">
+            {loadingChats ? (
+              <div className="flex justify-center py-10">
+                <MiniLoader variant="inline" />
+              </div>
+            ) : chats.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 px-4">
+                <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-full mb-3">
+                  <Inbox className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+                </div>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No messages yet</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Website visitor chats will appear here</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                {chats.slice(0, 5).map((chat) => (
+                  <div key={chat._id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <div className="relative shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-amber-400 flex items-center justify-center text-white text-xs font-bold">
+                          {chat.visitorName.charAt(0).toUpperCase()}
+                        </div>
+                        {chat.status === "active" && (
+                          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{chat.visitorName}</p>
+                          <span className="text-[10px] text-gray-400 dark:text-gray-500 shrink-0">
+                            {new Date(chat.updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{chat.lastMessage || "No messages yet"}</p>
+                          {chat.unreadAdmin > 0 && (
+                            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-500 text-white rounded-full shrink-0">{chat.unreadAdmin}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </motion.div>
 

@@ -13,6 +13,7 @@ import {
   LogOut,
   User,
   ArrowLeftRight,
+  MessageSquare,
 } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 import MiniLoader from "../Components/MiniLoader";
@@ -20,6 +21,7 @@ import MiniLoader from "../Components/MiniLoader";
 // Master list of all possible sidebar tabs
 const ALL_MENU_ITEMS = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "messages", label: "Messages", icon: MessageSquare },
   { key: "orders", label: "Orders Management", icon: ClipboardList },
   { key: "menu", label: "Menu & Items Catalogue", icon: UtensilsCrossed },
   { key: "add-order", label: "New Order", icon: PlusCircle, badge: "⭐" },
@@ -32,8 +34,8 @@ const ALL_MENU_ITEMS = [
 
 // Fallback if role config hasn't loaded yet
 const FALLBACK_TABS = {
-  admin: ["dashboard", "orders", "menu", "settings", "setup", "appsettings"],
-  chef: ["dashboard", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
+  admin: ["dashboard", "messages", "orders", "menu", "settings", "setup", "appsettings"],
+  chef: ["dashboard", "messages", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
 };
 
 export default function Sidebar({
