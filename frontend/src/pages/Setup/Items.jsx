@@ -12,7 +12,7 @@ export default function Items() {
 
   return (
     <AnimatedPage>
-      {open != "list" && <div className="card p-5 sm:p-6 text-app w-full">
+      {!open && <div className="card p-5 sm:p-6 text-app w-full">
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <CardButton
@@ -32,9 +32,7 @@ export default function Items() {
       </div>}
 
       {open === "add" && (
-        <Modal title="Add New Item" onClose={() => setOpen(null)}>
-          <AddItem onClose={() => setOpen(null)} />
-        </Modal>
+        <AddItem onClose={() => setOpen(null)} />
       )}
 
       {open === "list"  && (

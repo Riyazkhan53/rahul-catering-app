@@ -47,10 +47,16 @@ const handleDelete = async (item) => {
   };
   const visibleItems = items.filter(item => !item.isDeleted);
 
-  const filteredItems =
+  const categoryOrder = itemsCategory.reduce((acc, cat, idx) => {
+    acc[cat.value] = idx;
+    return acc;
+  }, {});
+
+  const filteredItems = (
     activeTab === "all"
-      ? visibleItems
-      : visibleItems.filter(item => item.category === (TABS.find(tab => tab.id === activeTab)?.value || "all"));
+      ? [...visibleItems].sort((a, b) => (categoryOrder[a.category] ?? 999) - (categoryOrder[b.category] ?? 999))
+      : visibleItems.filter(item => item.category === (TABS.find(tab => tab.id === activeTab)?.value || "all"))
+  );
 
   return (
     <div className="w-full">
