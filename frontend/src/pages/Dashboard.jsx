@@ -19,6 +19,7 @@ import Messages from "./Messages";
 import ProfileModal from "./Settings/Profile";
 import { apiRequest, isOfflineMode } from "../api/api";
 import { getAllUserRoles } from "../db/indexedDB";
+import { loadRoleLabels } from "../utils/roleLabel";
 
 export default function Dashboard({ user, onLogout, onSwitchRole }) {
   const [activeTab, setActiveTab] = useState(() => {
@@ -85,6 +86,8 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
           }
         } catch {}
       }
+      // Populate role label cache for display purposes
+      await loadRoleLabels();
     }
     fetchRoleConfig();
   }, [user?.role]);

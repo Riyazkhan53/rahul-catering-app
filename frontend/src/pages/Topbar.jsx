@@ -5,6 +5,7 @@ import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../context/ToastContext";
 import MiniLoader from "../Components/MiniLoader";
 import NotificationDropdown from "../Components/NotificationDropdown";
+import { getRoleLabel } from "../utils/roleLabel";
 
 export default function Topbar({
   greeting,
@@ -36,10 +37,10 @@ export default function Topbar({
   const initial = (user?.name || user?.username || "U").charAt(0).toUpperCase();
 
   return (
-    <div className="relative flex justify-between items-center px-2 sm:px-6 py-2 sm:py-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+    <div className="relative z-50 flex justify-between items-center px-2 sm:px-6 py-2 sm:py-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
 
       {switchingRole && (
-        <MiniLoader variant="overlay" message={`Switching to ${switchingRole.charAt(0).toUpperCase() + switchingRole.slice(1)}...`} />
+        <MiniLoader variant="overlay" message={`Switching to ${getRoleLabel(switchingRole)}...`} />
       )}
 
       <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
@@ -103,7 +104,7 @@ export default function Topbar({
               {/* User info header */}
               <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
                 <p className="text-sm font-semibold truncate">{user?.name || user?.username || "User"}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role || "user"}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{getRoleLabel(user?.role)}</p>
               </div>
 
               {/* View Profile */}
@@ -127,7 +128,7 @@ export default function Topbar({
                       setSwitchingRole(role);
                       try {
                         await onSwitchRole?.(role);
-                        showToast(`Switched to ${role}`, "success");
+                        showToast(`Switched to ${getRoleLabel(role)}`, "success");
                       } catch {
                         showToast("Failed to switch role", "error");
                       } finally {
@@ -137,7 +138,7 @@ export default function Topbar({
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left"
                   >
                     <ArrowLeftRight className="w-4 h-4 text-gray-500" />
-                    Switch to {role.charAt(0).toUpperCase() + role.slice(1)}
+                    Switch to {getRoleLabel(role)}
                   </button>
                 ));
               })()}

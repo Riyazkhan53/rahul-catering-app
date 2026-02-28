@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 import MiniLoader from "../Components/MiniLoader";
+import { getRoleLabel } from "../utils/roleLabel";
 
 // Master list of all possible sidebar tabs
 const ALL_MENU_ITEMS = [
@@ -71,7 +72,7 @@ export default function Sidebar({
   return (
     <>
       {switchingRole && (
-        <MiniLoader variant="overlay" message={`Switching to ${switchingRole.charAt(0).toUpperCase() + switchingRole.slice(1)}...`} />
+        <MiniLoader variant="overlay" message={`Switching to ${getRoleLabel(switchingRole)}...`} />
       )}
 
       {/* Overlay for mobile only */}
@@ -183,7 +184,7 @@ export default function Sidebar({
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold truncate">{user?.name || user?.username || "User"}</p>
-              <p className="text-xs text-gray-400 capitalize">{user?.role || "user"}</p>
+              <p className="text-xs text-gray-400">{getRoleLabel(user?.role)}</p>
             </div>
           </div>
 
@@ -206,7 +207,7 @@ export default function Sidebar({
                   setSwitchingRole(r);
                   try {
                     await onSwitchRole?.(r);
-                    showToast(`Switched to ${r}`, "success");
+                    showToast(`Switched to ${getRoleLabel(r)}`, "success");
                   } catch {
                     showToast("Failed to switch role", "error");
                   } finally {
@@ -217,7 +218,7 @@ export default function Sidebar({
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
               >
                 <ArrowLeftRight className="w-4 h-4 text-gray-400" />
-                Switch to {r.charAt(0).toUpperCase() + r.slice(1)}
+                Switch to {getRoleLabel(r)}
               </button>
             ))}
             <button

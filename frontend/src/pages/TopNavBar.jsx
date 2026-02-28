@@ -25,6 +25,7 @@ import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../context/ToastContext";
 import MiniLoader from "../Components/MiniLoader";
 import NotificationDropdown from "../Components/NotificationDropdown";
+import { getRoleLabel } from "../utils/roleLabel";
 
 const ALL_MENU_ITEMS = [
   { key: "dashboard", label: "Dashboard", shortLabel: "Home", icon: LayoutDashboard },
@@ -108,9 +109,9 @@ export default function TopNavBar({
   };
 
   return (
-    <div className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 shadow-sm">
+    <div className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 shadow-sm">
       {switchingRole && (
-        <MiniLoader variant="overlay" message={`Switching to ${switchingRole.charAt(0).toUpperCase() + switchingRole.slice(1)}...`} />
+        <MiniLoader variant="overlay" message={`Switching to ${getRoleLabel(switchingRole)}...`} />
       )}
       {/* Top row: branding + controls */}
       <div className="flex items-center justify-between px-2 sm:px-4 py-1.5 sm:py-2">
@@ -159,7 +160,7 @@ export default function TopNavBar({
               <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
                 <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
                   <p className="text-sm font-semibold truncate">{user?.name || user?.username || "User"}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role || "user"}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{getRoleLabel(user?.role)}</p>
                 </div>
                 <button
                   onClick={() => { setProfileOpen(false); onViewProfile?.(); }}
@@ -173,14 +174,14 @@ export default function TopNavBar({
                     onClick={async () => {
                       setProfileOpen(false);
                       setSwitchingRole(r);
-                      try { await onSwitchRole?.(r); showToast(`Switched to ${r}`, "success"); }
+                      try { await onSwitchRole?.(r); showToast(`Switched to ${getRoleLabel(r)}`, "success"); }
                       catch { showToast("Failed to switch role", "error"); }
                       finally { setSwitchingRole(null); }
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left"
                   >
                     <ArrowLeftRight className="w-4 h-4 text-gray-500" />
-                    Switch to {r.charAt(0).toUpperCase() + r.slice(1)}
+                    Switch to {getRoleLabel(r)}
                   </button>
                 ))}
                 <div className="border-t border-gray-100 dark:border-gray-700 my-1" />

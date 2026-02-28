@@ -3,6 +3,7 @@ import { Pencil, Save, X, Shield } from "lucide-react";
 import Modal from "../../Components/Modal";
 import { apiRequest } from "../../api/api";
 import { useToast } from "../../context/ToastContext";
+import { getRoleLabel } from "../../utils/roleLabel";
 
 export default function ChefListModal({ onClose }) {
   const [chefs, setChefs] = useState([]);
@@ -96,7 +97,7 @@ export default function ChefListModal({ onClose }) {
               <div className="flex items-center gap-2 flex-wrap justify-end">
                 {/* Primary role badge */}
                 <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full uppercase">
-                  {chef.role}
+                  {getRoleLabel(chef.role)}
                 </span>
                 {/* Additional role badges */}
                 {(chef.additional_roles || []).map((r) => (
@@ -104,7 +105,7 @@ export default function ChefListModal({ onClose }) {
                     key={r}
                     className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-full font-medium uppercase"
                   >
-                    {r}
+                    {getRoleLabel(r)}
                   </span>
                 ))}
                 {editingId !== chef._id && (

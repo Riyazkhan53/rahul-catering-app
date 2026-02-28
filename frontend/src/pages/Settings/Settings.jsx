@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Settings as SettingsIcon, Users, Shield } from "lucide-react";
+import { Settings as SettingsIcon, Users, Shield, Sliders } from "lucide-react";
 import CreateChefModal from "./CreateUser"
 import ChefListModal from "./UsersList";
 import ChangePasswordModal from "./ChangePassword";
 import RoleSettings from "../Setup/RoleSettings";
+import RoleSetup from "../Setup/RoleSetup";
 
 export default function Settings({ user }) {
   const [modal, setModal] = useState(null);
@@ -49,6 +50,15 @@ export default function Settings({ user }) {
           Role Management
         </h3>
         <RoleSettings />
+      </div>
+
+      {/* Role Configuration Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 sm:p-6 shadow-sm">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-4">
+          <Sliders className="w-4.5 h-4.5 text-purple-500" />
+          Role Configuration
+        </h3>
+        <RoleSetup />
       </div>
 
       {modal === "create" && <CreateChefModal onClose={() => setModal(null)} />}

@@ -134,10 +134,29 @@ export default function RoleSetup() {
     setPermissions(JSON.parse(JSON.stringify(existingPerms)));
   };
 
+  // Tabs that are admin-only and should be disabled for other roles
+  const ADMIN_ONLY_TABS = ["settings"];
+
+  const isTabDisabled = (tabKey) => {
+    return ADMIN_ONLY_TABS.includes(tabKey) && selectedRole?.id !== "admin";
+  };
+
   const handleToggleTab = (tabKey) => {
+    if (isTabDisabled(tabKey)) return;
     setTabConfig((prev) =>
       prev.includes(tabKey) ? prev.filter((k) => k !== tabKey) : [...prev, tabKey]
     );
+  };
+
+  const handleCheckAllTabs = (value) => {
+    if (value) {
+      // Check all — but skip admin-only tabs for non-admin roles
+      const allKeys = ALL_TABS.filter((t) => !isTabDisabled(t.key)).map((t) => t.key);
+      setTabConfig(allKeys);
+    } else {
+      // Uncheck all — keep admin-only tabs if they were on for admin
+      setTabConfig([]);
+    }
   };
 
   const handleTogglePermission = (section, action) => {
@@ -266,37 +285,57 @@ export default function RoleSetup() {
             {activeSetupTab === "general" ? (
               /* ---- GENERAL SETUP: Tab visibility ---- */
               <div className="space-y-2">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                  Select which sidebar tabs are visible for this role.
-                </p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Select which sidebar tabs are visible for this role.
+                  </p>
+                  <button
+                    onClick={() => {
+                      const selectableCount = ALL_TABS.filter((t) => !isTabDisabled(t.key)).length;
+                      const checkedCount = tabConfig.filter((k) => !isTabDisabled(k)).length;
+                      handleCheckAllTabs(checkedCount < selectableCount);
+                    }}
+                    className="text-xs font-medium text-orange-500 hover:text-orange-600 transition whitespace-nowrap ml-3"
+                  >
+                    {tabConfig.filter((k) => !isTabDisabled(k)).length >= ALL_TABS.filter((t) => !isTabDisabled(t.key)).length
+                      ? "Uncheck All"
+                      : "Check All"}
+                  </button>
+                </div>
                 {ALL_TABS.map((tab) => {
                   const Icon = tab.icon;
                   const isChecked = tabConfig.includes(tab.key);
+                  const disabled = isTabDisabled(tab.key);
                   return (
                     <motion.label
                       key={tab.key}
-                      whileTap={{ scale: 0.98 }}
-                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                        isChecked
-                          ? "bg-orange-50 dark:bg-orange-900/10 border-orange-300 dark:border-orange-700"
-                          : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                      whileTap={disabled ? {} : { scale: 0.98 }}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                        disabled
+                          ? "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed"
+                          : isChecked
+                            ? "bg-orange-50 dark:bg-orange-900/10 border-orange-300 dark:border-orange-700 cursor-pointer"
+                            : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 cursor-pointer"
                       }`}
                     >
                       <div
                         className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${
-                          isChecked ? "bg-orange-500 border-orange-500" : "border-gray-300 dark:border-gray-600"
+                          disabled
+                            ? "bg-gray-300 dark:bg-gray-600 border-gray-300 dark:border-gray-600"
+                            : isChecked ? "bg-orange-500 border-orange-500" : "border-gray-300 dark:border-gray-600"
                         }`}
                       >
                         {isChecked && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
                       </div>
-                      <Icon className={`w-4 h-4 shrink-0 ${isChecked ? "text-orange-500" : "text-gray-400 dark:text-gray-500"}`} />
+                      <Icon className={`w-4 h-4 shrink-0 ${disabled ? "text-gray-400 dark:text-gray-500" : isChecked ? "text-orange-500" : "text-gray-400 dark:text-gray-500"}`} />
                       <div className="flex-1 min-w-0">
-                        <span className={`text-sm font-medium ${isChecked ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-400"}`}>
+                        <span className={`text-sm font-medium ${disabled ? "text-gray-400 dark:text-gray-500" : isChecked ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-400"}`}>
                           {tab.label}
+                          {disabled && <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">Admin Only</span>}
                         </span>
                         <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{tab.description}</p>
                       </div>
-                      <input type="checkbox" checked={isChecked} onChange={() => handleToggleTab(tab.key)} className="sr-only" />
+                      <input type="checkbox" checked={isChecked} onChange={() => handleToggleTab(tab.key)} disabled={disabled} className="sr-only" />
                     </motion.label>
                   );
                 })}
