@@ -73,6 +73,13 @@ export const picklistService = {
     });
   },
 
+  reorder(picklist, items) {
+    return apiRequest(`/api/picklist/${picklist}/reorder`, {
+      method: "PUT",
+      body: { items },
+    });
+  },
+
   delete(picklist, id) {
     return apiRequest(`/api/picklist/${picklist}/${id}`, {
       method: "DELETE",

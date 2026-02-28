@@ -67,6 +67,34 @@ export async function updatePicklistItem(req, res) {
   }
 }
 
+/* ---------------- REORDER --------------- */
+export async function reorderPicklist(req, res) {
+  try {
+    const { picklist } = req.params;
+    const { items } = req.body; // [{id, order}, ...]
+
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ message: "items array required" });
+    }
+
+    await Promise.all(
+      items.map(({ id, order }) =>
+        Picklist.findOneAndUpdate(
+          { _id: id, picklist },
+          { order },
+          { new: true }
+        )
+      )
+    );
+
+    const updated = await Picklist.find({ picklist, active: true }).sort({ order: 1 });
+    res.json(updated);
+  } catch (err) {
+    console.error("reorderPicklist error:", err);
+    res.status(500).json({ message: "Failed to reorder picklist" });
+  }
+}
+
 /* ---------------- DELETE ---------------- */
 export async function deletePicklistItem(req, res) {
   try {

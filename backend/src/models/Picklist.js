@@ -8,6 +8,11 @@ const PicklistSchema = new mongoose.Schema(
       index: true,
     },
 
+    item_id: {
+      type: String,
+      default: null,
+    },
+
     category: {
       type: String,
       default: null,

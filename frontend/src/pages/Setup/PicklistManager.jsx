@@ -11,6 +11,8 @@ import {
   Search,
   ListFilter,
   RefreshCw,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { picklistService } from "../../api/service";
 import { useToast } from "../../context/ToastContext";
@@ -25,31 +27,37 @@ const PICKLIST_TYPES = [
     key: "item_category",
     label: "Item Category",
     description: "Raw material categories (Vegetables, Spices, etc.)",
+    idPrefix: "cat",
   },
   {
     key: "unit",
     label: "Units",
     description: "Measurement units (kg, litre, piece, etc.)",
+    idPrefix: "unit",
   },
   {
     key: "event_type",
     label: "Event Type",
     description: "Types of events (Wedding, Birthday, etc.)",
+    idPrefix: "evt",
   },
   {
     key: "dish_category",
     label: "Dish Category",
     description: "Food categories (Starter, Main Course, etc.)",
+    idPrefix: "dcat",
   },
   {
     key: "service_type",
     label: "Service Type",
     description: "Additional services (Decoration, Tent, etc.)",
+    idPrefix: "svc",
   },
   {
     key: "payment_mode",
     label: "Payment Mode",
     description: "Payment methods (Cash, UPI, Bank Transfer, etc.)",
+    idPrefix: "pay",
   },
 ];
 
@@ -72,6 +80,9 @@ export default function PicklistManager() {
 
   // Delete state
   const [deleteLoading, setDeleteLoading] = useState(null);
+
+  // Reorder state
+  const [reorderLoading, setReorderLoading] = useState(false);
 
   // Sync status
   const [syncing, setSyncing] = useState(false);
@@ -137,6 +148,17 @@ export default function PicklistManager() {
     });
   };
 
+  const generateItemId = () => {
+    const typeConfig = PICKLIST_TYPES.find((t) => t.key === activeType);
+    const prefix = typeConfig?.idPrefix || "id";
+    const maxNum = items.reduce((max, item) => {
+      if (!item.item_id) return max;
+      const match = item.item_id.match(new RegExp(`^${prefix}_(\\d+)$`));
+      return match ? Math.max(max, parseInt(match[1], 10)) : max;
+    }, 0);
+    return `${prefix}_${maxNum + 1}`;
+  };
+
   const handleAdd = async () => {
     if (!addForm.code.trim() || !addForm.label.trim()) {
       showToast("Code and Label are required", "error");
@@ -146,6 +168,7 @@ export default function PicklistManager() {
     setAddLoading(true);
     try {
       const newItem = await picklistService.add(activeType, {
+        item_id: generateItemId(),
         code: addForm.code.trim().toUpperCase(),
         label: addForm.label.trim(),
         value: addForm.value.trim() || addForm.label.trim().toLowerCase().replace(/\s+/g, "_"),
@@ -214,6 +237,34 @@ export default function PicklistManager() {
       showToast("Failed to delete item", "error");
     } finally {
       setDeleteLoading(null);
+    }
+  };
+
+  const handleMove = async (index, direction) => {
+    const swapIndex = direction === "up" ? index - 1 : index + 1;
+    if (swapIndex < 0 || swapIndex >= items.length) return;
+
+    const reordered = [...items];
+    [reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
+    const withOrder = reordered.map((item, i) => ({ ...item, order: i }));
+
+    // Optimistic update
+    updateLocalData(activeType, () => withOrder);
+
+    setReorderLoading(true);
+    try {
+      const updated = await picklistService.reorder(
+        activeType,
+        withOrder.map((item) => ({ id: item._id, order: item.order }))
+      );
+      updateLocalData(activeType, () => updated);
+    } catch (err) {
+      console.error("Reorder failed:", err);
+      showToast("Reorder failed", "error");
+      // Revert
+      updateLocalData(activeType, () => items);
+    } finally {
+      setReorderLoading(false);
     }
   };
 
@@ -379,9 +430,11 @@ export default function PicklistManager() {
         <div className="space-y-2">
           {/* Table Header */}
           <div className="hidden sm:grid grid-cols-12 gap-3 px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <div className="col-span-1"></div>
+            <div className="col-span-1">ID</div>
             <div className="col-span-2">Code</div>
-            <div className="col-span-4">Label</div>
-            <div className="col-span-4">Value</div>
+            <div className="col-span-3">Label</div>
+            <div className="col-span-3">Value</div>
             <div className="col-span-2 text-right">Actions</div>
           </div>
 
@@ -397,6 +450,7 @@ export default function PicklistManager() {
                 /* Edit Mode */
                 <div className="p-3 sm:p-4">
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                    <div className="sm:col-span-1" />
                     <input
                       type="text"
                       value={editForm.code}
@@ -421,7 +475,7 @@ export default function PicklistManager() {
                       onChange={(e) =>
                         setEditForm({ ...editForm, value: e.target.value })
                       }
-                      className="sm:col-span-4 border border-orange-300 dark:border-orange-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 outline-none"
+                      className="sm:col-span-3 border border-orange-300 dark:border-orange-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 outline-none"
                       placeholder="Value"
                     />
                     <div className="sm:col-span-2 flex justify-end gap-1">
@@ -450,15 +504,37 @@ export default function PicklistManager() {
               ) : (
                 /* View Mode */
                 <div className="grid grid-cols-12 gap-3 items-center p-3 sm:p-4">
+                  {/* Sort Arrows */}
+                  <div className="col-span-1 flex flex-col items-center gap-0.5">
+                    <button
+                      onClick={() => handleMove(index, "up")}
+                      disabled={index === 0 || reorderLoading || !!search}
+                      className="p-0.5 text-gray-400 hover:text-orange-500 disabled:opacity-20 disabled:cursor-not-allowed transition"
+                      title="Move up"
+                    >
+                      <ChevronUp className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleMove(index, "down")}
+                      disabled={index === items.length - 1 || reorderLoading || !!search}
+                      className="p-0.5 text-gray-400 hover:text-orange-500 disabled:opacity-20 disabled:cursor-not-allowed transition"
+                      title="Move down"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="col-span-11 sm:col-span-1 text-xs text-gray-400 dark:text-gray-500 font-mono">
+                    {item.item_id || "—"}
+                  </div>
                   <div className="col-span-12 sm:col-span-2">
                     <span className="inline-block bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-bold px-2.5 py-1 rounded-md">
                       {item.code}
                     </span>
                   </div>
-                  <div className="col-span-6 sm:col-span-4 font-medium text-gray-900 dark:text-gray-100 text-sm">
+                  <div className="col-span-6 sm:col-span-3 font-medium text-gray-900 dark:text-gray-100 text-sm">
                     {item.label}
                   </div>
-                  <div className="col-span-6 sm:col-span-4 text-gray-500 dark:text-gray-400 text-sm truncate">
+                  <div className="col-span-6 sm:col-span-3 text-gray-500 dark:text-gray-400 text-sm truncate">
                     {item.value}
                   </div>
                   <div className="col-span-12 sm:col-span-2 flex justify-end gap-1">
