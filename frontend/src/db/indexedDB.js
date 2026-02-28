@@ -337,11 +337,18 @@ export async function getItemByCode(code) {
 }
 
 
-export async function clearIndexedDB(dbName) {
+export async function clearIndexedDB() {
+  const db = await openDB();
+  const storeNames = Array.from(db.objectStoreNames);
+  if (storeNames.length === 0) return;
+
   return new Promise((resolve, reject) => {
-    const req = indexedDB.deleteDatabase(dbName);
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
+    const tx = db.transaction(storeNames, "readwrite");
+    for (const name of storeNames) {
+      tx.objectStore(name).clear();
+    }
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
   });
 }
 

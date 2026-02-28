@@ -3,7 +3,6 @@ import {
   updateItem,
   saveItem,
   clearIndexedDB,
-  openDB,
   getPendingGeneratedLists,
   saveGeneratedList,
   updateGeneratedList,
@@ -129,9 +128,7 @@ export async function masterSync(setProgress, setStatus) {
   setStatus?.("Clearing local data…");
   setProgress(5);
   try {
-    await clearIndexedDB("rahul_catering_db");
-    // Recreate DB + all object stores immediately after delete
-    await openDB();
+    await clearIndexedDB();
   } catch (err) {
     console.error("Clear DB failed:", err);
     throw new Error("Failed to clear local data");

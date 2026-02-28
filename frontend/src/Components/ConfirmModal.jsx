@@ -77,13 +77,12 @@ export default function ConfirmModal({
         {/* Actions */}
         <div className="flex justify-end gap-2 sm:gap-3">
           <button
-            disabled={loading}
             onClick={onCancel}
             className="px-3 sm:px-4 py-2 rounded-lg text-sm
                        bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300
-                       disabled:opacity-50 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                       hover:bg-gray-200 dark:hover:bg-gray-700 transition"
           >
-            {cancelText}
+            {loading ? "Close" : cancelText}
           </button>
 
           <button
