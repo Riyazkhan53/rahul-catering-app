@@ -28,6 +28,7 @@ import {
   getAllCalendarTodos,
   saveNoteForDate,
   getAllCalendarNotes,
+  getAllOrders,
 } from "../../db/indexedDB";
 import { eventDatesService } from "../../api/service";
 import { useToast } from "../../context/ToastContext";
@@ -43,7 +44,7 @@ const SHORT_MONTHS = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ];
 
-export default function OrdersCalender({ onCreateOrder }) {
+export default function OrdersCalender({ onCreateOrder, onEditOrder }) {
   const today = new Date();
   const { showToast } = useToast();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -70,6 +71,8 @@ export default function OrdersCalender({ onCreateOrder }) {
   const [modalTodos, setModalTodos] = useState([]);
   const [modalNote, setModalNote] = useState("");
   const [newTodoText, setNewTodoText] = useState("");
+
+  const [allOrders, setAllOrders] = useState([]);
 
   /* Month navigation */
   const prevMonth = useCallback(() => {
@@ -115,6 +118,7 @@ export default function OrdersCalender({ onCreateOrder }) {
     getAllEvents().then(setEvents);
     getAllCalendarTodos().then(setAllTodos);
     getAllCalendarNotes().then(setAllNotes);
+    getAllOrders().then((o) => setAllOrders(o || [])).catch(() => {});
   }, []);
 
   const isPast = (date) => {
@@ -167,6 +171,14 @@ export default function OrdersCalender({ onCreateOrder }) {
       x: dir > 0 ? -300 : 300,
       opacity: 0,
     }),
+  };
+
+  // Find orders that have a day matching the selected date
+  const getOrdersForDate = (dateKey) => {
+    if (!dateKey || !allOrders.length) return [];
+    return allOrders.filter((order) =>
+      order.days?.some((d) => d.date === dateKey)
+    );
   };
 
   return (
@@ -603,6 +615,39 @@ export default function OrdersCalender({ onCreateOrder }) {
                     <Plus className="w-4 h-4" />
                     Add another event
                   </button>
+
+                  {/* Existing orders for this date */}
+                  {(() => {
+                    const dateOrders = getOrdersForDate(selectedDate);
+                    if (dateOrders.length === 0) return null;
+                    return (
+                      <div className="space-y-2 mb-2">
+                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Existing Orders
+                        </p>
+                        {dateOrders.map((order) => (
+                          <button
+                            key={order.orderId}
+                            onClick={() => {
+                              setShowModal(false);
+                              if (onEditOrder) onEditOrder(order);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-orange-200 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition text-left"
+                          >
+                            <Pencil className="w-4 h-4 text-orange-500 shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                {order.clientName} — {order.orderNumber}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {order.functionType} · {order.orderType}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
 
                   {onCreateOrder && (
                     <button

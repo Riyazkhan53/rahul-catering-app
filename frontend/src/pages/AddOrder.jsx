@@ -47,11 +47,14 @@ const needsPax  = (type) => type !== "Only Service";
 const needsBoys = (type) => type !== "Only Cooking";
 
 export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
-  const [orderType, setOrderType] = useState("");
-  const [clientName, setClientName] = useState(prefill?.clientName || "");
-  const [mobile, setMobile] = useState(prefill?.mobile || "");
-  const [functionType, setFunctionType] = useState("Wedding");
-  const [days, setDays] = useState(prefill?.days || 0);
+  const editOrder = prefill?.editOrder || null;
+  const isEditing = !!editOrder;
+
+  const [orderType, setOrderType] = useState(editOrder?.orderType || "");
+  const [clientName, setClientName] = useState(editOrder?.clientName || prefill?.clientName || "");
+  const [mobile, setMobile] = useState(editOrder?.mobile || prefill?.mobile || "");
+  const [functionType, setFunctionType] = useState(editOrder?.functionType || "Wedding");
+  const [days, setDays] = useState(editOrder?.days?.length || prefill?.days || 0);
   const { showToast } = useToast();
 
   const [orderDays, setOrderDays] = useState([]);
@@ -67,16 +70,22 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
 
   /* ---------- Apply prefill on mount ---------- */
   useEffect(() => {
-    if (prefill?.date && prefill?.days) {
+    if (editOrder) {
+      // Editing: populate day-wise data from existing order
+      setOrderDays(editOrder.days || []);
+      setExpandedDay(0);
+    } else if (prefill?.date && prefill?.days) {
       setDays(prefill.days);
     }
-    if (prefill?.clientName) setClientName(prefill.clientName);
-    if (prefill?.mobile) setMobile(prefill.mobile);
+    if (!editOrder && prefill?.clientName) setClientName(prefill.clientName);
+    if (!editOrder && prefill?.mobile) setMobile(prefill.mobile);
     return () => { if (clearPrefill) clearPrefill(); };
   }, []);
 
   /* ---------- Generate Days ---------- */
   useEffect(() => {
+    // Skip auto-generation if editing (days are populated from editOrder above)
+    if (isEditing) return;
     if (days > 0) {
       const generated = Array.from({ length: days }, (_, i) => ({
         day: i + 1,
@@ -124,15 +133,17 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
 
   /* ---------- Build order object ---------- */
   const buildOrder = () => ({
-    orderId: uuid(),
-    orderNumber: `#RCE${Date.now().toString().slice(-6)}`,
+    orderId: isEditing ? editOrder.orderId : uuid(),
+    orderNumber: isEditing ? editOrder.orderNumber : `#RCE${Date.now().toString().slice(-6)}`,
     orderType,
     clientName,
     mobile,
     functionType,
     days: orderDays,
-    status: "pending",
-    createdAt: Date.now(),
+    status: isEditing ? editOrder.status : "pending",
+    createdAt: isEditing ? editOrder.createdAt : Date.now(),
+    updatedAt: isEditing ? Date.now() : undefined,
+    attachedDocs: isEditing ? editOrder.attachedDocs : undefined,
   });
 
   /* ---------- Actually save the order ---------- */
@@ -142,26 +153,28 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
     try {
       await saveOrder(pendingOrder);
 
-      // Bookmark each day in the Orders Calendar
-      for (const d of pendingOrder.days) {
-        if (d.date) {
-          try {
-            const existing = await getEventsByDate(d.date);
-            const calendarEvent = {
-              id: crypto.randomUUID(),
-              title: `${pendingOrder.functionType} - ${pendingOrder.orderNumber}`,
-              client: pendingOrder.clientName,
-              contact: pendingOrder.mobile,
-              notes: `${pendingOrder.orderType} · Day ${d.day}`,
-            };
-            const updated = [...existing, calendarEvent];
-            await saveEventsByDate(d.date, updated);
-            eventDatesService.saveByDate(d.date, updated).catch(() => {});
-          } catch (_) {}
+      // Bookmark each day in the Orders Calendar (only for new orders)
+      if (!isEditing) {
+        for (const d of pendingOrder.days) {
+          if (d.date) {
+            try {
+              const existing = await getEventsByDate(d.date);
+              const calendarEvent = {
+                id: crypto.randomUUID(),
+                title: `${pendingOrder.functionType} - ${pendingOrder.orderNumber}`,
+                client: pendingOrder.clientName,
+                contact: pendingOrder.mobile,
+                notes: `${pendingOrder.orderType} · Day ${d.day}`,
+              };
+              const updated = [...existing, calendarEvent];
+              await saveEventsByDate(d.date, updated);
+              eventDatesService.saveByDate(d.date, updated).catch(() => {});
+            } catch (_) {}
+          }
         }
       }
 
-      showToast("Order created successfully!", "success");
+      showToast(isEditing ? "Order updated successfully!" : "Order created successfully!", "success");
       setSavedOrderNumber(pendingOrder.orderNumber);
       setShowConfirm(false);
 
@@ -194,9 +207,9 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
       <div className="bg-gradient-to-r from-orange-500 to-amber-500 dark:from-orange-600 dark:to-amber-600 rounded-t-2xl px-6 py-5 sm:px-8 sm:py-6">
         <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
           <CalendarDays className="w-6 h-6" />
-          New Order Booking
+          {isEditing ? `Edit Order ${editOrder.orderNumber}` : "New Order Booking"}
         </h2>
-        <p className="text-white/80 text-sm mt-1">Fill in the details to create a new catering order</p>
+        <p className="text-white/80 text-sm mt-1">{isEditing ? "Update the order details below" : "Fill in the details to create a new catering order"}</p>
       </div>
 
       <div className="bg-white dark:bg-gray-800 shadow-xl rounded-b-2xl p-5 sm:p-8 space-y-8">
@@ -499,7 +512,7 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
                 <div>
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
                     <AlertCircle className="w-5 h-5" />
-                    Confirm Order
+                    {isEditing ? "Update Order" : "Confirm Order"}
                   </h3>
                   <p className="text-white/80 text-sm mt-0.5">{pendingOrder.orderNumber}</p>
                 </div>
@@ -596,7 +609,7 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold text-sm shadow-md transition disabled:opacity-50"
                     >
                       <SkipForward className="w-4 h-4" />
-                      {saving ? "Creating..." : "Skip & Create Order"}
+                      {saving ? (isEditing ? "Updating..." : "Creating...") : isEditing ? "Save & Go to Orders" : "Skip & Create Order"}
                     </button>
                   </div>
                 </div>
