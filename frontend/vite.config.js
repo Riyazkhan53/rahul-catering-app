@@ -8,13 +8,24 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["demotion/is-prop-valid"],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          motion: ['framer-motion'],
+          icons: ['lucide-react'],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
       disable: isElectron,
       registerType: 'prompt',
       workbox: {
-        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4MB
         cleanupOutdatedCaches: true,
         skipWaiting: false,
         clientsClaim: true,
