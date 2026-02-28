@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { saveDish, getDishesByCategory } from "../../db/indexedDB";
+import { aiService } from "../../api/service";
 import { useToast } from "../../context/ToastContext";
 import { toTamilSmart } from "../../utils/toTamilSmart";
 import { uuid } from "../../utils/uuid";
@@ -10,6 +11,7 @@ import { Input, Select, Textarea, FormField, PrimaryButton } from "../../Compone
 
 export default function AddDish({ onClose, onSaved }) {
   const { showToast } = useToast();
+  const [aiLoading, setAiLoading] = useState(false);
   const [form, setForm] = useState({
     dishId: uuid(),
     name: "",
@@ -40,6 +42,28 @@ export default function AddDish({ onClose, onSaved }) {
       }
     })();
   }, [form.category]);
+
+  const handleAIGenerate = async () => {
+    if (!form.name) {
+      showToast("Enter dish name first", "error");
+      return;
+    }
+
+    try {
+      setAiLoading(true);
+      const res = await aiService.autoGenerateItem(form.name);
+      setForm((prev) => ({
+        ...prev,
+        tamilName: res.tamilName || prev.tamilName,
+        description: res.description || prev.description,
+      }));
+      showToast("AI generated details", "success");
+    } catch (err) {
+      showToast("AI generation failed", "error");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleChange = (key, value) => {
     setForm({ ...form, [key]: value });
@@ -80,19 +104,62 @@ export default function AddDish({ onClose, onSaved }) {
           }
         >
           <FormField label="Dish Name (English)">
-            <Input
-              placeholder="Enter dish name"
-              value={form.name}
-              onChange={(e) => {
-                const value = e.target.value;
-                setForm((prev) => ({
-                  ...prev,
-                  name: value,
-                  tamilName: toTamilSmart(value),
-                }));
-              }}
-              required
-            />
+            <div className="relative flex items-center gap-2">
+              <Input
+                placeholder="Enter dish name"
+                value={form.name}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setForm((prev) => ({
+                    ...prev,
+                    name: value,
+                    tamilName: toTamilSmart(value),
+                  }));
+                }}
+                required
+              />
+
+              {/* AI BUTTON */}
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={handleAIGenerate}
+                  disabled={aiLoading || !form.name}
+                  className="
+                    flex items-center gap-1
+                    px-3 py-2 rounded-md
+                    border border-orange-300
+                    bg-orange-50 text-orange-600
+                    text-sm font-semibold
+                    hover:bg-orange-100 hover:shadow-sm
+                    active:scale-95
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                    transition
+                  "
+                >
+                  {aiLoading ? (
+                    <span className="animate-spin">⏳</span>
+                  ) : (
+                    <>✨ <span>AI</span></>
+                  )}
+                </button>
+
+                {/* TOOLTIP */}
+                <div
+                  className="
+                    absolute bottom-full left-1/2 -translate-x-1/2 mb-2
+                    whitespace-nowrap
+                    rounded-md bg-black text-white text-xs
+                    px-2 py-1
+                    opacity-0 group-hover:opacity-100
+                    pointer-events-none
+                    transition
+                  "
+                >
+                  Generate Tamil name & description
+                </div>
+              </div>
+            </div>
           </FormField>
 
           <FormField label="Dish Name (Tamil)">
