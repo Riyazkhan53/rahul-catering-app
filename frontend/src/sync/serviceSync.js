@@ -10,6 +10,7 @@ import {
   savePicklistCache,
   saveQuotation,
   saveMenuPlan,
+  saveEventsByDate,
   getSyncQ,
   removeFromSyncQ,
   getListById,
@@ -23,6 +24,7 @@ import {
   picklistService,
   generatedQuotationService,
   generatedMenuPlanService,
+  eventDatesService,
 } from "../api/service";
 
 /* ---------------- APP SYNC ---------------- */
@@ -196,9 +198,21 @@ export async function masterSync(setProgress, setStatus) {
       await saveMenuPlan({ ...p, id: p.id || p.planNumber });
     }
   });
-  setProgress(90);
+  setProgress(85);
 
-  // ── 7. Result ──
+  // ── 7. Event Dates ──
+  await runStep("Event Dates", async () => {
+    const records = await eventDatesService.getAll();
+    const arr = Array.isArray(records) ? records : [];
+    for (const record of arr) {
+      if (record.date && Array.isArray(record.events)) {
+        await saveEventsByDate(record.date, record.events);
+      }
+    }
+  });
+  setProgress(95);
+
+  // ── 8. Result ──
   if (failed.length > 0) {
     setStatus?.(`Failed: ${failed.join(", ")}`);
     throw new Error(`Sync failed for: ${failed.join(", ")}`);
