@@ -92,7 +92,14 @@ export default function AddItem(props) {
 
     // 2️⃣ If online → sync immediately
     if (navigator.onLine) {
-      await itemService.upsertItem(itemPayload);
+      try {
+        await itemService.upsertItem(itemPayload);
+      } catch (err) {
+        console.error("Server sync failed:", err);
+        showToast("Saved locally, server sync failed", "warning");
+        resetForm();
+        return;
+      }
     }
 
     showToast("Item saved successfully", "success");

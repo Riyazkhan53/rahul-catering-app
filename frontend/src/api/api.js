@@ -43,7 +43,15 @@ export async function apiRequest(path, options = {}) {
       const err = await res.json();
       errorMessage = err?.message || errorMessage;
     } catch {}
-    throw new Error(errorMessage);
+
+    // On 401, dispatch global event so app can handle expired/invalid tokens
+    if (res.status === 401 && !isAuthPath) {
+      window.dispatchEvent(new Event("auth:expired"));
+    }
+
+    const error = new Error(errorMessage);
+    error.status = res.status;
+    throw error;
   }
 
   // ✅ THIS IS THE KEY FIX

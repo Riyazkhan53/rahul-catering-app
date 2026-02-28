@@ -52,23 +52,39 @@ function App() {
       try {
         const data = await apiRequest("/api/auth/me");
         setUser(data.user);
-      } catch {
-        // If API fails but we have a cached user, use it instead of clearing
-        try {
-          const cached = JSON.parse(localStorage.getItem("user"));
-          if (cached) {
-            setUser(cached);
-            setLoading(false);
-            return;
-          }
-        } catch {}
-        localStorage.clear();
-        setUser(null);
+      } catch (err) {
+        // Only clear on true 401 auth failure
+        if (err.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          setUser(null);
+        } else {
+          // Network / server error — fall back to cached user
+          try {
+            const cached = JSON.parse(localStorage.getItem("user"));
+            if (cached) {
+              setUser(cached);
+              setLoading(false);
+              return;
+            }
+          } catch {}
+        }
       } finally {
         setLoading(false);
       }
     }
     checkAuth();
+  }, []);
+
+  useEffect(() => {
+    const handler = () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      setShowLogin(false);
+    };
+    window.addEventListener("auth:expired", handler);
+    return () => window.removeEventListener("auth:expired", handler);
   }, []);
 
   const handleOnline = () => {
