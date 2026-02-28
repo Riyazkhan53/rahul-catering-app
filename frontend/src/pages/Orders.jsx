@@ -14,8 +14,13 @@ import CreatedItemLists from "./Orderpage/CreatedItemList";
 import CreatedMenuList from "./Orderpage/CreatedMenuList";
 import OrderMasterList from "./Orderpage/OrderMasterList";
 
-export default function Orders({ setActiveTab, setOrderPrefill }) {
+export default function Orders({ setActiveTab, setOrderPrefill, allowedTabs }) {
   const [orderSelected, setOrderSelected] = useState(null);
+
+  // If allowedTabs is null (admin / not loaded), show everything
+  const hasTab = (tab) => !allowedTabs || allowedTabs.includes(tab);
+  const showMenu = hasTab("menu") || hasTab("listcreator") || hasTab("listcreator-menu");
+  const showItems = hasTab("menu") || hasTab("listcreator") || hasTab("listcreator-list");
 
   return (
     <AnimatedPage>
@@ -34,19 +39,23 @@ export default function Orders({ setActiveTab, setOrderPrefill }) {
               onClick={() => setOrderSelected("calendar")}
             />
 
-            <CardButton
-              icon={UtensilsCrossed}
-              title="Menu List Manager"
-              description="Plan dishes and menus for each order"
-              onClick={() => setOrderSelected("menu")}
-            />
+            {showMenu && (
+              <CardButton
+                icon={UtensilsCrossed}
+                title="Menu List Manager"
+                description="Plan dishes and menus for each order"
+                onClick={() => setOrderSelected("menu")}
+              />
+            )}
 
-            <CardButton
-              icon={ListChecks}
-              title="Item List Manager"
-              description="Generated ingredient & service item lists"
-              onClick={() => setOrderSelected("items")}
-            />
+            {showItems && (
+              <CardButton
+                icon={ListChecks}
+                title="Item List Manager"
+                description="Generated ingredient & service item lists"
+                onClick={() => setOrderSelected("items")}
+              />
+            )}
 
             <CardButton
               icon={ScrollText}

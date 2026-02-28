@@ -91,12 +91,12 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
 
   const hour = new Date().getHours();
   const timeGreeting =
-    hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+    hour >= 3 && hour < 12 ? "Good Morning" : hour >= 12 && hour < 15 ? "Good Afternoon" : "Good Evening";
 
   const greetingText =
     user?.role === "admin"
       ? `Hi, ${timeGreeting} Admin`
-      : `Hi Good Evening Chef ${user?.name} 👨‍🍳`;
+      : `Hi ${timeGreeting} Chef ${user?.name} 👨‍🍳`;
 
   const pageVariants = {
     initial: { 
@@ -128,7 +128,7 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
     const pages = {
       dashboard: <DashboardHome />,
       messages: <Messages />,
-      orders: <Orders setActiveTab={setActiveTab} setOrderPrefill={setOrderPrefill} />,
+      orders: <Orders setActiveTab={setActiveTab} setOrderPrefill={setOrderPrefill} allowedTabs={allowedTabs} />,
       "add-order": <AddOrder setActiveTab={setActiveTab} prefill={orderPrefill} clearPrefill={() => setOrderPrefill(null)} />,
       "create-order": <CreateOrder setActiveTab={setActiveTab} />,
       menu: <Menu />,
@@ -136,9 +136,9 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
       setup: <Setup />,
       list: <MenuList />,
       invoice: <Invoice />,
-      listcreator: <MenuListCreator />,
-      "listcreator-menu": <MenuListCreator defaultView="menu" />,
-      "listcreator-list": <MenuListCreator defaultView="list" />,
+      listcreator: <MenuListCreator allowedTabs={allowedTabs} />,
+      "listcreator-menu": <MenuListCreator defaultView="menu" allowedTabs={allowedTabs} />,
+      "listcreator-list": <MenuListCreator defaultView="list" allowedTabs={allowedTabs} />,
       appsettings: <AppSettings />,
     };
 

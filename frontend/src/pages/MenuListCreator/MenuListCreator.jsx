@@ -10,9 +10,18 @@ import {
 import GenerateSingleList from "./GenerateSingleList";
 import GenerateSingleMenu from "./GenerateSingleMenu";
 
-export default function MenuListBuilder({ defaultView }) {
-  const [generateMenuOpen, setGenerateMenuOpen] = useState(defaultView === "menu");
-  const [generateListOpen, setGenerateListOpen] = useState(defaultView === "list");
+export default function MenuListBuilder({ defaultView, allowedTabs }) {
+  // If allowedTabs is null (admin / not loaded), show everything
+  const hasTab = (tab) => !allowedTabs || allowedTabs.includes(tab);
+  const showMenu = hasTab("menu") || hasTab("listcreator") || hasTab("listcreator-menu");
+  const showItems = hasTab("menu") || hasTab("listcreator") || hasTab("listcreator-list");
+
+  // Auto-open if only one option is available (and no explicit defaultView)
+  const autoMenu = !defaultView && showMenu && !showItems;
+  const autoList = !defaultView && showItems && !showMenu;
+
+  const [generateMenuOpen, setGenerateMenuOpen] = useState(defaultView === "menu" || autoMenu);
+  const [generateListOpen, setGenerateListOpen] = useState(defaultView === "list" || autoList);
 
   return (
     <AnimatedPage>
@@ -24,19 +33,23 @@ export default function MenuListBuilder({ defaultView }) {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <CardButton
-              icon={Boxes}
-              title="Generate Item List"
-              description="Create ingredient & raw material lists"
-              onClick={() => setGenerateListOpen(true)}
-            />
+            {showItems && (
+              <CardButton
+                icon={Boxes}
+                title="Generate Item List"
+                description="Create ingredient & raw material lists"
+                onClick={() => setGenerateListOpen(true)}
+              />
+            )}
 
-            <CardButton
-              icon={UtensilsCrossed}
-              title="Generate Menu"
-              description="Build menus & generate dish-wise requirements"
-              onClick={() => setGenerateMenuOpen(true)}
-            />
+            {showMenu && (
+              <CardButton
+                icon={UtensilsCrossed}
+                title="Generate Menu"
+                description="Build menus & generate dish-wise requirements"
+                onClick={() => setGenerateMenuOpen(true)}
+              />
+            )}
           </div>
         </div>
       )}
