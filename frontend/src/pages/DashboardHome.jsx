@@ -4,12 +4,14 @@ import { TrendingUp, Clock, Wallet, MessageSquare, ClipboardList, Inbox, Check, 
 import AnimatedPage from "./AnimatedPage";
 import { apiRequest, isOfflineMode } from "../api/api";
 import MiniLoader from "../Components/MiniLoader";
+import DeleteConfirmModal from "../Components/DeleteConfirmModal";
 
 export default function DashboardHome() {
   const [orderRequests, setOrderRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [chats, setChats] = useState([]);
   const [loadingChats, setLoadingChats] = useState(true);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const stats = [
     { title: "Today's Orders", value: "24", icon: TrendingUp, color: "text-blue-500 dark:text-blue-400" },
@@ -54,7 +56,10 @@ export default function DashboardHome() {
   const unreadChatsCount = chats.filter((c) => c.unreadAdmin > 0).length;
 
   const clearAllChats = async () => {
-    if (!window.confirm("Are you sure you want to delete all messages?")) return;
+    setShowClearConfirm(true);
+  };
+
+  const clearAllChatsConfirmed = async () => {
     try {
       await apiRequest("/api/chats/all", { method: "DELETE" });
       setChats([]);
@@ -266,6 +271,15 @@ export default function DashboardHome() {
         </motion.div>
 
       </div>
+
+      <DeleteConfirmModal
+        open={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
+        onConfirm={clearAllChatsConfirmed}
+        title="Clear All Messages"
+        message="Are you sure you want to delete all chat messages? This action cannot be undone."
+        confirmText="Clear All"
+      />
     </AnimatedPage>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MiniLoader from "../../Components/MiniLoader";
+import DeleteConfirmModal from "../../Components/DeleteConfirmModal";
 import {
   Plus,
   Pencil,
@@ -80,6 +81,7 @@ export default function PicklistManager() {
 
   // Delete state
   const [deleteLoading, setDeleteLoading] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   // Reorder state
   const [reorderLoading, setReorderLoading] = useState(false);
@@ -223,8 +225,6 @@ export default function PicklistManager() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this item?")) return;
-
     setDeleteLoading(id);
     try {
       await picklistService.delete(activeType, id);
@@ -546,7 +546,7 @@ export default function PicklistManager() {
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(item._id)}
+                      onClick={() => setDeleteConfirmId(item._id)}
                       disabled={deleteLoading === item._id}
                       className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition disabled:opacity-50"
                       title="Delete"
@@ -564,6 +564,14 @@ export default function PicklistManager() {
           ))}
         </div>
       )}
+
+      <DeleteConfirmModal
+        open={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => handleDelete(deleteConfirmId)}
+        title="Delete Item"
+        message="Are you sure you want to delete this picklist item? This action cannot be undone."
+      />
     </div>
   );
 }

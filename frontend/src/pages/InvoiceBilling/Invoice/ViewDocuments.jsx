@@ -9,6 +9,7 @@ import {
   getAllMenuPlans,
   deleteMenuPlan,
 } from "../../../db/indexedDB";
+import DeleteConfirmModal from "../../../Components/DeleteConfirmModal";
 
 export default function ViewDocuments({ onBack }) {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export default function ViewDocuments({ onBack }) {
   const [quotations, setQuotations] = useState([]);
   const [menuPlans, setMenuPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // {type, id}
 
   useEffect(() => {
     loadDocuments();
@@ -35,15 +37,22 @@ export default function ViewDocuments({ onBack }) {
   };
 
   const handleDeleteQuotation = async (id) => {
-    if (!confirm("Delete this quotation?")) return;
     await deleteQuotation(id);
     setQuotations((prev) => prev.filter((q) => q.id !== id));
   };
 
   const handleDeleteMenuPlan = async (id) => {
-    if (!confirm("Delete this menu plan?")) return;
     await deleteMenuPlan(id);
     setMenuPlans((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm) return;
+    if (deleteConfirm.type === "quotation") {
+      await handleDeleteQuotation(deleteConfirm.id);
+    } else {
+      await handleDeleteMenuPlan(deleteConfirm.id);
+    }
   };
 
   const formatDate = (timestamp) => {
@@ -157,7 +166,7 @@ export default function ViewDocuments({ onBack }) {
                     <Printer className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDeleteQuotation(q.id)}
+                    onClick={() => setDeleteConfirm({ type: "quotation", id: q.id })}
                     className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
                     title="Delete"
                   >
@@ -216,7 +225,7 @@ export default function ViewDocuments({ onBack }) {
                   <Printer className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => handleDeleteMenuPlan(m.id)}
+                  onClick={() => setDeleteConfirm({ type: "menu_plan", id: m.id })}
                   className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
                   title="Delete"
                 >
@@ -227,6 +236,13 @@ export default function ViewDocuments({ onBack }) {
           ))}
         </div>
       )}
+      <DeleteConfirmModal
+        open={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={handleDeleteConfirm}
+        title={deleteConfirm?.type === "quotation" ? "Delete Quotation" : "Delete Menu Plan"}
+        message={`Are you sure you want to delete this ${deleteConfirm?.type === "quotation" ? "quotation" : "menu plan"}? This action cannot be undone.`}
+      />
     </motion.div>
   );
 }

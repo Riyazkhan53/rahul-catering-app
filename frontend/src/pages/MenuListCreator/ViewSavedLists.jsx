@@ -4,11 +4,13 @@ import MiniLoader from "../../Components/MiniLoader";
 import { Trash2, ClipboardList, Calendar, X, FileText, Package, Clock } from "lucide-react";
 import { getAllItemLists, deleteItemList } from "../../db/indexedDB";
 import { useToast } from "../../context/ToastContext";
+import DeleteConfirmModal from "../../Components/DeleteConfirmModal";
 
 export default function ViewSavedLists({ onBack }) {
   const { showToast } = useToast();
   const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   useEffect(() => {
     loadLists();
@@ -28,7 +30,6 @@ export default function ViewSavedLists({ onBack }) {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this list?")) return;
     try {
       await deleteItemList(id);
       setLists((prev) => prev.filter((l) => l.id !== id));
@@ -329,7 +330,7 @@ export default function ViewSavedLists({ onBack }) {
                       View
                     </button>
                     <button
-                      onClick={() => handleDelete(list.id)}
+                      onClick={() => setDeleteConfirmId(list.id)}
                       className="px-4 py-2.5 bg-red-50 hover:bg-red-500 dark:bg-red-900/20 dark:hover:bg-red-500 text-red-600 hover:text-white dark:text-red-400 dark:hover:text-white rounded-xl transition-all duration-200 group/delete"
                       title="Delete list"
                     >
@@ -345,6 +346,13 @@ export default function ViewSavedLists({ onBack }) {
           </AnimatePresence>
         </div>
       )}
+      <DeleteConfirmModal
+        open={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => handleDelete(deleteConfirmId)}
+        title="Delete List"
+        message="Are you sure you want to delete this list? This action cannot be undone."
+      />
     </motion.div>
   );
 }
