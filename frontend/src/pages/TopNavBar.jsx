@@ -19,7 +19,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Inbox,
 } from "lucide-react";
 import { useNetworkMode } from "../context/NetworkModeContext";
 import { useTheme } from "../context/ThemeContext";
@@ -30,7 +29,6 @@ import { getRoleLabel } from "../utils/roleLabel";
 
 const ALL_MENU_ITEMS = [
   { key: "dashboard", label: "Dashboard", shortLabel: "Home", icon: LayoutDashboard },
-  { key: "order-requests", label: "Requests", shortLabel: "Requests", icon: Inbox },
   { key: "orders", label: "Orders", shortLabel: "Orders", icon: ClipboardList },
   { key: "menu", label: "Menu", shortLabel: "Menu", icon: UtensilsCrossed },
   { key: "add-order", label: "New Order", shortLabel: "New", icon: PlusCircle },
@@ -42,8 +40,8 @@ const ALL_MENU_ITEMS = [
 ];
 
 const FALLBACK_TABS = {
-  admin: ["dashboard", "order-requests", "orders", "menu", "settings", "setup", "appsettings"],
-  chef: ["dashboard", "order-requests", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
+  admin: ["dashboard", "orders", "menu", "settings", "setup", "appsettings"],
+  chef: ["dashboard", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
 };
 
 export default function TopNavBar({
@@ -66,17 +64,9 @@ export default function TopNavBar({
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   const role = user?.role === "admin" ? "admin" : "chef";
-  const rawTabs = allowedTabs && allowedTabs.length > 0
+  const tabKeys = allowedTabs && allowedTabs.length > 0
     ? allowedTabs
     : FALLBACK_TABS[role] || FALLBACK_TABS.chef;
-  const tabKeys = rawTabs.includes("order-requests")
-    ? rawTabs
-    : (() => {
-        const copy = [...rawTabs];
-        const msgIdx = copy.indexOf("messages");
-        copy.splice(msgIdx >= 0 ? msgIdx + 1 : 1, 0, "order-requests");
-        return copy;
-      })();
 
   const menu = tabKeys
     .map((key) => ALL_MENU_ITEMS.find((item) => item.key === key))

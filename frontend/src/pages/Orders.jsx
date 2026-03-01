@@ -8,13 +8,15 @@ import {
   UtensilsCrossed,
   ListChecks,
   ScrollText,
+  Inbox,
 } from "lucide-react";
 import OrdersCalender from "./Orderpage/OrderCalender";
 import CreatedItemLists from "./Orderpage/CreatedItemList";
 import CreatedMenuList from "./Orderpage/CreatedMenuList";
 import OrderMasterList from "./Orderpage/OrderMasterList";
+import OrderRequests from "./OrderRequests";
 
-export default function Orders({ setActiveTab, setOrderPrefill, allowedTabs }) {
+export default function Orders({ setActiveTab, setOrderPrefill, setQuotationPrefill, allowedTabs }) {
   const [orderSelected, setOrderSelected] = useState(null);
 
   // If allowedTabs is null (admin / not loaded), show everything
@@ -62,6 +64,13 @@ export default function Orders({ setActiveTab, setOrderPrefill, allowedTabs }) {
               title="Order Master List"
               description="View all created orders"
               onClick={() => setOrderSelected("order-list")}
+            />
+
+            <CardButton
+              icon={Inbox}
+              title="Order Requests"
+              description="View incoming requests from website"
+              onClick={() => setOrderSelected("order-requests")}
             />
           </div>
         </div>
@@ -116,6 +125,21 @@ export default function Orders({ setActiveTab, setOrderPrefill, allowedTabs }) {
             onBack={() => setOrderSelected(null)}
           />
           <OrderMasterList />
+        </div>
+      )}
+
+      {orderSelected === "order-requests" && (
+        <div className="w-full max-w-5xl">
+          <BackHeader
+            title="Order Requests"
+            subtitle="Incoming requests from website"
+            onBack={() => setOrderSelected(null)}
+          />
+          <OrderRequests
+            setActiveTab={setActiveTab}
+            setOrderPrefill={setOrderPrefill}
+            setQuotationPrefill={setQuotationPrefill}
+          />
         </div>
       )}
     </AnimatedPage>

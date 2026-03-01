@@ -3,7 +3,7 @@ import MiniLoader from "../../Components/MiniLoader";
 import {
   Shield, ChevronRight, ChevronLeft, Check, Loader2,
   LayoutDashboard, UtensilsCrossed, ClipboardList, PlusCircle,
-  FileText, Receipt, Settings, Wrench, Sparkles, Inbox,
+  FileText, Receipt, Settings, Wrench, Sparkles,
 } from "lucide-react";
 import { getAllUserRoles, saveUserRole } from "../../db/indexedDB";
 import { apiRequest, isOfflineMode } from "../../api/api";
@@ -13,7 +13,6 @@ import { motion, AnimatePresence } from "framer-motion";
 // All available sidebar tabs
 const ALL_TABS = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, description: "Home dashboard with overview" },
-  { key: "order-requests", label: "Order Requests", icon: Inbox, description: "Website quotation requests" },
   { key: "orders", label: "Orders Management", icon: ClipboardList, description: "View and manage all orders" },
   { key: "menu", label: "Menu & Items Catalogue", icon: UtensilsCrossed, description: "Browse menu items and dishes" },
   { key: "add-order", label: "New Order", icon: PlusCircle, description: "Create new orders" },
@@ -26,8 +25,8 @@ const ALL_TABS = [
 
 // Default tab config per built-in role
 const DEFAULT_TAB_CONFIG = {
-  admin: ["dashboard", "order-requests", "orders", "menu", "settings", "setup", "appsettings"],
-  chef: ["dashboard", "order-requests", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
+  admin: ["dashboard", "orders", "menu", "settings", "setup", "appsettings"],
+  chef: ["dashboard", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
 };
 
 // Permission sections — each has Create, Modify, Delete, Approve

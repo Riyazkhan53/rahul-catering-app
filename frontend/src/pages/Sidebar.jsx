@@ -14,7 +14,6 @@ import {
   User,
   ArrowLeftRight,
   MessageSquare,
-  Inbox,
 } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 import MiniLoader from "../Components/MiniLoader";
@@ -24,7 +23,6 @@ import { getRoleLabel } from "../utils/roleLabel";
 const ALL_MENU_ITEMS = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "messages", label: "Messages", icon: MessageSquare },
-  { key: "order-requests", label: "Order Requests", icon: Inbox },
   { key: "orders", label: "Orders Management", icon: ClipboardList },
   { key: "menu", label: "Menu & Items Catalogue", icon: UtensilsCrossed },
   { key: "add-order", label: "New Order", icon: PlusCircle, badge: "⭐" },
@@ -37,8 +35,8 @@ const ALL_MENU_ITEMS = [
 
 // Fallback if role config hasn't loaded yet
 const FALLBACK_TABS = {
-  admin: ["dashboard", "messages", "order-requests", "orders", "menu", "settings", "setup", "appsettings"],
-  chef: ["dashboard", "messages", "order-requests", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
+  admin: ["dashboard", "messages", "orders", "menu", "settings", "setup", "appsettings"],
+  chef: ["dashboard", "messages", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
 };
 
 export default function Sidebar({
@@ -58,18 +56,9 @@ export default function Sidebar({
   const role = user?.role === "admin" ? "admin" : "chef";
 
   // Use allowedTabs from role config, fall back to hardcoded defaults
-  // Always ensure "order-requests" is present right after "messages"
-  const rawTabs = allowedTabs && allowedTabs.length > 0
+  const tabKeys = allowedTabs && allowedTabs.length > 0
     ? allowedTabs
     : FALLBACK_TABS[role] || FALLBACK_TABS.chef;
-  const tabKeys = rawTabs.includes("order-requests")
-    ? rawTabs
-    : (() => {
-        const copy = [...rawTabs];
-        const msgIdx = copy.indexOf("messages");
-        copy.splice(msgIdx >= 0 ? msgIdx + 1 : 1, 0, "order-requests");
-        return copy;
-      })();
 
   // Filter and order menu items based on allowed tabs
   const menu = tabKeys
