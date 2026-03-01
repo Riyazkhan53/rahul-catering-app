@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, BellOff, MessageSquare } from "lucide-react";
+import { Bell, BellOff, MessageSquare, Inbox } from "lucide-react";
 import { apiRequest, isOfflineMode } from "../api/api";
+import { orderRequestService } from "../api/service";
 
 export default function NotificationDropdown() {
   const [open, setOpen] = useState(false);
   const [chats, setChats] = useState([]);
+  const [newRequests, setNewRequests] = useState([]);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -25,12 +27,21 @@ export default function NotificationDropdown() {
         }
       } catch {}
     }
+    async function fetchNewRequests() {
+      try {
+        if (!isOfflineMode()) {
+          const data = await orderRequestService.getAll("new");
+          setNewRequests(data);
+        }
+      } catch {}
+    }
     fetchUnread();
-    const interval = setInterval(fetchUnread, 8000);
+    fetchNewRequests();
+    const interval = setInterval(() => { fetchUnread(); fetchNewRequests(); }, 8000);
     return () => clearInterval(interval);
   }, []);
 
-  const totalUnread = chats.reduce((sum, c) => sum + c.unreadAdmin, 0);
+  const totalUnread = chats.reduce((sum, c) => sum + c.unreadAdmin, 0) + newRequests.length;
 
   const handleNotificationClick = async (chat) => {
     // Mark as read and remove from notification list
@@ -73,7 +84,7 @@ export default function NotificationDropdown() {
               )}
             </div>
 
-            {chats.length === 0 ? (
+            {chats.length === 0 && newRequests.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 px-4">
                 <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-full mb-3">
                   <BellOff className="w-6 h-6 text-gray-400 dark:text-gray-500" />
@@ -83,6 +94,33 @@ export default function NotificationDropdown() {
               </div>
             ) : (
               <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+                {newRequests.map((req) => (
+                  <div
+                    key={req._id}
+                    onClick={() => {
+                      setOpen(false);
+                      window.dispatchEvent(new CustomEvent("openOrderRequests"));
+                    }}
+                    className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg shrink-0">
+                        <Inbox className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">
+                          New order request from {req.name}
+                        </p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                          {req.functionType} · {req.paxCount} pax
+                        </p>
+                      </div>
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-orange-500 text-white rounded-full shrink-0">
+                        New
+                      </span>
+                    </div>
+                  </div>
+                ))}
                 {chats.map((chat) => (
                   <div key={chat._id} onClick={() => handleNotificationClick(chat)} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition cursor-pointer">
                     <div className="flex items-center gap-3">

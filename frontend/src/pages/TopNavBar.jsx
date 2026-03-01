@@ -19,6 +19,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Inbox,
 } from "lucide-react";
 import { useNetworkMode } from "../context/NetworkModeContext";
 import { useTheme } from "../context/ThemeContext";
@@ -29,6 +30,7 @@ import { getRoleLabel } from "../utils/roleLabel";
 
 const ALL_MENU_ITEMS = [
   { key: "dashboard", label: "Dashboard", shortLabel: "Home", icon: LayoutDashboard },
+  { key: "order-requests", label: "Requests", shortLabel: "Requests", icon: Inbox },
   { key: "orders", label: "Orders", shortLabel: "Orders", icon: ClipboardList },
   { key: "menu", label: "Menu", shortLabel: "Menu", icon: UtensilsCrossed },
   { key: "add-order", label: "New Order", shortLabel: "New", icon: PlusCircle },
@@ -40,8 +42,8 @@ const ALL_MENU_ITEMS = [
 ];
 
 const FALLBACK_TABS = {
-  admin: ["dashboard", "orders", "menu", "settings", "setup", "appsettings"],
-  chef: ["dashboard", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
+  admin: ["dashboard", "order-requests", "orders", "menu", "settings", "setup", "appsettings"],
+  chef: ["dashboard", "order-requests", "menu", "orders", "add-order", "listcreator", "invoice", "appsettings"],
 };
 
 export default function TopNavBar({

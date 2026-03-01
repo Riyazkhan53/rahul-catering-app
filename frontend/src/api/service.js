@@ -178,6 +178,24 @@ export const aiService = {
   },
 };
 
+/* -------------------------- */
+/* ORDER REQUEST SERVICES     */
+/* -------------------------- */
+
+export const orderRequestService = {
+  getAll(status) {
+    const q = status ? `?status=${status}` : "";
+    return apiRequest(`/api/order-requests${q}`);
+  },
+
+  updateStatus(id, status, notes) {
+    return apiRequest(`/api/order-requests/${id}/status`, {
+      method: "PATCH",
+      body: { status, ...(notes !== undefined && { notes }) },
+    });
+  },
+};
+
 /* -------------------- */
 /* EVENT DATES SERVICES */
 /* -------------------- */

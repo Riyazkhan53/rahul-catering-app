@@ -16,6 +16,7 @@ import MenuListCreator from "./MenuListCreator/MenuListCreator"
 import useIsDesktop from "../hooks/uselsDesktop";
 import AppSettings from "./AppSettings/AppSettings";
 import Messages from "./Messages";
+import OrderRequests from "./OrderRequests";
 import ProfileModal from "./Settings/Profile";
 import { apiRequest, isOfflineMode } from "../api/api";
 import { getAllUserRoles } from "../db/indexedDB";
@@ -53,6 +54,13 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
     const handler = () => setActiveTab("messages");
     window.addEventListener("openChat", handler);
     return () => window.removeEventListener("openChat", handler);
+  }, []);
+
+  // Listen for openOrderRequests event from notifications
+  useEffect(() => {
+    const handler = () => setActiveTab("order-requests");
+    window.addEventListener("openOrderRequests", handler);
+    return () => window.removeEventListener("openOrderRequests", handler);
   }, []);
 
   // Fetch role config (tabs + permissions) for the current user's role
@@ -131,6 +139,7 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
     const pages = {
       dashboard: <DashboardHome />,
       messages: <Messages />,
+      "order-requests": <OrderRequests setActiveTab={setActiveTab} setOrderPrefill={setOrderPrefill} />,
       orders: <Orders setActiveTab={setActiveTab} setOrderPrefill={setOrderPrefill} allowedTabs={allowedTabs} />,
       "add-order": <AddOrder setActiveTab={setActiveTab} prefill={orderPrefill} clearPrefill={() => setOrderPrefill(null)} />,
       "create-order": <CreateOrder setActiveTab={setActiveTab} />,

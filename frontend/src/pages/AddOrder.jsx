@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 import { saveOrder, getEventsByDate, saveEventsByDate } from "../db/indexedDB";
-import { eventDatesService } from "../api/service";
+import { eventDatesService, orderRequestService } from "../api/service";
 import { uuid } from "../utils/uuid";
 
 const ORDER_TYPE = [
@@ -53,8 +53,8 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
   const [orderType, setOrderType] = useState(editOrder?.orderType || "");
   const [clientName, setClientName] = useState(editOrder?.clientName || prefill?.clientName || "");
   const [mobile, setMobile] = useState(editOrder?.mobile || prefill?.mobile || "");
-  const [functionType, setFunctionType] = useState(editOrder?.functionType || "Wedding");
-  const [days, setDays] = useState(editOrder?.days?.length || prefill?.days || 0);
+  const [functionType, setFunctionType] = useState(editOrder?.functionType || prefill?.functionType || "Wedding");
+  const [days, setDays] = useState(editOrder?.days?.length || prefill?.days || (prefill?.fromRequest ? 1 : 0));
   const { showToast } = useToast();
 
   const [orderDays, setOrderDays] = useState([]);
@@ -172,6 +172,11 @@ export default function AddOrder({ setActiveTab, prefill, clearPrefill }) {
             } catch (_) {}
           }
         }
+      }
+
+      // If this order was created from a website request, mark the request as accepted
+      if (!isEditing && prefill?.fromRequest) {
+        orderRequestService.updateStatus(prefill.fromRequest, "accepted").catch(() => {});
       }
 
       showToast(isEditing ? "Order updated successfully!" : "Order created successfully!", "success");
