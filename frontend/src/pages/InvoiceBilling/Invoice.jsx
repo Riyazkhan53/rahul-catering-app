@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import InvoiceBillingHome from "./Invoice/InvoiceBillingHome";
 import CreateInvoice from "./Invoice/CreateInvoice";
 import CreateQuotation from "./Invoice/CreateQuotation";
@@ -9,8 +9,13 @@ import PdfLayout from "../../utils/InvoiceTemplate";
 import InvoicePreview from "../../pdf/invoicePreview";
 import BackHeader from "../../Components/BackHeader";
 
-export default function InvoiceBillingPage() {
-    const [view, setView] = useState("home");
+export default function InvoiceBillingPage({ prefill, clearPrefill }) {
+    const [view, setView] = useState(prefill ? "create-quotation" : "home");
+
+    useEffect(() => {
+        if (prefill) setView("create-quotation");
+    }, [prefill]);
+
     const [invoice, setInvoice] = useState({
         type: "INVOICE",
         invoiceNo: "INV-0001",
@@ -52,7 +57,7 @@ export default function InvoiceBillingPage() {
             )}
 
             {view === "create-quotation" && (
-                <CreateQuotation onBack={() => setView("home")} />
+                <CreateQuotation onBack={() => { if (clearPrefill) clearPrefill(); setView("home"); }} prefill={prefill} />
             )}
 
             {view === "event-menu-plan" && (

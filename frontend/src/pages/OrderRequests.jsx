@@ -14,9 +14,13 @@ import {
   ArrowRight,
   RefreshCw,
   ChefHat,
+  FileText,
+  CalendarPlus,
+  PlusCircle,
 } from "lucide-react";
 import { useToast } from "../context/ToastContext";
-import { orderRequestService } from "../api/service";
+import { orderRequestService, eventDatesService } from "../api/service";
+import { getEventsByDate, saveEventsByDate } from "../db/indexedDB";
 import MiniLoader from "../Components/MiniLoader";
 
 const STATUS_CONFIG = {
@@ -34,7 +38,7 @@ const FILTER_OPTIONS = [
   { key: "rejected", label: "Rejected" },
 ];
 
-export default function OrderRequests({ setActiveTab, setOrderPrefill }) {
+export default function OrderRequests({ setActiveTab, setOrderPrefill, setQuotationPrefill }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -76,7 +80,6 @@ export default function OrderRequests({ setActiveTab, setOrderPrefill }) {
   };
 
   const handleCreateOrder = (req) => {
-    // Map website request data → AddOrder prefill format
     setOrderPrefill({
       clientName: req.name,
       mobile: req.contact,
@@ -87,6 +90,36 @@ export default function OrderRequests({ setActiveTab, setOrderPrefill }) {
       fromRequest: req._id,
     });
     setActiveTab("add-order");
+  };
+
+  const handleCreateQuotation = (req) => {
+    setQuotationPrefill({
+      customerName: req.name,
+      customerPhone: req.contact,
+      eventType: req.functionType,
+      numberOfGuests: String(req.paxCount || ""),
+    });
+    setActiveTab("invoice");
+  };
+
+  const handleAddToCalendar = async (req) => {
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+      const existing = await getEventsByDate(today);
+      const calendarEvent = {
+        id: crypto.randomUUID(),
+        title: `${req.functionType} - ${req.name}`,
+        client: req.name,
+        contact: req.contact,
+        notes: `Website request · ${req.paxCount} pax`,
+      };
+      const updated = [...existing, calendarEvent];
+      await saveEventsByDate(today, updated);
+      eventDatesService.saveByDate(today, updated).catch(() => {});
+      showToast("Added to calendar!", "success");
+    } catch {
+      showToast("Failed to add to calendar", "error");
+    }
   };
 
   const filtered =
@@ -330,7 +363,7 @@ export default function OrderRequests({ setActiveTab, setOrderPrefill }) {
                               <button
                                 onClick={() => updateStatus(req._id, "accepted")}
                                 disabled={updatingId === req._id}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition-all disabled:opacity-50"
+                                className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition-all disabled:opacity-50"
                               >
                                 <CheckCircle2 className="w-4 h-4" />
                                 Accept
@@ -340,7 +373,7 @@ export default function OrderRequests({ setActiveTab, setOrderPrefill }) {
                               <button
                                 onClick={() => updateStatus(req._id, "rejected")}
                                 disabled={updatingId === req._id}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition-all disabled:opacity-50"
+                                className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition-all disabled:opacity-50"
                               >
                                 <XCircle className="w-4 h-4" />
                                 Reject
@@ -348,10 +381,24 @@ export default function OrderRequests({ setActiveTab, setOrderPrefill }) {
                             )}
                             <button
                               onClick={() => handleCreateOrder(req)}
-                              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition-all"
+                              className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition-all"
                             >
-                              <ArrowRight className="w-4 h-4" />
+                              <PlusCircle className="w-4 h-4" />
                               Create Order
+                            </button>
+                            <button
+                              onClick={() => handleCreateQuotation(req)}
+                              className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition-all"
+                            >
+                              <FileText className="w-4 h-4" />
+                              Create Quotation
+                            </button>
+                            <button
+                              onClick={() => handleAddToCalendar(req)}
+                              className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition-all"
+                            >
+                              <CalendarPlus className="w-4 h-4" />
+                              Add to Calendar
                             </button>
                           </div>
                         </div>

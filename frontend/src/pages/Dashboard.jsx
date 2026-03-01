@@ -27,6 +27,7 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
     return localStorage.getItem("activeTab") || "dashboard";
   });
   const [orderPrefill, setOrderPrefill] = useState(null);
+  const [quotationPrefill, setQuotationPrefill] = useState(null);
   const isDesktop = useIsDesktop();
   const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
   const [allowedTabs, setAllowedTabs] = useState(null);
@@ -139,7 +140,7 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
     const pages = {
       dashboard: <DashboardHome />,
       messages: <Messages />,
-      "order-requests": <OrderRequests setActiveTab={setActiveTab} setOrderPrefill={setOrderPrefill} />,
+      "order-requests": <OrderRequests setActiveTab={setActiveTab} setOrderPrefill={setOrderPrefill} setQuotationPrefill={setQuotationPrefill} />,
       orders: <Orders setActiveTab={setActiveTab} setOrderPrefill={setOrderPrefill} allowedTabs={allowedTabs} />,
       "add-order": <AddOrder setActiveTab={setActiveTab} prefill={orderPrefill} clearPrefill={() => setOrderPrefill(null)} />,
       "create-order": <CreateOrder setActiveTab={setActiveTab} />,
@@ -147,7 +148,7 @@ export default function Dashboard({ user, onLogout, onSwitchRole }) {
       settings: <Settings user={user} />,
       setup: <Setup />,
       list: <MenuList />,
-      invoice: <Invoice />,
+      invoice: <Invoice prefill={quotationPrefill} clearPrefill={() => setQuotationPrefill(null)} />,
       listcreator: <MenuListCreator allowedTabs={allowedTabs} />,
       "listcreator-menu": <MenuListCreator defaultView="menu" allowedTabs={allowedTabs} />,
       "listcreator-list": <MenuListCreator defaultView="list" allowedTabs={allowedTabs} />,
