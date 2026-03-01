@@ -66,9 +66,17 @@ export default function TopNavBar({
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   const role = user?.role === "admin" ? "admin" : "chef";
-  const tabKeys = allowedTabs && allowedTabs.length > 0
+  const rawTabs = allowedTabs && allowedTabs.length > 0
     ? allowedTabs
     : FALLBACK_TABS[role] || FALLBACK_TABS.chef;
+  const tabKeys = rawTabs.includes("order-requests")
+    ? rawTabs
+    : (() => {
+        const copy = [...rawTabs];
+        const msgIdx = copy.indexOf("messages");
+        copy.splice(msgIdx >= 0 ? msgIdx + 1 : 1, 0, "order-requests");
+        return copy;
+      })();
 
   const menu = tabKeys
     .map((key) => ALL_MENU_ITEMS.find((item) => item.key === key))

@@ -58,9 +58,18 @@ export default function Sidebar({
   const role = user?.role === "admin" ? "admin" : "chef";
 
   // Use allowedTabs from role config, fall back to hardcoded defaults
-  const tabKeys = allowedTabs && allowedTabs.length > 0
+  // Always ensure "order-requests" is present right after "messages"
+  const rawTabs = allowedTabs && allowedTabs.length > 0
     ? allowedTabs
     : FALLBACK_TABS[role] || FALLBACK_TABS.chef;
+  const tabKeys = rawTabs.includes("order-requests")
+    ? rawTabs
+    : (() => {
+        const copy = [...rawTabs];
+        const msgIdx = copy.indexOf("messages");
+        copy.splice(msgIdx >= 0 ? msgIdx + 1 : 1, 0, "order-requests");
+        return copy;
+      })();
 
   // Filter and order menu items based on allowed tabs
   const menu = tabKeys
