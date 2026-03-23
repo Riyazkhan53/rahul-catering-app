@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import InvoicePreview from "./InvoicePreview"
 import PdfLayout from "../../../utils/InvoiceTemplate";
+import SearchAddTable from "../../../Components/BasicComponents/SearchAddTable";
 
 export default function CreateInvoice({ onSelect, onBack, type = "INVOICE", invoice, setInvoice }) {
 
@@ -152,8 +153,8 @@ export default function CreateInvoice({ onSelect, onBack, type = "INVOICE", invo
 
             {/* ITEMS PLACEHOLDER */}
             <Section title="Invoice Items">
-                <div className="border border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center text-gray-500 dark:text-gray-400">
-                    Item table coming next…
+                <div className="border rounded-xl p-6 text-center text-gray-500">
+                    <SearchAddTable/>
                 </div>
             </Section>
 

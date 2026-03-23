@@ -2,12 +2,17 @@ import { useState } from "react";
 import AnimatedPage from "./AnimatedPage";
 
 const MENU_CATEGORIES = [
-  { key: "veg", label: "Veg", icon: "🥦" },
-  { key: "nonveg", label: "Non Veg", icon: "🍗" },
+  { key: "sweets", label: "Sweets", icon: "🥨" },
+  { key: "starters", label: "Starters", icon: "🍟" },
+  { key: "main courses", label: "Main Courses", icon: "🍛" },
+  { key: "accompaniments", label: "Accompaniments", icon: "🥣" },
+  { key: "kerala segment", label: "Kerala Segment", icon: "🥥" },
+  { key: "north indian flavours ", label: "North Indian Flavours", icon: "🫓" },
+  { key: "village treat", label: "Village Treat", icon: "🌾" },
   { key: "desserts", label: "Desserts", icon: "🍰" },
-  { key: "snacks", label: "Snacks", icon: "🍟" },
-  { key: "drinks", label: "Cool Drinks", icon: "🥤" },
-  { key: "others", label: "Others", icon: "🍽️" },
+  { key: "beverages", label: "Beverages", icon: "🥤" },
+  { key: "childrens menu", label: "Childrens Menu", icon: "👶" },
+  { key: "live counters/others", label: "Live Counters/Others", icon: "🍽️" },
 ];
 
 export default function Menu() {

@@ -15,6 +15,7 @@ import CateringLoader from "./Components/CateringLoader";
 import UpdatePrompt from "./Components/UpdatePrompt";
 import { syncPendingItems, pullItemsFromServer } from "./sync/itemSync";
 
+
 const getInitialTheme = () =>
   localStorage.getItem("theme") === "dark";
 
@@ -76,16 +77,8 @@ function App() {
     checkAuth();
   }, []);
 
-  useEffect(() => {
-    const handler = () => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      setUser(null);
-      setShowLogin(false);
-    };
-    window.addEventListener("auth:expired", handler);
-    return () => window.removeEventListener("auth:expired", handler);
-  }, []);
+
+
 
   const handleOnline = () => {
     syncPendingItems();
